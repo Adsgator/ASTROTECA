@@ -1,6 +1,6 @@
 import { Q as createComponent, $ as renderComponent, a6 as renderTemplate$1, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
 import 'kleur/colors';
-import { $ as $$AppLayout } from '../chunks/AppLayout_CMGUMeQX.mjs';
+import { $ as $$AppLayout } from '../chunks/AppLayout_CV10e5-C.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState, useEffect, useMemo } from 'react';
 import { f as fetchRegistry } from '../chunks/github_B0bVnyLs.mjs';
@@ -124,25 +124,25 @@ function generateManifest(project, artDirection, components, settings) {
   return renderTemplate(template, vars);
 }
 
-const inputBase = "w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+const inputBase = "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
 const btnBase = "px-4 py-2 rounded-lg text-sm font-medium transition-colors";
-const btnPrimary = `${btnBase} bg-accent text-bg hover:bg-accent-hover disabled:opacity-50`;
-const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`;
-const btnGhost = `${btnBase} bg-transparent text-ink-secondary hover:bg-raised hover:text-ink-primary`;
-const btnDanger = `${btnBase} bg-fail text-white hover:opacity-90`;
-const cardBase = "rounded-xl border border-border bg-surface overflow-hidden";
-const cardInteractive = `${cardBase} cursor-pointer transition-all hover:border-accent/50`;
+const btnPrimary = `${btnBase} bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50`;
+const btnOutline = `${btnBase} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50`;
+const btnGhost = `${btnBase} bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900`;
+const btnDanger = `${btnBase} bg-red-600 text-white hover:bg-red-700`;
+const cardBase = "rounded-xl border border-gray-200 bg-white overflow-hidden";
+const cardInteractive = `${cardBase} cursor-pointer transition-all hover:border-blue-300 hover:shadow-sm`;
 const badgeBase = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium";
 function Field({ label, children }) {
   return /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-    /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-ink-secondary", children: label }),
+    /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-gray-600", children: label }),
     children
   ] });
 }
 function Pair({ label, value }) {
-  return /* @__PURE__ */ jsxs("div", { className: "flex justify-between py-1 text-sm border-b border-border-subtle last:border-0", children: [
-    /* @__PURE__ */ jsx("span", { className: "text-ink-muted", children: label }),
-    /* @__PURE__ */ jsx("span", { className: "font-medium", children: value || "-" })
+  return /* @__PURE__ */ jsxs("div", { className: "flex justify-between py-1 text-sm border-b border-gray-100 last:border-0", children: [
+    /* @__PURE__ */ jsx("span", { className: "text-gray-500", children: label }),
+    /* @__PURE__ */ jsx("span", { className: "font-medium text-gray-900", children: value || "-" })
   ] });
 }
 function ColorSwatch({
@@ -151,7 +151,7 @@ function ColorSwatch({
   onChange
 }) {
   return /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-    /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-ink-secondary", children: label }),
+    /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-gray-600", children: label }),
     /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
       /* @__PURE__ */ jsx(
         "input",
@@ -159,7 +159,7 @@ function ColorSwatch({
           type: "color",
           value,
           onChange: (e) => onChange(e.target.value),
-          className: "w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5"
+          className: "w-10 h-10 rounded-lg border border-gray-300 bg-transparent cursor-pointer p-0.5"
         }
       ),
       /* @__PURE__ */ jsx(
@@ -364,7 +364,7 @@ function Builder({ availableComponents }) {
   }
   if (result) {
     return /* @__PURE__ */ jsxs("div", { className: "max-w-xl mx-auto flex flex-col gap-4 pt-12", children: [
-      /* @__PURE__ */ jsx("h1", { className: "text-2xl font-bold text-accent", children: "Projeto criado com sucesso!" }),
+      /* @__PURE__ */ jsx("h1", { className: "text-2xl font-bold text-blue-600", children: "Projeto criado com sucesso!" }),
       /* @__PURE__ */ jsxs("div", { className: `${cardBase} p-5 space-y-4`, children: [
         /* @__PURE__ */ jsx(Pair, { label: "Repositorio", value: result.repoUrl }),
         /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-2 pt-2", children: [
@@ -384,10 +384,10 @@ function Builder({ availableComponents }) {
   }
   return /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[1fr_280px] gap-6 min-h-[calc(100vh-4rem)]", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4", children: [
-      /* @__PURE__ */ jsx("div", { className: "flex gap-2 border-b border-border pb-2", children: STEPS.map((s, i) => /* @__PURE__ */ jsxs(
+      /* @__PURE__ */ jsx("div", { className: "flex gap-2 border-b border-gray-200 pb-2", children: STEPS.map((s, i) => /* @__PURE__ */ jsxs(
         "button",
         {
-          className: `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${step === s ? "bg-accent text-bg" : "text-ink-secondary hover:bg-raised hover:text-ink-primary"}`,
+          className: `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${step === s ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`,
           onClick: () => setStep(s),
           children: [
             i + 1,
@@ -461,7 +461,7 @@ function Builder({ availableComponents }) {
             }
           ) })
         ] }),
-        /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold pt-4 border-t border-border", children: "Direcao de Arte" }),
+        /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold pt-4 border-t border-gray-200", children: "Direcao de Arte" }),
         /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
           /* @__PURE__ */ jsx(
             ColorSwatch,
@@ -575,21 +575,21 @@ function Builder({ availableComponents }) {
             ))
           ] })
         ] }),
-        filteredComponents.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-ink-secondary py-8 text-center", children: "Nenhum componente encontrado." }) : /* @__PURE__ */ jsx("div", { className: "grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3", children: filteredComponents.map((c) => {
+        filteredComponents.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-gray-600 py-8 text-center", children: "Nenhum componente encontrado." }) : /* @__PURE__ */ jsx("div", { className: "grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3", children: filteredComponents.map((c) => {
           const sel = isSelected(c.id);
           const pos = getPosition(c.id);
           return /* @__PURE__ */ jsxs(
             "div",
             {
-              className: `${cardInteractive} ${sel ? "ring-2 ring-accent" : ""} p-4`,
+              className: `${cardInteractive} ${sel ? "ring-2 ring-blue-500" : ""} p-4`,
               onClick: () => toggleComponent(c),
               children: [
                 /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-start mb-1", children: [
                   /* @__PURE__ */ jsx("span", { className: "font-semibold text-sm", children: c.name }),
-                  pos !== null && /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-accent-dim text-accent`, children: pos })
+                  pos !== null && /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-blue-100 text-blue-700`, children: pos })
                 ] }),
-                /* @__PURE__ */ jsx("div", { className: "text-xs text-ink-secondary line-clamp-2", children: c.description }),
-                /* @__PURE__ */ jsx("div", { className: "mt-2", children: /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-raised text-ink-secondary`, children: c.category }) })
+                /* @__PURE__ */ jsx("div", { className: "text-xs text-gray-600 line-clamp-2", children: c.description }),
+                /* @__PURE__ */ jsx("div", { className: "mt-2", children: /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-gray-100 text-gray-600`, children: c.category }) })
               ]
             },
             c.id
@@ -614,12 +614,12 @@ function Builder({ availableComponents }) {
             selected.length,
             ")"
           ] }),
-          selected.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-ink-secondary py-4 text-center", children: "Nenhum componente selecionado." }) : /* @__PURE__ */ jsx("div", { className: "space-y-4", children: selected.map((sc, index) => /* @__PURE__ */ jsxs("div", { className: "border-b border-border-subtle last:border-0 pb-4 last:pb-0", children: [
+          selected.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-gray-600 py-4 text-center", children: "Nenhum componente selecionado." }) : /* @__PURE__ */ jsx("div", { className: "space-y-4", children: selected.map((sc, index) => /* @__PURE__ */ jsxs("div", { className: "border-b border-gray-100 last:border-0 pb-4 last:pb-0", children: [
             /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-              /* @__PURE__ */ jsx("span", { className: "w-6 h-6 rounded bg-accent-dim text-accent flex items-center justify-center text-sm font-bold", children: sc.position }),
+              /* @__PURE__ */ jsx("span", { className: "w-6 h-6 rounded bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold", children: sc.position }),
               /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
                 /* @__PURE__ */ jsx("strong", { className: "block", children: sc.meta.name }),
-                /* @__PURE__ */ jsx("div", { className: "text-sm text-ink-secondary", children: sc.meta.description })
+                /* @__PURE__ */ jsx("div", { className: "text-sm text-gray-600", children: sc.meta.description })
               ] }),
               /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
                 /* @__PURE__ */ jsx(
@@ -650,11 +650,11 @@ function Builder({ availableComponents }) {
                 )
               ] })
             ] }),
-            sc.meta.copy && Object.keys(sc.meta.copy).length > 0 && /* @__PURE__ */ jsxs("div", { className: "mt-3 pt-3 border-t border-border-subtle pl-9", children: [
+            sc.meta.copy && Object.keys(sc.meta.copy).length > 0 && /* @__PURE__ */ jsxs("div", { className: "mt-3 pt-3 border-t border-gray-100 pl-9", children: [
               /* @__PURE__ */ jsxs(
                 "button",
                 {
-                  className: "text-accent text-sm font-medium hover:underline",
+                  className: "text-blue-600 text-sm font-medium hover:underline",
                   onClick: () => toggleCopyExpand(sc.meta.id),
                   children: [
                     expandedCopy[sc.meta.id] ? "▼" : "▶",
@@ -666,7 +666,7 @@ function Builder({ availableComponents }) {
               ),
               expandedCopy[sc.meta.id] && /* @__PURE__ */ jsx("div", { className: "mt-2 space-y-3", children: Object.entries(copyEdits[sc.meta.id] || sc.meta.copy).map(
                 ([key, value]) => /* @__PURE__ */ jsxs("div", { children: [
-                  /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-ink-muted mb-1", children: key }),
+                  /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-gray-400 mb-1", children: key }),
                   /* @__PURE__ */ jsx(
                     "textarea",
                     {
@@ -681,8 +681,8 @@ function Builder({ availableComponents }) {
             ] })
           ] }, sc.meta.id)) })
         ] }) }),
-        error && /* @__PURE__ */ jsx("div", { className: "p-4 border border-fail rounded-lg text-fail text-sm", children: error }),
-        /* @__PURE__ */ jsxs("div", { className: "flex gap-3 pt-4 border-t border-border", children: [
+        error && /* @__PURE__ */ jsx("div", { className: "p-4 border border-red-300 rounded-lg text-red-600 text-sm", children: error }),
+        /* @__PURE__ */ jsxs("div", { className: "flex gap-3 pt-4 border-t border-gray-200", children: [
           /* @__PURE__ */ jsx("button", { className: btnOutline, onClick: downloadManifest, children: "Baixar Manifesto (.md)" }),
           /* @__PURE__ */ jsx(
             "button",
@@ -698,32 +698,32 @@ function Builder({ availableComponents }) {
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4", children: [
       /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3", children: "Cliente" }),
+        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3", children: "Cliente" }),
         /* @__PURE__ */ jsx("div", { className: "font-medium", children: project.clientName || "(nao definido)" }),
-        /* @__PURE__ */ jsxs("div", { className: "text-sm text-ink-secondary", children: [
+        /* @__PURE__ */ jsxs("div", { className: "text-sm text-gray-600", children: [
           project.projectType,
           " - ",
           project.niche || "-"
         ] })
       ] }) }),
       /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3", children: "Estrutura da Pagina" }),
-        selected.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-sm text-ink-secondary", children: "Nenhum componente adicionado" }) : /* @__PURE__ */ jsx("div", { className: "space-y-1", children: selected.map((sc) => /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 text-sm", children: [
-          /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-accent-dim text-accent`, children: sc.position }),
+        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3", children: "Estrutura da Pagina" }),
+        selected.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-sm text-gray-600", children: "Nenhum componente adicionado" }) : /* @__PURE__ */ jsx("div", { className: "space-y-1", children: selected.map((sc) => /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 text-sm", children: [
+          /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-blue-100 text-blue-700`, children: sc.position }),
           /* @__PURE__ */ jsx("span", { children: sc.meta.name })
         ] }, sc.meta.id)) })
       ] }) }),
       /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3", children: "Cores" }),
+        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3", children: "Cores" }),
         /* @__PURE__ */ jsxs("div", { className: "flex gap-2 flex-wrap", children: [
-          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorPrimary }, title: "Primaria" }),
-          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorSecondary }, title: "Secundaria" }),
-          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorBackground }, title: "Fundo" }),
-          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorText }, title: "Texto" })
+          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-gray-200", style: { background: art.colorPrimary }, title: "Primaria" }),
+          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-gray-200", style: { background: art.colorSecondary }, title: "Secundaria" }),
+          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-gray-200", style: { background: art.colorBackground }, title: "Fundo" }),
+          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-gray-200", style: { background: art.colorText }, title: "Texto" })
         ] })
       ] }) }),
       /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3", children: "Tipografia" }),
+        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3", children: "Tipografia" }),
         /* @__PURE__ */ jsx(Pair, { label: "Titulos", value: art.fontHeading }),
         /* @__PURE__ */ jsx(Pair, { label: "Corpo", value: art.fontBody })
       ] }) })

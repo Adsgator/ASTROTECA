@@ -1,17 +1,17 @@
 import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
 import 'kleur/colors';
-import { $ as $$AppLayout } from '../chunks/AppLayout_CMGUMeQX.mjs';
+import { $ as $$AppLayout } from '../chunks/AppLayout_CV10e5-C.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState, useEffect } from 'react';
 import { v as validateGithubToken } from '../chunks/github_B0bVnyLs.mjs';
 export { renderers } from '../renderers.mjs';
 
-const inputBase = "w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+const inputBase = "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
 const btnBase = "px-4 py-2 rounded-lg text-sm font-medium transition-colors";
-const btnPrimary = `${btnBase} bg-accent text-bg hover:bg-accent-hover disabled:opacity-50`;
-const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`;
-const btnSuccess = `${btnBase} bg-ok text-white hover:opacity-90`;
-const cardBase = "rounded-xl border border-border bg-surface p-5";
+const btnPrimary = `${btnBase} bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50`;
+const btnOutline = `${btnBase} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50`;
+const btnSuccess = `${btnBase} bg-green-600 text-white hover:bg-green-700`;
+const cardBase = "rounded-xl border border-gray-200 bg-white p-5";
 const badgeBase = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium";
 const DEFAULT_SETTINGS = {
   githubToken: "",
@@ -71,7 +71,7 @@ function ConfigPanel() {
   }
   function Field({ label, children }) {
     return /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-      /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-ink-secondary", children: label }),
+      /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-gray-600", children: label }),
       children
     ] });
   }
@@ -104,11 +104,11 @@ function ConfigPanel() {
                 children: validating ? "Validando..." : "Validar Token"
               }
             ),
-            tokenUser && /* @__PURE__ */ jsxs("span", { className: `${badgeBase} bg-ok/20 text-ok`, children: [
+            tokenUser && /* @__PURE__ */ jsxs("span", { className: `${badgeBase} bg-green-100 text-green-700`, children: [
               "✓ ",
               tokenUser
             ] }),
-            tokenError && /* @__PURE__ */ jsxs("span", { className: `${badgeBase} bg-fail/20 text-fail`, children: [
+            tokenError && /* @__PURE__ */ jsxs("span", { className: `${badgeBase} bg-red-100 text-red-700`, children: [
               "✗ ",
               tokenError
             ] })
@@ -180,7 +180,7 @@ function ConfigPanel() {
               type: "color",
               value: settings.defaultColorPrimary,
               onChange: (e) => update("defaultColorPrimary", e.target.value),
-              className: "w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5"
+              className: "w-10 h-10 rounded-lg border border-gray-300 bg-transparent cursor-pointer p-0.5"
             }
           ),
           /* @__PURE__ */ jsx(

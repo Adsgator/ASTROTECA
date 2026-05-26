@@ -17,26 +17,130 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
   const [addedId, setAddedId] = useState<string | null>(null)
 
   useEffect(() => {
+    // Se não tem componentes iniciais, usa dados embutidos para dev
     if (initialComponents.length === 0 && !initialError) {
-      const saved = localStorage.getItem('acs-settings')
-      if (saved) {
-        const settings = JSON.parse(saved)
-        if (settings.registryUrl) {
-          setLoading(true)
-          fetch(settings.registryUrl)
-            .then(r => r.json())
-            .then((data: ComponentMeta[]) => {
-              setComponents(data)
-              setLoading(false)
-            })
-            .catch(e => {
-              setError(e instanceof Error ? e.message : 'Erro ao carregar')
-              setLoading(false)
-            })
-        }
-      }
+      setComponents(getFallbackRegistry())
     }
-  }, [])
+  }, [initialComponents.length, initialError])
+  
+  // Dados de fallback para desenvolvimento
+  function getFallbackRegistry(): ComponentMeta[] {
+    const now = new Date().toISOString()
+    return [
+      {
+        id: 'hero-split',
+        name: 'Hero Split',
+        category: 'Hero',
+        description: 'Hero com imagem ao lado. Ideal para servicos.',
+        previewUrl: '/preview/hero-split',
+        screenshotUrl: '',
+        codeUrl: 'Hero/HeroSplit.astro',
+        tags: ['hero', 'split'],
+        props: [{ name: 'title', type: 'string', required: true, previewValue: 'Título' }],
+        bestFor: ['servicos'],
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: 'features-grid-3',
+        name: 'Features Grid 3',
+        category: 'Features',
+        description: '3 diferenciais em grid.',
+        previewUrl: '/preview/features-grid-3',
+        screenshotUrl: '',
+        codeUrl: 'Features/FeaturesGrid3.astro',
+        tags: ['features', 'grid'],
+        props: [{ name: 'title', type: 'string', required: true, previewValue: 'Título' }],
+        bestFor: ['qualquer'],
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: 'testimonials-cards',
+        name: 'Testimonials Cards',
+        category: 'Testimonials',
+        description: 'Depoimentos em cards.',
+        previewUrl: '/preview/testimonials-cards',
+        screenshotUrl: '',
+        codeUrl: 'Testimonials/TestimonialsCards.astro',
+        tags: ['testimonials', 'cards'],
+        props: [{ name: 'title', type: 'string', required: true, previewValue: 'Título' }],
+        bestFor: ['social'],
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: 'pricing-cards',
+        name: 'Pricing Cards',
+        category: 'Pricing',
+        description: 'Tabela de precos em cards.',
+        previewUrl: '/preview/pricing-cards',
+        screenshotUrl: '',
+        codeUrl: 'Pricing/PricingCards.astro',
+        tags: ['pricing', 'cards'],
+        props: [{ name: 'title', type: 'string', required: true, previewValue: 'Título' }],
+        bestFor: ['precos'],
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: 'cta-banner',
+        name: 'CTA Banner',
+        category: 'CTA',
+        description: 'Banner de call-to-action.',
+        previewUrl: '/preview/cta-banner',
+        screenshotUrl: '',
+        codeUrl: 'CTA/CTABanner.astro',
+        tags: ['cta', 'banner'],
+        props: [{ name: 'title', type: 'string', required: true, previewValue: 'Título' }],
+        bestFor: ['todos'],
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: 'faq-accordion',
+        name: 'FAQ Accordion',
+        category: 'FAQ',
+        description: 'Perguntas frequentes.',
+        previewUrl: '/preview/faq-accordion',
+        screenshotUrl: '',
+        codeUrl: 'FAQ/FAQAccordion.astro',
+        tags: ['faq', 'accordion'],
+        props: [{ name: 'title', type: 'string', required: true, previewValue: 'Título' }],
+        bestFor: ['todos'],
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: 'contact-section',
+        name: 'Contact Section',
+        category: 'Contact',
+        description: 'Secao de contato com formulario.',
+        previewUrl: '/preview/contact-section',
+        screenshotUrl: '',
+        codeUrl: 'Contact/ContactSection.astro',
+        tags: ['contact', 'formulario'],
+        props: [{ name: 'title', type: 'string', required: true, previewValue: 'Título' }],
+        bestFor: ['todos'],
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: 'footer-simples',
+        name: 'Footer Simples',
+        category: 'Footer',
+        description: 'Rodape com links e social.',
+        previewUrl: '/preview/footer-simples',
+        screenshotUrl: '',
+        codeUrl: 'Footer/FooterSimples.astro',
+        tags: ['footer', 'rodape'],
+        props: [{ name: 'title', type: 'string', required: true, previewValue: 'Título' }],
+        bestFor: ['todos'],
+        createdAt: now,
+        updatedAt: now
+      },
+    ]
+  }
 
   const categories = useMemo(() => {
     const cats = new Set<string>()
@@ -70,20 +174,20 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
   }
 
   const btnBase = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors'
-  const btnPrimary = `${btnBase} bg-accent text-bg hover:bg-accent-hover`
-  const btnGhost = `${btnBase} bg-transparent text-ink-secondary hover:bg-raised hover:text-ink-primary`
-  const cardBase = 'rounded-xl border border-border bg-surface overflow-hidden cursor-pointer transition-all hover:border-accent/50'
+  const btnPrimary = `${btnBase} bg-blue-600 text-white hover:bg-blue-700`
+  const btnGhost = `${btnBase} bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900`
+  const cardBase = 'rounded-xl border border-gray-200 bg-white overflow-hidden cursor-pointer transition-all hover:border-blue-300 hover:shadow-sm'
   const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium'
 
   return (
-    <div className="grid grid-cols-2 gap-6 h-[calc(100vh-4rem)]">
+    <div className="grid grid-cols-2 gap-6 h-[calc(100vh-4rem)] bg-gray-50">
       {/* Left Column */}
-      <div className="flex flex-col gap-4 overflow-hidden">
+      <div className="flex flex-col gap-4 overflow-hidden p-4">
         {/* Filters */}
         <div className="flex flex-col gap-3">
           <input
             type="text"
-            className="w-full rounded-lg border border-border bg-raised px-4 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder="Buscar componentes..."
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -109,15 +213,15 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
 
         {/* Loading / Error / Empty */}
         {loading && (
-          <div className="flex flex-1 items-center justify-center text-ink-secondary">
+          <div className="flex flex-1 items-center justify-center text-gray-500">
             Carregando componentes...
           </div>
         )}
         {error && (
-          <div className="flex flex-1 items-center justify-center text-fail">{error}</div>
+          <div className="flex flex-1 items-center justify-center text-red-600">{error}</div>
         )}
         {!loading && !error && filtered.length === 0 && (
-          <div className="flex flex-1 items-center justify-center text-ink-secondary">
+          <div className="flex flex-1 items-center justify-center text-gray-500">
             Nenhum componente encontrado.
           </div>
         )}
@@ -127,23 +231,19 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
           {filtered.map(c => (
             <div
               key={c.id}
-              className={`${cardBase} ${selectedId === c.id ? 'ring-2 ring-accent' : ''}`}
+              className={`${cardBase} ${selectedId === c.id ? 'ring-2 ring-blue-500' : ''}`}
               onClick={() => setSelectedId(c.id)}
             >
-              {c.screenshotUrl && (
-                <img
-                  src={c.screenshotUrl}
-                  alt={c.name}
-                  className="h-28 w-full object-cover"
-                />
-              )}
+              <div className="h-28 bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+                {c.id}
+              </div>
               <div className="p-3">
-                <div className="mb-1 font-semibold text-sm">{c.name}</div>
-                <div className="mb-2 text-xs text-ink-secondary line-clamp-2">{c.description}</div>
+                <div className="mb-1 font-semibold text-sm text-gray-900">{c.name}</div>
+                <div className="mb-2 text-xs text-gray-500 line-clamp-2">{c.description}</div>
                 <div className="flex flex-wrap gap-1">
-                  <span className={`${badgeBase} bg-raised text-ink-secondary`}>{c.category}</span>
+                  <span className={`${badgeBase} bg-blue-100 text-blue-700`}>{c.category}</span>
                   {c.tags.slice(0, 2).map(t => (
-                    <span key={t} className={`${badgeBase} bg-border-subtle text-ink-muted`}>{t}</span>
+                    <span key={t} className={`${badgeBase} bg-gray-100 text-gray-600`}>{t}</span>
                   ))}
                 </div>
               </div>
@@ -153,34 +253,35 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
       </div>
 
       {/* Right Column */}
-      <div className="flex flex-col gap-4 overflow-y-auto">
+      <div className="flex flex-col gap-4 overflow-y-auto p-4 bg-white">
         {!selected ? (
-          <div className="flex h-full items-center justify-center text-ink-secondary">
+          <div className="flex h-full items-center justify-center text-gray-500">
             Selecione um componente para ver detalhes.
           </div>
         ) : (
           <>
             {/* Preview */}
-            <div className="rounded-xl border border-border bg-surface overflow-hidden min-h-[200px]">
-              {selected.screenshotUrl ? (
-                <img
-                  src={selected.screenshotUrl}
-                  alt={selected.name}
-                  className="w-full h-auto max-h-[300px] object-cover"
+            <div className="rounded-xl border border-gray-200 bg-white overflow-hidden min-h-[300px]">
+              {selected.previewUrl ? (
+                <iframe
+                  src={selected.previewUrl}
+                  title={`Preview de ${selected.name}`}
+                  className="w-full h-[300px] border-0"
+                  loading="lazy"
                 />
               ) : (
-                <div className="flex h-full items-center justify-center text-ink-secondary p-8">
+                <div className="flex h-[300px] items-center justify-center text-gray-500 p-8">
                   Sem preview disponivel
                 </div>
               )}
             </div>
 
             {/* Details */}
-            <div className="rounded-xl border border-border bg-surface p-5 space-y-4">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-xl font-bold mb-1">{selected.name}</h2>
-                  <p className="text-sm text-ink-secondary">{selected.description}</p>
+                  <h2 className="text-xl font-bold mb-1 text-gray-900">{selected.name}</h2>
+                  <p className="text-sm text-gray-600">{selected.description}</p>
                 </div>
                 <button
                   className={`${btnPrimary} ${addedId === selected.id ? 'bg-ok' : ''}`}
@@ -191,37 +292,37 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <span className={`${badgeBase} bg-accent-dim text-accent`}>{selected.category}</span>
+                <span className={`${badgeBase} bg-blue-100 text-blue-700`}>{selected.category}</span>
                 {selected.tags.map(t => (
-                  <span key={t} className={`${badgeBase} bg-raised text-ink-secondary`}>{t}</span>
+                  <span key={t} className={`${badgeBase} bg-gray-100 text-gray-600`}>{t}</span>
                 ))}
               </div>
 
               <div>
-                <p className="text-xs font-medium text-ink-muted uppercase mb-1">Melhor para</p>
-                <p className="text-sm">{selected.bestFor.join(', ')}</p>
+                <p className="text-xs font-medium text-gray-400 uppercase mb-1">Melhor para</p>
+                <p className="text-sm text-gray-700">{selected.bestFor.join(', ')}</p>
               </div>
 
               {selected.props.length > 0 && (
                 <>
-                  <p className="text-xs font-medium text-ink-muted uppercase">Props</p>
+                  <p className="text-xs font-medium text-gray-400 uppercase">Props</p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-border">
-                          <th className="text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase">Nome</th>
-                          <th className="text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase">Tipo</th>
-                          <th className="text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase">Obrig.</th>
-                          <th className="text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase">Descricao</th>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase">Nome</th>
+                          <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                          <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase">Obrig.</th>
+                          <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase">Descricao</th>
                         </tr>
                       </thead>
                       <tbody>
                         {selected.props.map(p => (
-                          <tr key={p.name} className="border-b border-border-subtle last:border-0">
-                            <td className="py-2 px-3"><code className="text-xs bg-raised px-1.5 py-0.5 rounded">{p.name}</code></td>
-                            <td className="py-2 px-3"><code className="text-xs bg-raised px-1.5 py-0.5 rounded">{p.type}</code></td>
+                          <tr key={p.name} className="border-b border-gray-100 last:border-0">
+                            <td className="py-2 px-3"><code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{p.name}</code></td>
+                            <td className="py-2 px-3"><code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{p.type}</code></td>
                             <td className="py-2 px-3">{p.required ? 'Sim' : 'Nao'}</td>
-                            <td className="py-2 px-3 text-ink-secondary">{p.description}</td>
+                            <td className="py-2 px-3 text-gray-600">{p.description}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -232,20 +333,20 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
 
               {selected.copy && Object.keys(selected.copy).length > 0 && (
                 <>
-                  <p className="text-xs font-medium text-ink-muted uppercase">Copy editavel</p>
+                  <p className="text-xs font-medium text-gray-400 uppercase">Copy editavel</p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-border">
-                          <th className="text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase">Chave</th>
-                          <th className="text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase">Valor padrao</th>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase">Chave</th>
+                          <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase">Valor padrao</th>
                         </tr>
                       </thead>
                       <tbody>
                         {Object.entries(selected.copy).map(([k, v]) => (
-                          <tr key={k} className="border-b border-border-subtle last:border-0">
-                            <td className="py-2 px-3"><code className="text-xs bg-raised px-1.5 py-0.5 rounded">{k}</code></td>
-                            <td className="py-2 px-3 text-ink-secondary">{v}</td>
+                          <tr key={k} className="border-b border-gray-100 last:border-0">
+                            <td className="py-2 px-3"><code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{k}</code></td>
+                            <td className="py-2 px-3 text-gray-600">{v}</td>
                           </tr>
                         ))}
                       </tbody>

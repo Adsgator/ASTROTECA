@@ -3,12 +3,12 @@ import type { AppSettings } from '../types'
 import { validateGithubToken } from '../lib/github'
 
 /* --- Tailwind classes --- */
-const inputBase = 'w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent'
+const inputBase = 'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500'
 const btnBase = 'px-4 py-2 rounded-lg text-sm font-medium transition-colors'
-const btnPrimary = `${btnBase} bg-accent text-bg hover:bg-accent-hover disabled:opacity-50`
-const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`
-const btnSuccess = `${btnBase} bg-ok text-white hover:opacity-90`
-const cardBase = 'rounded-xl border border-border bg-surface p-5'
+const btnPrimary = `${btnBase} bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50`
+const btnOutline = `${btnBase} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50`
+const btnSuccess = `${btnBase} bg-green-600 text-white hover:bg-green-700`
+const cardBase = 'rounded-xl border border-gray-200 bg-white p-5'
 const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium'
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -76,7 +76,7 @@ export default function ConfigPanel() {
   function Field({ label, children }: { label: string; children: React.ReactNode }) {
     return (
       <div className="space-y-1.5">
-        <label className="block text-xs font-medium text-ink-secondary">{label}</label>
+        <label className="block text-xs font-medium text-gray-600">{label}</label>
         {children}
       </div>
     )
@@ -112,8 +112,8 @@ export default function ConfigPanel() {
               >
                 {validating ? 'Validando...' : 'Validar Token'}
               </button>
-              {tokenUser && <span className={`${badgeBase} bg-ok/20 text-ok`}>✓ {tokenUser}</span>}
-              {tokenError && <span className={`${badgeBase} bg-fail/20 text-fail`}>✗ {tokenError}</span>}
+              {tokenUser && <span className={`${badgeBase} bg-green-100 text-green-700`}>✓ {tokenUser}</span>}
+              {tokenError && <span className={`${badgeBase} bg-red-100 text-red-700`}>✗ {tokenError}</span>}
             </div>
           </div>
           <Field label="Owner (usuario ou org)">
@@ -178,7 +178,7 @@ export default function ConfigPanel() {
                 type="color"
                 value={settings.defaultColorPrimary}
                 onChange={e => update('defaultColorPrimary', e.target.value)}
-                className="w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5"
+                className="w-10 h-10 rounded-lg border border-gray-300 bg-transparent cursor-pointer p-0.5"
               />
               <input
                 type="text"

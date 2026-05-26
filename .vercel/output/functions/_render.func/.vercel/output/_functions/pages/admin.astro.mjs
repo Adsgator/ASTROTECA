@@ -1,6 +1,6 @@
 import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
 import 'kleur/colors';
-import { $ as $$AppLayout } from '../chunks/AppLayout_CMGUMeQX.mjs';
+import { $ as $$AppLayout } from '../chunks/AppLayout_CV10e5-C.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState } from 'react';
 export { renderers } from '../renderers.mjs';
@@ -28,12 +28,12 @@ const EMPTY_PROP = {
   description: "",
   previewValue: ""
 };
-const inputBase = "w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+const inputBase = "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
 const btnBase = "px-4 py-2 rounded-lg text-sm font-medium transition-colors";
-const btnPrimary = `${btnBase} bg-accent text-bg hover:bg-accent-hover disabled:opacity-50`;
-const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`;
-const btnDanger = `${btnBase} bg-fail text-white hover:opacity-90 px-2 py-1`;
-const cardBase = "rounded-xl border border-border bg-surface p-5";
+const btnPrimary = `${btnBase} bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50`;
+const btnOutline = `${btnBase} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50`;
+const btnDanger = `${btnBase} bg-red-600 text-white hover:bg-red-700 px-2 py-1`;
+const cardBase = "rounded-xl border border-gray-200 bg-white p-5";
 const badgeBase = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium";
 function AdminForm() {
   const [name, setName] = useState("");
@@ -162,13 +162,13 @@ ${propsStr}
   }
   function Field({ label, children }) {
     return /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-      /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-ink-secondary", children: label }),
+      /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-gray-600", children: label }),
       children
     ] });
   }
   return /* @__PURE__ */ jsxs("form", { className: "max-w-3xl flex flex-col gap-4", onSubmit: handleSubmit, children: [
     /* @__PURE__ */ jsx("h1", { className: "text-2xl font-bold", children: "Adicionar Componente" }),
-    feedback && /* @__PURE__ */ jsx("div", { className: `${badgeBase} ${feedback.type === "ok" ? "bg-ok/20 text-ok" : "bg-fail/20 text-fail"} px-3 py-2`, children: feedback.message }),
+    feedback && /* @__PURE__ */ jsx("div", { className: `${badgeBase} ${feedback.type === "ok" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"} px-3 py-2`, children: feedback.message }),
     /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Informacoes Basicas" }),
       /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
@@ -213,8 +213,8 @@ ${propsStr}
         ) })
       ] }),
       name && /* @__PURE__ */ jsxs("div", { className: "mt-3 text-sm", children: [
-        /* @__PURE__ */ jsx("span", { className: "text-ink-muted", children: "ID gerado: " }),
-        /* @__PURE__ */ jsx("code", { className: "bg-raised px-1.5 py-0.5 rounded text-xs", children: generateId(name) })
+        /* @__PURE__ */ jsx("span", { className: "text-gray-400", children: "ID gerado: " }),
+        /* @__PURE__ */ jsx("code", { className: "bg-gray-100 px-1.5 py-0.5 rounded text-xs", children: generateId(name) })
       ] })
     ] }),
     /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
@@ -222,8 +222,8 @@ ${propsStr}
         /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold", children: "Props" }),
         /* @__PURE__ */ jsx("button", { type: "button", className: `${btnOutline} py-1 px-3 text-xs`, onClick: addProp, children: "+ Adicionar Prop" })
       ] }),
-      props.length === 0 && /* @__PURE__ */ jsx("div", { className: "text-ink-secondary py-4 text-center", children: "Nenhuma prop adicionada ainda." }),
-      props.map((prop, i) => /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-border-subtle last:border-0", children: [
+      props.length === 0 && /* @__PURE__ */ jsx("div", { className: "text-gray-600 py-4 text-center", children: "Nenhuma prop adicionada ainda." }),
+      props.map((prop, i) => /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-gray-100 last:border-0", children: [
         /* @__PURE__ */ jsx(Field, { label: "Nome", children: /* @__PURE__ */ jsx("input", { className: inputBase, value: prop.name, onChange: (e) => updateProp(i, "name", e.target.value), placeholder: "titulo" }) }),
         /* @__PURE__ */ jsx(Field, { label: "Tipo", children: /* @__PURE__ */ jsxs("select", { className: inputBase, value: prop.type, onChange: (e) => updateProp(i, "type", e.target.value), children: [
           /* @__PURE__ */ jsx("option", { value: "string", children: "string" }),
@@ -253,9 +253,9 @@ ${propsStr}
     ] }),
     name && props.length > 0 && /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-2", children: "Preview Gerado" }),
-      /* @__PURE__ */ jsx("pre", { className: "bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto mb-4", children: generatePreviewCode() }),
+      /* @__PURE__ */ jsx("pre", { className: "bg-gray-100 p-3 rounded-lg text-xs font-mono overflow-x-auto mb-4", children: generatePreviewCode() }),
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-2", children: "index.ts Gerado" }),
-      /* @__PURE__ */ jsx("pre", { className: "bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto", children: generateIndexCode() })
+      /* @__PURE__ */ jsx("pre", { className: "bg-gray-100 p-3 rounded-lg text-xs font-mono overflow-x-auto", children: generateIndexCode() })
     ] }),
     /* @__PURE__ */ jsx("button", { type: "submit", className: `${btnPrimary} py-3 text-base`, disabled: submitting || !name || !astroCode, children: submitting ? "Publicando..." : "Publicar Componente" })
   ] });

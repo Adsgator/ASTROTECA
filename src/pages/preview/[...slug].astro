@@ -1,0 +1,46 @@
+---
+// src/pages/preview/[...slug].astro
+// Renderiza o preview de um componente da biblioteca
+
+import HeroSplitPreview from '../../../minha-lib-astro/src/components/Hero/HeroSplit.preview.astro'
+import HeroCenteredPreview from '../../../minha-lib-astro/src/components/Hero/HeroCentered.preview.astro'
+import FeaturesGrid3Preview from '../../../minha-lib-astro/src/components/Features/FeaturesGrid3.preview.astro'
+import TestimonialsCardsPreview from '../../../minha-lib-astro/src/components/Testimonials/TestimonialsCards.preview.astro'
+import PricingCardsPreview from '../../../minha-lib-astro/src/components/Pricing/PricingCards.preview.astro'
+import CTABannerPreview from '../../../minha-lib-astro/src/components/CTA/CTABanner.preview.astro'
+import FAQAccordionPreview from '../../../minha-lib-astro/src/components/FAQ/FAQAccordion.preview.astro'
+import ContactSectionPreview from '../../../minha-lib-astro/src/components/Contact/ContactSection.preview.astro'
+import FooterSimplesPreview from '../../../minha-lib-astro/src/components/Footer/FooterSimples.preview.astro'
+
+const { slug } = Astro.params
+
+// Mapeia slugs para componentes preview
+const previewMap: Record<string, any> = {
+  'hero-split': HeroSplitPreview,
+  'hero-centered': HeroCenteredPreview,
+  'features-grid-3': FeaturesGrid3Preview,
+  'testimonials-cards': TestimonialsCardsPreview,
+  'pricing-cards': PricingCardsPreview,
+  'cta-banner': CTABannerPreview,
+  'faq-accordion': FAQAccordionPreview,
+  'contact-section': ContactSectionPreview,
+  'footer-simples': FooterSimplesPreview,
+}
+
+const PreviewComponent = slug ? previewMap[slug] : null
+
+if (!PreviewComponent) {
+  return Astro.redirect('/')
+}
+---
+
+<div class="preview-container">
+  <PreviewComponent />
+</div>
+
+<style>
+  .preview-container {
+    min-height: 100vh;
+    background: white;
+  }
+</style>

@@ -8,6 +8,7 @@ let error = ''
 
 const registryUrl = import.meta.env.PUBLIC_REGISTRY_URL || ''
 
+// Carrega do GitHub se tiver URL, senão fica vazio e o client carrega local
 if (registryUrl) {
   try {
     components = await fetchRegistry(registryUrl)
