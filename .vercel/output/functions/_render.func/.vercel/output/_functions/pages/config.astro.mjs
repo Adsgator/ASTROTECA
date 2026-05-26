@@ -1,57 +1,56 @@
 import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
 import 'kleur/colors';
 import { $ as $$AppLayout } from '../chunks/AppLayout_CMGUMeQX.mjs';
-import { jsxs, Fragment, jsx } from 'react/jsx-runtime';
+import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState, useEffect } from 'react';
 import { v as validateGithubToken } from '../chunks/github_B0bVnyLs.mjs';
-import { D as DEFAULT_TEMPLATE } from '../chunks/manifest_DPK6IvCu.mjs';
 export { renderers } from '../renderers.mjs';
 
-const SECTIONS = [
-  { key: "github", label: "GitHub" },
-  { key: "defaults", label: "Padroes" },
-  { key: "template", label: "Template do Manifesto" },
-  { key: "about", label: "Sobre" }
-];
-const EMPTY_SETTINGS = {
+const inputBase = "w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+const btnBase = "px-4 py-2 rounded-lg text-sm font-medium transition-colors";
+const btnPrimary = `${btnBase} bg-accent text-bg hover:bg-accent-hover disabled:opacity-50`;
+const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`;
+const btnSuccess = `${btnBase} bg-ok text-white hover:opacity-90`;
+const cardBase = "rounded-xl border border-border bg-surface p-5";
+const badgeBase = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium";
+const DEFAULT_SETTINGS = {
   githubToken: "",
   githubOwner: "",
-  componentsRepo: "astro-components",
+  componentsRepo: "minha-lib-astro",
   baseProjectRepo: "_base-project",
-  registryUrl: "",
   previewBaseUrl: "",
+  registryUrl: "",
+  yourName: "",
+  studioName: "Astroteca Studio",
+  manifestTemplate: "",
   defaultFontHeading: "Inter",
   defaultFontBody: "Inter",
   defaultColorPrimary: "#6366f1",
-  defaultCtaLabel: "Comecar agora",
-  manifestTemplate: DEFAULT_TEMPLATE,
-  yourName: "",
-  studioName: "",
-  npmNamespace: ""
+  defaultCtaLabel: "Saiba mais",
+  npmNamespace: "@astroteca",
+  userName: "",
+  userEmail: ""
 };
 function ConfigPanel() {
-  const [section, setSection] = useState("github");
-  const [settings, setSettings] = useState(EMPTY_SETTINGS);
-  const [showToken, setShowToken] = useState(false);
-  const [validating, setValidating] = useState(false);
-  const [tokenUser, setTokenUser] = useState(null);
-  const [tokenError, setTokenError] = useState("");
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [saved, setSaved] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [tokenError, setTokenError] = useState("");
+  const [tokenUser, setTokenUser] = useState(null);
   useEffect(() => {
-    const raw = localStorage.getItem("acs-settings");
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      setSettings({ ...EMPTY_SETTINGS, ...parsed });
+    const saved2 = localStorage.getItem("acs-settings");
+    if (saved2) {
+      setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved2) });
     }
   }, []);
   function update(key, value) {
-    setSettings((prev) => {
-      const next = { ...prev, [key]: value };
-      localStorage.setItem("acs-settings", JSON.stringify(next));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2e3);
-      return next;
-    });
+    setSettings((prev) => ({ ...prev, [key]: value }));
+    setSaved(false);
+  }
+  function handleSave() {
+    localStorage.setItem("acs-settings", JSON.stringify(settings));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2e3);
   }
   async function handleValidateToken() {
     setValidating(true);
@@ -70,317 +69,192 @@ function ConfigPanel() {
       setValidating(false);
     }
   }
-  function resetTemplate() {
-    update("manifestTemplate", DEFAULT_TEMPLATE);
-  }
   function Field({ label, children }) {
-    return /* @__PURE__ */ jsxs("div", { className: "field", children: [
-      /* @__PURE__ */ jsx("label", { className: "label", children: label }),
+    return /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+      /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-ink-secondary", children: label }),
       children
     ] });
   }
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("style", { children: `
-        .config {
-          display: grid;
-          grid-template-columns: 200px 1fr;
-          gap: var(--space-6);
-          max-width: 900px;
-        }
-
-        .config__nav {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-1);
-        }
-
-        .config__content {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-        }
-
-        .config__title {
-          font-size: var(--text-xl);
-          font-weight: 700;
-          margin-bottom: var(--space-2);
-        }
-
-        .config__row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--space-3);
-        }
-
-        .config__full {
-          grid-column: 1 / -1;
-        }
-
-        .config__token-row {
-          display: flex;
-          gap: var(--space-2);
-          align-items: end;
-        }
-
-        .config__token-input {
-          flex: 1;
-        }
-
-        .config__token-result {
-          font-size: var(--text-sm);
-          margin-top: var(--space-2);
-        }
-
-        .config__template-area {
-          width: 100%;
-          min-height: 400px;
-          font-family: var(--font-mono);
-          font-size: var(--text-sm);
-          resize: vertical;
-        }
-
-        .config__template-actions {
-          display: flex;
-          justify-content: flex-end;
-        }
-
-        .config__saved {
-          font-size: var(--text-sm);
-          color: var(--accent);
-          opacity: 0;
-          transition: opacity 0.3s;
-        }
-
-        .config__saved--visible {
-          opacity: 1;
-        }
-
-        .config__color-row {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-        }
-
-        .config__color-picker {
-          width: 40px;
-          height: 40px;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 2px;
-          cursor: pointer;
-          background: none;
-        }
-
-        .config__template-help {
-          font-size: var(--text-xs);
-          color: var(--muted);
-          margin-bottom: var(--space-3);
-        }
-      ` }),
-    /* @__PURE__ */ jsxs("div", { className: "config", children: [
-      /* @__PURE__ */ jsxs("nav", { className: "config__nav", children: [
-        SECTIONS.map((s) => /* @__PURE__ */ jsx(
-          "button",
-          {
-            className: `sidebar-link ${section === s.key ? "active" : ""}`,
-            onClick: () => setSection(s.key),
-            children: s.label
-          },
-          s.key
-        )),
-        /* @__PURE__ */ jsx("div", { className: `config__saved ${saved ? "config__saved--visible" : ""}`, children: "Salvo!" })
-      ] }),
-      /* @__PURE__ */ jsxs("div", { className: "config__content", children: [
-        section === "github" && /* @__PURE__ */ jsxs("div", { className: "card", children: [
-          /* @__PURE__ */ jsx("h2", { className: "config__title", children: "GitHub" }),
-          /* @__PURE__ */ jsxs("div", { className: "config__row", children: [
-            /* @__PURE__ */ jsx("div", { className: "config__full", children: /* @__PURE__ */ jsxs(Field, { label: "Token de acesso", children: [
-              /* @__PURE__ */ jsxs("div", { className: "config__token-row", children: [
-                /* @__PURE__ */ jsx("div", { className: "config__token-input", children: /* @__PURE__ */ jsx(
-                  "input",
-                  {
-                    className: "input",
-                    type: showToken ? "text" : "password",
-                    value: settings.githubToken,
-                    onChange: (e) => update("githubToken", e.target.value),
-                    placeholder: "ghp_..."
-                  }
-                ) }),
-                /* @__PURE__ */ jsx(
-                  "button",
-                  {
-                    type: "button",
-                    className: "btn btn-ghost btn-sm",
-                    onClick: () => setShowToken(!showToken),
-                    children: showToken ? "Ocultar" : "Mostrar"
-                  }
-                ),
-                /* @__PURE__ */ jsx(
-                  "button",
-                  {
-                    type: "button",
-                    className: "btn btn-outline btn-sm",
-                    onClick: handleValidateToken,
-                    disabled: validating || !settings.githubToken,
-                    children: validating ? "Validando..." : "Validar"
-                  }
-                )
-              ] }),
-              tokenUser && /* @__PURE__ */ jsx("div", { className: "config__token-result", children: /* @__PURE__ */ jsxs("span", { className: "badge badge-ok", children: [
-                "Conectado como ",
-                tokenUser
-              ] }) }),
-              tokenError && /* @__PURE__ */ jsx("div", { className: "config__token-result", children: /* @__PURE__ */ jsx("span", { className: "badge badge-fail", children: tokenError }) })
-            ] }) }),
-            /* @__PURE__ */ jsx(Field, { label: "Owner (usuario ou org)", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.githubOwner,
-                onChange: (e) => update("githubOwner", e.target.value),
-                placeholder: "seu-usuario"
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field, { label: "Repo de componentes", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.componentsRepo,
-                onChange: (e) => update("componentsRepo", e.target.value),
-                placeholder: "astro-components"
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field, { label: "Repo base do projeto", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.baseProjectRepo,
-                onChange: (e) => update("baseProjectRepo", e.target.value),
-                placeholder: "_base-project"
-              }
-            ) }),
-            /* @__PURE__ */ jsx("div", { className: "config__full", children: /* @__PURE__ */ jsx(Field, { label: "URL do registry.json", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.registryUrl,
-                onChange: (e) => update("registryUrl", e.target.value),
-                placeholder: "https://raw.githubusercontent.com/..."
-              }
-            ) }) }),
-            /* @__PURE__ */ jsx("div", { className: "config__full", children: /* @__PURE__ */ jsx(Field, { label: "Base URL dos previews", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.previewBaseUrl,
-                onChange: (e) => update("previewBaseUrl", e.target.value),
-                placeholder: "https://seu-usuario.github.io/astro-components"
-              }
-            ) }) })
-          ] })
-        ] }),
-        section === "defaults" && /* @__PURE__ */ jsxs("div", { className: "card", children: [
-          /* @__PURE__ */ jsx("h2", { className: "config__title", children: "Padroes" }),
-          /* @__PURE__ */ jsxs("div", { className: "config__row", children: [
-            /* @__PURE__ */ jsx(Field, { label: "Fonte padrao (titulos)", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.defaultFontHeading,
-                onChange: (e) => update("defaultFontHeading", e.target.value),
-                placeholder: "Inter"
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field, { label: "Fonte padrao (corpo)", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.defaultFontBody,
-                onChange: (e) => update("defaultFontBody", e.target.value),
-                placeholder: "Inter"
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field, { label: "Cor primaria padrao", children: /* @__PURE__ */ jsxs("div", { className: "config__color-row", children: [
-              /* @__PURE__ */ jsx(
-                "input",
-                {
-                  type: "color",
-                  value: settings.defaultColorPrimary,
-                  onChange: (e) => update("defaultColorPrimary", e.target.value),
-                  className: "config__color-picker"
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                "input",
-                {
-                  className: "input",
-                  value: settings.defaultColorPrimary,
-                  onChange: (e) => update("defaultColorPrimary", e.target.value),
-                  placeholder: "#6366f1"
-                }
-              )
-            ] }) }),
-            /* @__PURE__ */ jsx(Field, { label: "Label padrao do CTA", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.defaultCtaLabel,
-                onChange: (e) => update("defaultCtaLabel", e.target.value),
-                placeholder: "Comecar agora"
-              }
-            ) })
-          ] })
-        ] }),
-        section === "template" && /* @__PURE__ */ jsxs("div", { className: "card", children: [
-          /* @__PURE__ */ jsx("h2", { className: "config__title", children: "Template do Manifesto" }),
-          /* @__PURE__ */ jsxs("p", { className: "config__template-help", children: [
-            "Use ",
-            "{{variavel}}",
-            " para interpolar valores. Variaveis disponiveis: clientName, date, projectType, niche, pageGoal, googleAnalyticsId, siteUrl, npmNamespace, repoName, colorPrimary, colorSecondary, colorBackground, colorText, fontHeading, fontBody, mood, references, notes, components, studioName."
-          ] }),
-          /* @__PURE__ */ jsx(
-            "textarea",
+  return /* @__PURE__ */ jsxs("div", { className: "max-w-3xl flex flex-col gap-4", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx("h1", { className: "text-2xl font-bold", children: "Configuracoes" }),
+      /* @__PURE__ */ jsx("button", { onClick: handleSave, className: saved ? btnSuccess : btnPrimary, children: saved ? "Salvo!" : "Salvar" })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "GitHub" }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
+        /* @__PURE__ */ jsxs("div", { className: "col-span-2", children: [
+          /* @__PURE__ */ jsx(Field, { label: "Token de Acesso", children: /* @__PURE__ */ jsx(
+            "input",
             {
-              className: "input config__template-area",
-              value: settings.manifestTemplate,
-              onChange: (e) => update("manifestTemplate", e.target.value)
+              className: inputBase,
+              type: "password",
+              value: settings.githubToken,
+              onChange: (e) => update("githubToken", e.target.value),
+              placeholder: "ghp_xxxxxxxxxxxxxxxxxxxx"
+            }
+          ) }),
+          /* @__PURE__ */ jsxs("div", { className: "flex gap-2 mt-2", children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                className: `${btnOutline} py-1 px-3 text-xs`,
+                onClick: handleValidateToken,
+                disabled: validating || !settings.githubToken,
+                children: validating ? "Validando..." : "Validar Token"
+              }
+            ),
+            tokenUser && /* @__PURE__ */ jsxs("span", { className: `${badgeBase} bg-ok/20 text-ok`, children: [
+              "✓ ",
+              tokenUser
+            ] }),
+            tokenError && /* @__PURE__ */ jsxs("span", { className: `${badgeBase} bg-fail/20 text-fail`, children: [
+              "✗ ",
+              tokenError
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx(Field, { label: "Owner (usuario ou org)", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: settings.githubOwner,
+            onChange: (e) => update("githubOwner", e.target.value),
+            placeholder: "seuusuario"
+          }
+        ) }),
+        /* @__PURE__ */ jsx(Field, { label: "Repo de Componentes", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: settings.componentsRepo,
+            onChange: (e) => update("componentsRepo", e.target.value),
+            placeholder: "minha-lib-astro"
+          }
+        ) }),
+        /* @__PURE__ */ jsx(Field, { label: "Repo Base (template)", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: settings.baseProjectRepo,
+            onChange: (e) => update("baseProjectRepo", e.target.value),
+            placeholder: "_base-project"
+          }
+        ) }),
+        /* @__PURE__ */ jsx("div", { className: "col-span-2", children: /* @__PURE__ */ jsx(Field, { label: "URL do Registry", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: settings.registryUrl,
+            onChange: (e) => update("registryUrl", e.target.value),
+            placeholder: "https://raw.githubusercontent.com/.../registry.json"
+          }
+        ) }) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Padroes" }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
+        /* @__PURE__ */ jsx(Field, { label: "Fonte dos Titulos", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: settings.defaultFontHeading,
+            onChange: (e) => update("defaultFontHeading", e.target.value),
+            placeholder: "Inter"
+          }
+        ) }),
+        /* @__PURE__ */ jsx(Field, { label: "Fonte do Corpo", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: settings.defaultFontBody,
+            onChange: (e) => update("defaultFontBody", e.target.value),
+            placeholder: "Inter"
+          }
+        ) }),
+        /* @__PURE__ */ jsx(Field, { label: "Cor Primaria Padrao", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "color",
+              value: settings.defaultColorPrimary,
+              onChange: (e) => update("defaultColorPrimary", e.target.value),
+              className: "w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5"
             }
           ),
-          /* @__PURE__ */ jsx("div", { className: "config__template-actions", children: /* @__PURE__ */ jsx("button", { type: "button", className: "btn btn-ghost btn-sm", onClick: resetTemplate, children: "Restaurar Padrao" }) })
-        ] }),
-        section === "about" && /* @__PURE__ */ jsxs("div", { className: "card", children: [
-          /* @__PURE__ */ jsx("h2", { className: "config__title", children: "Sobre Voce" }),
-          /* @__PURE__ */ jsxs("div", { className: "config__row", children: [
-            /* @__PURE__ */ jsx(Field, { label: "Seu nome", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.yourName,
-                onChange: (e) => update("yourName", e.target.value),
-                placeholder: "Seu nome completo"
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field, { label: "Nome do estudio", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.studioName,
-                onChange: (e) => update("studioName", e.target.value),
-                placeholder: "Meu Estudio"
-              }
-            ) }),
-            /* @__PURE__ */ jsx(Field, { label: "Namespace npm", children: /* @__PURE__ */ jsx(
-              "input",
-              {
-                className: "input",
-                value: settings.npmNamespace,
-                onChange: (e) => update("npmNamespace", e.target.value),
-                placeholder: "@meu-estudio"
-              }
-            ) })
-          ] })
-        ] })
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "text",
+              className: inputBase,
+              value: settings.defaultColorPrimary,
+              onChange: (e) => update("defaultColorPrimary", e.target.value),
+              placeholder: "#6366f1"
+            }
+          )
+        ] }) })
       ] })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Studio" }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
+        /* @__PURE__ */ jsx(Field, { label: "Nome do Studio", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: settings.studioName,
+            onChange: (e) => update("studioName", e.target.value),
+            placeholder: "Astroteca Studio"
+          }
+        ) }),
+        /* @__PURE__ */ jsx(Field, { label: "Namespace NPM", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: settings.npmNamespace,
+            onChange: (e) => update("npmNamespace", e.target.value),
+            placeholder: "@astroteca"
+          }
+        ) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Usuario Git" }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
+        /* @__PURE__ */ jsx(Field, { label: "Nome", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: settings.userName,
+            onChange: (e) => update("userName", e.target.value),
+            placeholder: "Seu Nome"
+          }
+        ) }),
+        /* @__PURE__ */ jsx(Field, { label: "Email", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            type: "email",
+            value: settings.userEmail,
+            onChange: (e) => update("userEmail", e.target.value),
+            placeholder: "seu@email.com"
+          }
+        ) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Template do Manifesto" }),
+      /* @__PURE__ */ jsx(
+        "textarea",
+        {
+          className: `${inputBase} min-h-[200px] font-mono text-sm resize-y`,
+          value: settings.manifestTemplate,
+          onChange: (e) => update("manifestTemplate", e.target.value),
+          placeholder: "# {{PROJECT_NAME}}\\n\\n## Art Direction\\n...",
+          rows: 10
+        }
+      )
     ] })
   ] });
 }

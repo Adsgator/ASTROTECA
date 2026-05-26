@@ -87,6 +87,8 @@ export interface AppSettings {
   defaultColorPrimary: string
   defaultCtaLabel: string
   npmNamespace: string
+  userName: string
+  userEmail: string
 }
 
 // ─── GitHub API ─────────────────────────────────────────────────────────────

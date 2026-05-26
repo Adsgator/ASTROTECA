@@ -1,7 +1,7 @@
 import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
 import 'kleur/colors';
 import { $ as $$AppLayout } from '../chunks/AppLayout_CMGUMeQX.mjs';
-import { jsxs, Fragment, jsx } from 'react/jsx-runtime';
+import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState } from 'react';
 export { renderers } from '../renderers.mjs';
 
@@ -28,6 +28,13 @@ const EMPTY_PROP = {
   description: "",
   previewValue: ""
 };
+const inputBase = "w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+const btnBase = "px-4 py-2 rounded-lg text-sm font-medium transition-colors";
+const btnPrimary = `${btnBase} bg-accent text-bg hover:bg-accent-hover disabled:opacity-50`;
+const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`;
+const btnDanger = `${btnBase} bg-fail text-white hover:opacity-90 px-2 py-1`;
+const cardBase = "rounded-xl border border-border bg-surface p-5";
+const badgeBase = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium";
 function AdminForm() {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Hero");
@@ -136,13 +143,7 @@ ${propsStr}
       const res = await fetch("/api/publish-component", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          settings,
-          meta,
-          astroCode,
-          previewCode,
-          indexCode
-        })
+        body: JSON.stringify({ settings, meta, astroCode, previewCode, indexCode })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao publicar");
@@ -154,243 +155,109 @@ ${propsStr}
       setProps([]);
       setAstroCode("");
     } catch (e2) {
-      setFeedback({
-        type: "fail",
-        message: e2 instanceof Error ? e2.message : "Erro desconhecido"
-      });
+      setFeedback({ type: "fail", message: e2 instanceof Error ? e2.message : "Erro desconhecido" });
     } finally {
       setSubmitting(false);
     }
   }
   function Field({ label, children }) {
-    return /* @__PURE__ */ jsxs("div", { className: "field", children: [
-      /* @__PURE__ */ jsx("label", { className: "label", children: label }),
+    return /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+      /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-ink-secondary", children: label }),
       children
     ] });
   }
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("style", { children: `
-        .admin {
-          max-width: 800px;
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-        }
-
-        .admin__title {
-          font-size: var(--text-2xl);
-          font-weight: 700;
-        }
-
-        .admin__row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--space-3);
-        }
-
-        .admin__full {
-          grid-column: 1 / -1;
-        }
-
-        .admin__props-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--space-2);
-        }
-
-        .admin__prop-item {
-          display: grid;
-          grid-template-columns: 1fr 100px 80px 1fr 1fr 40px;
-          gap: var(--space-2);
-          align-items: end;
-          padding: var(--space-2) 0;
-          border-bottom: 1px solid var(--border);
-        }
-
-        .admin__prop-item:last-child {
-          border-bottom: none;
-        }
-
-        .admin__code-area {
-          width: 100%;
-          min-height: 300px;
-          font-family: var(--font-mono);
-          font-size: var(--text-sm);
-          resize: vertical;
-        }
-
-        .admin__generated {
-          background: var(--surface-2);
-          padding: var(--space-3);
-          border-radius: var(--radius);
-          font-family: var(--font-mono);
-          font-size: var(--text-xs);
-          white-space: pre-wrap;
-          max-height: 200px;
-          overflow-y: auto;
-        }
-
-        .admin__id-preview {
-          margin-top: var(--space-2);
-        }
-      ` }),
-    /* @__PURE__ */ jsxs("form", { className: "admin", onSubmit: handleSubmit, children: [
-      /* @__PURE__ */ jsx("h1", { className: "admin__title", children: "Adicionar Componente" }),
-      feedback && /* @__PURE__ */ jsx("div", { className: `badge ${feedback.type === "ok" ? "badge-ok" : "badge-fail"}`, children: feedback.message }),
-      /* @__PURE__ */ jsxs("div", { className: "card", children: [
-        /* @__PURE__ */ jsx("h2", { className: "section-title", children: "Informacoes Basicas" }),
-        /* @__PURE__ */ jsxs("div", { className: "admin__row", children: [
-          /* @__PURE__ */ jsx(Field, { label: "Nome (PascalCase)", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: "input",
-              value: name,
-              onChange: (e) => setName(e.target.value),
-              placeholder: "HeroSplit",
-              required: true
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Categoria", children: /* @__PURE__ */ jsx(
-            "select",
-            {
-              className: "input",
-              value: category,
-              onChange: (e) => setCategory(e.target.value),
-              children: CATEGORIES.map((c) => /* @__PURE__ */ jsx("option", { value: c, children: c }, c))
-            }
-          ) }),
-          /* @__PURE__ */ jsx("div", { className: "admin__full", children: /* @__PURE__ */ jsx(Field, { label: "Descricao", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: "input",
-              value: description,
-              onChange: (e) => setDescription(e.target.value),
-              placeholder: "Descricao curta do componente",
-              required: true
-            }
-          ) }) }),
-          /* @__PURE__ */ jsx(Field, { label: "Tags (separadas por virgula)", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: "input",
-              value: tags,
-              onChange: (e) => setTags(e.target.value),
-              placeholder: "hero, split, imagem"
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Melhor para", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: "input",
-              value: bestFor,
-              onChange: (e) => setBestFor(e.target.value),
-              placeholder: "Landing pages com imagem lateral"
-            }
-          ) })
-        ] }),
-        name && /* @__PURE__ */ jsxs("div", { className: "admin__id-preview", children: [
-          /* @__PURE__ */ jsx("span", { className: "label", children: "ID gerado: " }),
-          /* @__PURE__ */ jsx("code", { children: generateId(name) })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxs("div", { className: "card", children: [
-        /* @__PURE__ */ jsxs("div", { className: "admin__props-header", children: [
-          /* @__PURE__ */ jsx("h2", { className: "section-title", children: "Props" }),
-          /* @__PURE__ */ jsx("button", { type: "button", className: "btn btn-outline btn-sm", onClick: addProp, children: "+ Adicionar Prop" })
-        ] }),
-        props.length === 0 && /* @__PURE__ */ jsx("div", { className: "empty-state", children: "Nenhuma prop adicionada ainda." }),
-        props.map((prop, i) => /* @__PURE__ */ jsxs("div", { className: "admin__prop-item", children: [
-          /* @__PURE__ */ jsx(Field, { label: "Nome", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: "input",
-              value: prop.name,
-              onChange: (e) => updateProp(i, "name", e.target.value),
-              placeholder: "titulo"
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Tipo", children: /* @__PURE__ */ jsxs(
-            "select",
-            {
-              className: "input",
-              value: prop.type,
-              onChange: (e) => updateProp(i, "type", e.target.value),
-              children: [
-                /* @__PURE__ */ jsx("option", { value: "string", children: "string" }),
-                /* @__PURE__ */ jsx("option", { value: "number", children: "number" }),
-                /* @__PURE__ */ jsx("option", { value: "boolean", children: "boolean" }),
-                /* @__PURE__ */ jsx("option", { value: "string[]", children: "string[]" }),
-                /* @__PURE__ */ jsx("option", { value: "Record<string, string>", children: "Record" })
-              ]
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Obrig.", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              type: "checkbox",
-              checked: prop.required,
-              onChange: (e) => updateProp(i, "required", e.target.checked)
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Descricao", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: "input",
-              value: prop.description,
-              onChange: (e) => updateProp(i, "description", e.target.value),
-              placeholder: "Descricao da prop"
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Preview Value", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: "input",
-              value: prop.previewValue,
-              onChange: (e) => updateProp(i, "previewValue", e.target.value),
-              placeholder: "Valor no preview"
-            }
-          ) }),
-          /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              className: "btn btn-danger btn-sm btn-icon",
-              onClick: () => removeProp(i),
-              children: "x"
-            }
-          ) })
-        ] }, i))
-      ] }),
-      /* @__PURE__ */ jsxs("div", { className: "card", children: [
-        /* @__PURE__ */ jsx("h2", { className: "section-title", children: "Codigo do Componente (.astro)" }),
-        /* @__PURE__ */ jsx(
-          "textarea",
+  return /* @__PURE__ */ jsxs("form", { className: "max-w-3xl flex flex-col gap-4", onSubmit: handleSubmit, children: [
+    /* @__PURE__ */ jsx("h1", { className: "text-2xl font-bold", children: "Adicionar Componente" }),
+    feedback && /* @__PURE__ */ jsx("div", { className: `${badgeBase} ${feedback.type === "ok" ? "bg-ok/20 text-ok" : "bg-fail/20 text-fail"} px-3 py-2`, children: feedback.message }),
+    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Informacoes Basicas" }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
+        /* @__PURE__ */ jsx(Field, { label: "Nome (PascalCase)", children: /* @__PURE__ */ jsx(
+          "input",
           {
-            className: "input admin__code-area",
-            value: astroCode,
-            onChange: (e) => setAstroCode(e.target.value),
-            placeholder: "---\ninterface Props {\n  titulo: string\n}\nconst { titulo } = Astro.props\n---\n\n<section>\n  <h1>{titulo}</h1>\n</section>",
+            className: inputBase,
+            value: name,
+            onChange: (e) => setName(e.target.value),
+            placeholder: "HeroSplit",
             required: true
           }
-        )
+        ) }),
+        /* @__PURE__ */ jsx(Field, { label: "Categoria", children: /* @__PURE__ */ jsx("select", { className: inputBase, value: category, onChange: (e) => setCategory(e.target.value), children: CATEGORIES.map((c) => /* @__PURE__ */ jsx("option", { value: c, children: c }, c)) }) }),
+        /* @__PURE__ */ jsx("div", { className: "col-span-2", children: /* @__PURE__ */ jsx(Field, { label: "Descricao", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: description,
+            onChange: (e) => setDescription(e.target.value),
+            placeholder: "Descricao curta do componente",
+            required: true
+          }
+        ) }) }),
+        /* @__PURE__ */ jsx(Field, { label: "Tags (separadas por virgula)", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: tags,
+            onChange: (e) => setTags(e.target.value),
+            placeholder: "hero, split, imagem"
+          }
+        ) }),
+        /* @__PURE__ */ jsx(Field, { label: "Melhor para", children: /* @__PURE__ */ jsx(
+          "input",
+          {
+            className: inputBase,
+            value: bestFor,
+            onChange: (e) => setBestFor(e.target.value),
+            placeholder: "Landing pages com imagem lateral"
+          }
+        ) })
       ] }),
-      name && props.length > 0 && /* @__PURE__ */ jsxs("div", { className: "card", children: [
-        /* @__PURE__ */ jsx("h2", { className: "section-title", children: "Preview Gerado" }),
-        /* @__PURE__ */ jsx("div", { className: "admin__generated", children: generatePreviewCode() }),
-        /* @__PURE__ */ jsx("h2", { className: "section-title", children: "index.ts Gerado" }),
-        /* @__PURE__ */ jsx("div", { className: "admin__generated", children: generateIndexCode() })
+      name && /* @__PURE__ */ jsxs("div", { className: "mt-3 text-sm", children: [
+        /* @__PURE__ */ jsx("span", { className: "text-ink-muted", children: "ID gerado: " }),
+        /* @__PURE__ */ jsx("code", { className: "bg-raised px-1.5 py-0.5 rounded text-xs", children: generateId(name) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-4", children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold", children: "Props" }),
+        /* @__PURE__ */ jsx("button", { type: "button", className: `${btnOutline} py-1 px-3 text-xs`, onClick: addProp, children: "+ Adicionar Prop" })
       ] }),
+      props.length === 0 && /* @__PURE__ */ jsx("div", { className: "text-ink-secondary py-4 text-center", children: "Nenhuma prop adicionada ainda." }),
+      props.map((prop, i) => /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-border-subtle last:border-0", children: [
+        /* @__PURE__ */ jsx(Field, { label: "Nome", children: /* @__PURE__ */ jsx("input", { className: inputBase, value: prop.name, onChange: (e) => updateProp(i, "name", e.target.value), placeholder: "titulo" }) }),
+        /* @__PURE__ */ jsx(Field, { label: "Tipo", children: /* @__PURE__ */ jsxs("select", { className: inputBase, value: prop.type, onChange: (e) => updateProp(i, "type", e.target.value), children: [
+          /* @__PURE__ */ jsx("option", { value: "string", children: "string" }),
+          /* @__PURE__ */ jsx("option", { value: "number", children: "number" }),
+          /* @__PURE__ */ jsx("option", { value: "boolean", children: "boolean" }),
+          /* @__PURE__ */ jsx("option", { value: "string[]", children: "string[]" }),
+          /* @__PURE__ */ jsx("option", { value: "Record<string, string>", children: "Record" })
+        ] }) }),
+        /* @__PURE__ */ jsx(Field, { label: "Obrig.", children: /* @__PURE__ */ jsx("input", { type: "checkbox", checked: prop.required, onChange: (e) => updateProp(i, "required", e.target.checked) }) }),
+        /* @__PURE__ */ jsx(Field, { label: "Descricao", children: /* @__PURE__ */ jsx("input", { className: inputBase, value: prop.description, onChange: (e) => updateProp(i, "description", e.target.value), placeholder: "Descricao" }) }),
+        /* @__PURE__ */ jsx(Field, { label: "Preview", children: /* @__PURE__ */ jsx("input", { className: inputBase, value: prop.previewValue, onChange: (e) => updateProp(i, "previewValue", e.target.value), placeholder: "Valor" }) }),
+        /* @__PURE__ */ jsx("button", { type: "button", className: btnDanger, onClick: () => removeProp(i), children: "×" })
+      ] }, i))
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Codigo do Componente (.astro)" }),
       /* @__PURE__ */ jsx(
-        "button",
+        "textarea",
         {
-          type: "submit",
-          className: "btn btn-primary btn-lg",
-          disabled: submitting || !name || !astroCode,
-          children: submitting ? "Publicando..." : "Publicar Componente"
+          className: `${inputBase} min-h-[300px] font-mono text-sm resize-y`,
+          value: astroCode,
+          onChange: (e) => setAstroCode(e.target.value),
+          placeholder: "---\ninterface Props {\n  titulo: string\n}\nconst { titulo } = Astro.props\n---\n\n<section>\n  <h1>{titulo}</h1>\n</section>",
+          required: true
         }
       )
-    ] })
+    ] }),
+    name && props.length > 0 && /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-2", children: "Preview Gerado" }),
+      /* @__PURE__ */ jsx("pre", { className: "bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto mb-4", children: generatePreviewCode() }),
+      /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-2", children: "index.ts Gerado" }),
+      /* @__PURE__ */ jsx("pre", { className: "bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto", children: generateIndexCode() })
+    ] }),
+    /* @__PURE__ */ jsx("button", { type: "submit", className: `${btnPrimary} py-3 text-base`, disabled: submitting || !name || !astroCode, children: submitting ? "Publicando..." : "Publicar Componente" })
   ] });
 }
 

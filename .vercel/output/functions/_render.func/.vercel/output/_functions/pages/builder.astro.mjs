@@ -1,11 +1,128 @@
-import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
+import { Q as createComponent, $ as renderComponent, a6 as renderTemplate$1, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
 import 'kleur/colors';
 import { $ as $$AppLayout } from '../chunks/AppLayout_CMGUMeQX.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState, useEffect, useMemo } from 'react';
-import { g as generateManifest } from '../chunks/manifest_DPK6IvCu.mjs';
 import { f as fetchRegistry } from '../chunks/github_B0bVnyLs.mjs';
 export { renderers } from '../renderers.mjs';
+
+const DEFAULT_TEMPLATE = `# Projeto: {{clientName}}
+**Gerado em:** {{date}}
+**Tipo:** {{projectType}}
+**Nicho:** {{niche}}
+**Objetivo da pagina:** {{pageGoal}}
+**URL do site:** {{siteUrl}}
+**Google Analytics:** {{googleAnalyticsId}}
+**Namespace npm:** {{npmNamespace}}
+
+---
+
+## Direcao de Arte
+
+| Item | Valor |
+|------|-------|
+| Primary | {{colorPrimary}} |
+| Secondary | {{colorSecondary}} |
+| Background | {{colorBackground}} |
+| Texto | {{colorText}} |
+| Heading font | {{fontHeading}} |
+| Body font | {{fontBody}} |
+| Mood | {{mood}} |
+| Referencias | {{references}} |
+
+{{#notes}}
+### Notas
+{{notes}}
+{{/notes}}
+
+---
+
+## Componentes Selecionados
+
+{{components}}
+
+---
+
+## Instrucoes para o Claude Code
+
+1. Duplicar a pasta base e renomear para \`{{repoName}}\`
+2. Rodar \`npm install\`
+3. Criar \`src/styles/theme.css\` com as variaveis CSS abaixo:
+\`\`\`css
+:root {
+  --color-primary: {{colorPrimary}};
+  --color-secondary: {{colorSecondary}};
+  --color-bg: {{colorBackground}};
+  --color-text: {{colorText}};
+  --font-heading: '{{fontHeading}}', serif;
+  --font-body: '{{fontBody}}', sans-serif;
+}
+\`\`\`
+4. Implementar os componentes na ordem listada acima
+5. Preencher cada componente com o copy correspondente
+6. Colocar imagens na pasta \`/public/\` com os nomes referenciados
+7. Rodar \`npm run dev\` e validar responsividade em mobile e desktop
+8. Fazer build com \`npm run build\` e confirmar zero erros
+
+---
+
+**Gerado por:** {{studioName}}
+`;
+function renderTemplate(template, vars) {
+  let result = template;
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.replace(new RegExp(`{{${key}}}`, "g"), value);
+  }
+  result = result.replace(/\{\{#\w+\}\}[\s\S]*?\{\{\/\w+\}\}/g, (match) => {
+    const keyMatch = match.match(/\{\{#(\w+)\}\}/);
+    if (!keyMatch) return "";
+    const key = keyMatch[1];
+    const value = vars[key];
+    if (!value || value.trim() === "") return "";
+    return match.replace(/\{\{#\w+\}\}/, "").replace(/\{\{\/\w+\}\}/, "");
+  });
+  return result;
+}
+function buildComponentsSection(components) {
+  if (components.length === 0) return "_Nenhum componente selecionado_";
+  return components.map((comp, i) => {
+    const copy = comp.copy || {};
+    const copyLines = Object.entries(copy).filter(([, v]) => v.trim() !== "").map(([k, v]) => `  - **${k}:** ${v}`).join("\n");
+    return `### Secao ${i + 1} — \`${comp.meta.id}\`
+**Componente:** ${comp.meta.name}
+${copyLines ? `
+**Copy / Props:**
+${copyLines}` : ""}`;
+  }).join("\n\n");
+}
+function generateManifest(project, artDirection, components, settings) {
+  const { manifestTemplate, studioName, npmNamespace } = settings;
+  const template = manifestTemplate?.trim() ? manifestTemplate : DEFAULT_TEMPLATE;
+  const repoName = project.clientName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const vars = {
+    clientName: project.clientName,
+    date: new Intl.DateTimeFormat("pt-BR").format(/* @__PURE__ */ new Date()),
+    projectType: project.projectType,
+    niche: project.niche,
+    pageGoal: project.pageGoal,
+    googleAnalyticsId: project.googleAnalyticsId || "—",
+    siteUrl: project.siteUrl || "—",
+    npmNamespace: npmNamespace || "—",
+    repoName,
+    colorPrimary: artDirection.colorPrimary,
+    colorSecondary: artDirection.colorSecondary,
+    colorBackground: artDirection.colorBackground,
+    colorText: artDirection.colorText,
+    fontHeading: artDirection.fontHeading,
+    fontBody: artDirection.fontBody,
+    mood: artDirection.mood,
+    references: artDirection.references || "—",
+    notes: artDirection.notes || "",
+    components: buildComponentsSection(components),
+    studioName: studioName || "Astro Component Studio"
+  };
+  return renderTemplate(template, vars);
+}
 
 const inputBase = "w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 const btnBase = "px-4 py-2 rounded-lg text-sm font-medium transition-colors";
@@ -626,7 +743,7 @@ const $$Builder = createComponent(async ($$result, $$props, $$slots) => {
     } catch {
     }
   }
-  return renderTemplate`${renderComponent($$result, "AppLayout", $$AppLayout, { "title": "Builder - Astroteca" }, { "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "Builder", Builder, { "client:load": true, "availableComponents": components, "client:component-hydration": "load", "client:component-path": "C:/PROJETOS/ADSGATOR/ASTROTECA/src/components/Builder", "client:component-export": "default" })} ` })}`;
+  return renderTemplate$1`${renderComponent($$result, "AppLayout", $$AppLayout, { "title": "Builder - Astroteca" }, { "default": async ($$result2) => renderTemplate$1` ${renderComponent($$result2, "Builder", Builder, { "client:load": true, "availableComponents": components, "client:component-hydration": "load", "client:component-path": "C:/PROJETOS/ADSGATOR/ASTROTECA/src/components/Builder", "client:component-export": "default" })} ` })}`;
 }, "C:/PROJETOS/ADSGATOR/ASTROTECA/src/pages/builder.astro", void 0);
 const $$file = "C:/PROJETOS/ADSGATOR/ASTROTECA/src/pages/builder.astro";
 const $$url = "/builder";

@@ -1,59 +1,58 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings } from '../types'
 import { validateGithubToken } from '../lib/github'
-import { DEFAULT_TEMPLATE } from '../lib/manifest'
 
-type Section = 'github' | 'defaults' | 'template' | 'about'
+/* --- Tailwind classes --- */
+const inputBase = 'w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent'
+const btnBase = 'px-4 py-2 rounded-lg text-sm font-medium transition-colors'
+const btnPrimary = `${btnBase} bg-accent text-bg hover:bg-accent-hover disabled:opacity-50`
+const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`
+const btnSuccess = `${btnBase} bg-ok text-white hover:opacity-90`
+const cardBase = 'rounded-xl border border-border bg-surface p-5'
+const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium'
 
-const SECTIONS: { key: Section; label: string }[] = [
-  { key: 'github', label: 'GitHub' },
-  { key: 'defaults', label: 'Padroes' },
-  { key: 'template', label: 'Template do Manifesto' },
-  { key: 'about', label: 'Sobre' },
-]
-
-const EMPTY_SETTINGS: AppSettings = {
+const DEFAULT_SETTINGS: AppSettings = {
   githubToken: '',
   githubOwner: '',
-  componentsRepo: 'astro-components',
+  componentsRepo: 'minha-lib-astro',
   baseProjectRepo: '_base-project',
-  registryUrl: '',
   previewBaseUrl: '',
+  registryUrl: '',
+  yourName: '',
+  studioName: 'Astroteca Studio',
+  manifestTemplate: '',
   defaultFontHeading: 'Inter',
   defaultFontBody: 'Inter',
   defaultColorPrimary: '#6366f1',
-  defaultCtaLabel: 'Comecar agora',
-  manifestTemplate: DEFAULT_TEMPLATE,
-  yourName: '',
-  studioName: '',
-  npmNamespace: '',
+  defaultCtaLabel: 'Saiba mais',
+  npmNamespace: '@astroteca',
+  userName: '',
+  userEmail: '',
 }
 
 export default function ConfigPanel() {
-  const [section, setSection] = useState<Section>('github')
-  const [settings, setSettings] = useState<AppSettings>(EMPTY_SETTINGS)
-  const [showToken, setShowToken] = useState(false)
-  const [validating, setValidating] = useState(false)
-  const [tokenUser, setTokenUser] = useState<string | null>(null)
-  const [tokenError, setTokenError] = useState('')
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [saved, setSaved] = useState(false)
+  const [validating, setValidating] = useState(false)
+  const [tokenError, setTokenError] = useState('')
+  const [tokenUser, setTokenUser] = useState<string | null>(null)
 
   useEffect(() => {
-    const raw = localStorage.getItem('acs-settings')
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      setSettings({ ...EMPTY_SETTINGS, ...parsed })
+    const saved = localStorage.getItem('acs-settings')
+    if (saved) {
+      setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) })
     }
   }, [])
 
   function update<K extends keyof AppSettings>(key: K, value: AppSettings[K]) {
-    setSettings(prev => {
-      const next = { ...prev, [key]: value }
-      localStorage.setItem('acs-settings', JSON.stringify(next))
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-      return next
-    })
+    setSettings(prev => ({ ...prev, [key]: value }))
+    setSaved(false)
+  }
+
+  function handleSave() {
+    localStorage.setItem('acs-settings', JSON.stringify(settings))
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
   }
 
   async function handleValidateToken() {
@@ -74,336 +73,180 @@ export default function ConfigPanel() {
     }
   }
 
-  function resetTemplate() {
-    update('manifestTemplate', DEFAULT_TEMPLATE)
-  }
-
   function Field({ label, children }: { label: string; children: React.ReactNode }) {
     return (
-      <div className="field">
-        <label className="label">{label}</label>
+      <div className="space-y-1.5">
+        <label className="block text-xs font-medium text-ink-secondary">{label}</label>
         {children}
       </div>
     )
   }
 
   return (
-    <>
-      <style>{`
-        .config {
-          display: grid;
-          grid-template-columns: 200px 1fr;
-          gap: var(--space-6);
-          max-width: 900px;
-        }
+    <div className="max-w-3xl flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Configuracoes</h1>
+        <button onClick={handleSave} className={saved ? btnSuccess : btnPrimary}>
+          {saved ? 'Salvo!' : 'Salvar'}
+        </button>
+      </div>
 
-        .config__nav {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-1);
-        }
-
-        .config__content {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-        }
-
-        .config__title {
-          font-size: var(--text-xl);
-          font-weight: 700;
-          margin-bottom: var(--space-2);
-        }
-
-        .config__row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--space-3);
-        }
-
-        .config__full {
-          grid-column: 1 / -1;
-        }
-
-        .config__token-row {
-          display: flex;
-          gap: var(--space-2);
-          align-items: end;
-        }
-
-        .config__token-input {
-          flex: 1;
-        }
-
-        .config__token-result {
-          font-size: var(--text-sm);
-          margin-top: var(--space-2);
-        }
-
-        .config__template-area {
-          width: 100%;
-          min-height: 400px;
-          font-family: var(--font-mono);
-          font-size: var(--text-sm);
-          resize: vertical;
-        }
-
-        .config__template-actions {
-          display: flex;
-          justify-content: flex-end;
-        }
-
-        .config__saved {
-          font-size: var(--text-sm);
-          color: var(--accent);
-          opacity: 0;
-          transition: opacity 0.3s;
-        }
-
-        .config__saved--visible {
-          opacity: 1;
-        }
-
-        .config__color-row {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-        }
-
-        .config__color-picker {
-          width: 40px;
-          height: 40px;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 2px;
-          cursor: pointer;
-          background: none;
-        }
-
-        .config__template-help {
-          font-size: var(--text-xs);
-          color: var(--muted);
-          margin-bottom: var(--space-3);
-        }
-      `}</style>
-
-      <div className="config">
-        <nav className="config__nav">
-          {SECTIONS.map(s => (
-            <button
-              key={s.key}
-              className={`sidebar-link ${section === s.key ? 'active' : ''}`}
-              onClick={() => setSection(s.key)}
-            >
-              {s.label}
-            </button>
-          ))}
-          <div className={`config__saved ${saved ? 'config__saved--visible' : ''}`}>
-            Salvo!
-          </div>
-        </nav>
-
-        <div className="config__content">
-          {/* --- GitHub --- */}
-          {section === 'github' && (
-            <div className="card">
-              <h2 className="config__title">GitHub</h2>
-              <div className="config__row">
-                <div className="config__full">
-                  <Field label="Token de acesso">
-                    <div className="config__token-row">
-                      <div className="config__token-input">
-                        <input
-                          className="input"
-                          type={showToken ? 'text' : 'password'}
-                          value={settings.githubToken}
-                          onChange={e => update('githubToken', e.target.value)}
-                          placeholder="ghp_..."
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => setShowToken(!showToken)}
-                      >
-                        {showToken ? 'Ocultar' : 'Mostrar'}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-outline btn-sm"
-                        onClick={handleValidateToken}
-                        disabled={validating || !settings.githubToken}
-                      >
-                        {validating ? 'Validando...' : 'Validar'}
-                      </button>
-                    </div>
-                    {tokenUser && (
-                      <div className="config__token-result">
-                        <span className="badge badge-ok">Conectado como {tokenUser}</span>
-                      </div>
-                    )}
-                    {tokenError && (
-                      <div className="config__token-result">
-                        <span className="badge badge-fail">{tokenError}</span>
-                      </div>
-                    )}
-                  </Field>
-                </div>
-
-                <Field label="Owner (usuario ou org)">
-                  <input
-                    className="input"
-                    value={settings.githubOwner}
-                    onChange={e => update('githubOwner', e.target.value)}
-                    placeholder="seu-usuario"
-                  />
-                </Field>
-                <Field label="Repo de componentes">
-                  <input
-                    className="input"
-                    value={settings.componentsRepo}
-                    onChange={e => update('componentsRepo', e.target.value)}
-                    placeholder="astro-components"
-                  />
-                </Field>
-                <Field label="Repo base do projeto">
-                  <input
-                    className="input"
-                    value={settings.baseProjectRepo}
-                    onChange={e => update('baseProjectRepo', e.target.value)}
-                    placeholder="_base-project"
-                  />
-                </Field>
-                <div className="config__full">
-                  <Field label="URL do registry.json">
-                    <input
-                      className="input"
-                      value={settings.registryUrl}
-                      onChange={e => update('registryUrl', e.target.value)}
-                      placeholder="https://raw.githubusercontent.com/..."
-                    />
-                  </Field>
-                </div>
-                <div className="config__full">
-                  <Field label="Base URL dos previews">
-                    <input
-                      className="input"
-                      value={settings.previewBaseUrl}
-                      onChange={e => update('previewBaseUrl', e.target.value)}
-                      placeholder="https://seu-usuario.github.io/astro-components"
-                    />
-                  </Field>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* --- Padroes --- */}
-          {section === 'defaults' && (
-            <div className="card">
-              <h2 className="config__title">Padroes</h2>
-              <div className="config__row">
-                <Field label="Fonte padrao (titulos)">
-                  <input
-                    className="input"
-                    value={settings.defaultFontHeading}
-                    onChange={e => update('defaultFontHeading', e.target.value)}
-                    placeholder="Inter"
-                  />
-                </Field>
-                <Field label="Fonte padrao (corpo)">
-                  <input
-                    className="input"
-                    value={settings.defaultFontBody}
-                    onChange={e => update('defaultFontBody', e.target.value)}
-                    placeholder="Inter"
-                  />
-                </Field>
-                <Field label="Cor primaria padrao">
-                  <div className="config__color-row">
-                    <input
-                      type="color"
-                      value={settings.defaultColorPrimary}
-                      onChange={e => update('defaultColorPrimary', e.target.value)}
-                      className="config__color-picker"
-                    />
-                    <input
-                      className="input"
-                      value={settings.defaultColorPrimary}
-                      onChange={e => update('defaultColorPrimary', e.target.value)}
-                      placeholder="#6366f1"
-                    />
-                  </div>
-                </Field>
-                <Field label="Label padrao do CTA">
-                  <input
-                    className="input"
-                    value={settings.defaultCtaLabel}
-                    onChange={e => update('defaultCtaLabel', e.target.value)}
-                    placeholder="Comecar agora"
-                  />
-                </Field>
-              </div>
-            </div>
-          )}
-
-          {/* --- Template --- */}
-          {section === 'template' && (
-            <div className="card">
-              <h2 className="config__title">Template do Manifesto</h2>
-              <p className="config__template-help">
-                Use {'{{variavel}}'} para interpolar valores. Variaveis disponiveis: clientName, date,
-                projectType, niche, pageGoal, googleAnalyticsId, siteUrl, npmNamespace, repoName,
-                colorPrimary, colorSecondary, colorBackground, colorText, fontHeading, fontBody,
-                mood, references, notes, components, studioName.
-              </p>
-              <textarea
-                className="input config__template-area"
-                value={settings.manifestTemplate}
-                onChange={e => update('manifestTemplate', e.target.value)}
+      <div className={cardBase}>
+        <h2 className="text-lg font-semibold mb-4">GitHub</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <Field label="Token de Acesso">
+              <input
+                className={inputBase}
+                type="password"
+                value={settings.githubToken}
+                onChange={e => update('githubToken', e.target.value)}
+                placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
               />
-              <div className="config__template-actions">
-                <button type="button" className="btn btn-ghost btn-sm" onClick={resetTemplate}>
-                  Restaurar Padrao
-                </button>
-              </div>
+            </Field>
+            <div className="flex gap-2 mt-2">
+              <button
+                className={`${btnOutline} py-1 px-3 text-xs`}
+                onClick={handleValidateToken}
+                disabled={validating || !settings.githubToken}
+              >
+                {validating ? 'Validando...' : 'Validar Token'}
+              </button>
+              {tokenUser && <span className={`${badgeBase} bg-ok/20 text-ok`}>✓ {tokenUser}</span>}
+              {tokenError && <span className={`${badgeBase} bg-fail/20 text-fail`}>✗ {tokenError}</span>}
             </div>
-          )}
-
-          {/* --- Sobre --- */}
-          {section === 'about' && (
-            <div className="card">
-              <h2 className="config__title">Sobre Voce</h2>
-              <div className="config__row">
-                <Field label="Seu nome">
-                  <input
-                    className="input"
-                    value={settings.yourName}
-                    onChange={e => update('yourName', e.target.value)}
-                    placeholder="Seu nome completo"
-                  />
-                </Field>
-                <Field label="Nome do estudio">
-                  <input
-                    className="input"
-                    value={settings.studioName}
-                    onChange={e => update('studioName', e.target.value)}
-                    placeholder="Meu Estudio"
-                  />
-                </Field>
-                <Field label="Namespace npm">
-                  <input
-                    className="input"
-                    value={settings.npmNamespace}
-                    onChange={e => update('npmNamespace', e.target.value)}
-                    placeholder="@meu-estudio"
-                  />
-                </Field>
-              </div>
-            </div>
-          )}
+          </div>
+          <Field label="Owner (usuario ou org)">
+            <input
+              className={inputBase}
+              value={settings.githubOwner}
+              onChange={e => update('githubOwner', e.target.value)}
+              placeholder="seuusuario"
+            />
+          </Field>
+          <Field label="Repo de Componentes">
+            <input
+              className={inputBase}
+              value={settings.componentsRepo}
+              onChange={e => update('componentsRepo', e.target.value)}
+              placeholder="minha-lib-astro"
+            />
+          </Field>
+          <Field label="Repo Base (template)">
+            <input
+              className={inputBase}
+              value={settings.baseProjectRepo}
+              onChange={e => update('baseProjectRepo', e.target.value)}
+              placeholder="_base-project"
+            />
+          </Field>
+          <div className="col-span-2">
+            <Field label="URL do Registry">
+              <input
+                className={inputBase}
+                value={settings.registryUrl}
+                onChange={e => update('registryUrl', e.target.value)}
+                placeholder="https://raw.githubusercontent.com/.../registry.json"
+              />
+            </Field>
+          </div>
         </div>
       </div>
-    </>
+
+      <div className={cardBase}>
+        <h2 className="text-lg font-semibold mb-4">Padroes</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Fonte dos Titulos">
+            <input
+              className={inputBase}
+              value={settings.defaultFontHeading}
+              onChange={e => update('defaultFontHeading', e.target.value)}
+              placeholder="Inter"
+            />
+          </Field>
+          <Field label="Fonte do Corpo">
+            <input
+              className={inputBase}
+              value={settings.defaultFontBody}
+              onChange={e => update('defaultFontBody', e.target.value)}
+              placeholder="Inter"
+            />
+          </Field>
+          <Field label="Cor Primaria Padrao">
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={settings.defaultColorPrimary}
+                onChange={e => update('defaultColorPrimary', e.target.value)}
+                className="w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5"
+              />
+              <input
+                type="text"
+                className={inputBase}
+                value={settings.defaultColorPrimary}
+                onChange={e => update('defaultColorPrimary', e.target.value)}
+                placeholder="#6366f1"
+              />
+            </div>
+          </Field>
+        </div>
+      </div>
+
+      <div className={cardBase}>
+        <h2 className="text-lg font-semibold mb-4">Studio</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Nome do Studio">
+            <input
+              className={inputBase}
+              value={settings.studioName}
+              onChange={e => update('studioName', e.target.value)}
+              placeholder="Astroteca Studio"
+            />
+          </Field>
+          <Field label="Namespace NPM">
+            <input
+              className={inputBase}
+              value={settings.npmNamespace}
+              onChange={e => update('npmNamespace', e.target.value)}
+              placeholder="@astroteca"
+            />
+          </Field>
+        </div>
+      </div>
+
+      <div className={cardBase}>
+        <h2 className="text-lg font-semibold mb-4">Usuario Git</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Nome">
+            <input
+              className={inputBase}
+              value={settings.userName}
+              onChange={e => update('userName', e.target.value)}
+              placeholder="Seu Nome"
+            />
+          </Field>
+          <Field label="Email">
+            <input
+              className={inputBase}
+              type="email"
+              value={settings.userEmail}
+              onChange={e => update('userEmail', e.target.value)}
+              placeholder="seu@email.com"
+            />
+          </Field>
+        </div>
+      </div>
+
+      <div className={cardBase}>
+        <h2 className="text-lg font-semibold mb-4">Template do Manifesto</h2>
+        <textarea
+          className={`${inputBase} min-h-[200px] font-mono text-sm resize-y`}
+          value={settings.manifestTemplate}
+          onChange={e => update('manifestTemplate', e.target.value)}
+          placeholder="# {{PROJECT_NAME}}\n\n## Art Direction\n..."
+          rows={10}
+        />
+      </div>
+    </div>
   )
 }

@@ -2,20 +2,8 @@ import { useState } from 'react'
 import type { ComponentMeta, PropDefinition, PropDraft, AppSettings } from '../types'
 
 const CATEGORIES = [
-  'Hero',
-  'Features',
-  'Pricing',
-  'Testimonials',
-  'CTA',
-  'Footer',
-  'Navigation',
-  'FAQ',
-  'Gallery',
-  'Contact',
-  'About',
-  'Stats',
-  'Team',
-  'Misc',
+  'Hero', 'Features', 'Pricing', 'Testimonials', 'CTA', 'Footer',
+  'Navigation', 'FAQ', 'Gallery', 'Contact', 'About', 'Stats', 'Team', 'Misc',
 ]
 
 const EMPTY_PROP: PropDraft = {
@@ -25,6 +13,15 @@ const EMPTY_PROP: PropDraft = {
   description: '',
   previewValue: '',
 }
+
+/* --- Tailwind classes --- */
+const inputBase = 'w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent'
+const btnBase = 'px-4 py-2 rounded-lg text-sm font-medium transition-colors'
+const btnPrimary = `${btnBase} bg-accent text-bg hover:bg-accent-hover disabled:opacity-50`
+const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`
+const btnDanger = `${btnBase} bg-fail text-white hover:opacity-90 px-2 py-1`
+const cardBase = 'rounded-xl border border-border bg-surface p-5'
+const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium'
 
 export default function AdminForm() {
   const [name, setName] = useState('')
@@ -97,10 +94,7 @@ export default function AdminForm() {
       name,
       category: category as ComponentMeta['category'],
       description,
-      tags: tags
-        .split(',')
-        .map(t => t.trim())
-        .filter(Boolean),
+      tags: tags.split(',').map(t => t.trim()).filter(Boolean),
       bestFor: bestFor.split(',').map(t => t.trim()).filter(Boolean),
       props: propsMeta,
       copy: Object.keys(copy).length > 0 ? copy : undefined,
@@ -141,10 +135,7 @@ export default function AdminForm() {
         name,
         category: category as ComponentMeta['category'],
         description,
-        tags: tags
-          .split(',')
-          .map(t => t.trim())
-          .filter(Boolean),
+        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
         bestFor: bestFor.split(',').map(t => t.trim()).filter(Boolean),
         props: propsMeta,
         copy: Object.keys(copy).length > 0 ? copy : undefined,
@@ -158,13 +149,7 @@ export default function AdminForm() {
       const res = await fetch('/api/publish-component', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          settings,
-          meta,
-          astroCode,
-          previewCode,
-          indexCode,
-        }),
+        body: JSON.stringify({ settings, meta, astroCode, previewCode, indexCode }),
       })
 
       const data = await res.json()
@@ -178,10 +163,7 @@ export default function AdminForm() {
       setProps([])
       setAstroCode('')
     } catch (e) {
-      setFeedback({
-        type: 'fail',
-        message: e instanceof Error ? e.message : 'Erro desconhecido',
-      })
+      setFeedback({ type: 'fail', message: e instanceof Error ? e.message : 'Erro desconhecido' })
     } finally {
       setSubmitting(false)
     }
@@ -189,253 +171,141 @@ export default function AdminForm() {
 
   function Field({ label, children }: { label: string; children: React.ReactNode }) {
     return (
-      <div className="field">
-        <label className="label">{label}</label>
+      <div className="space-y-1.5">
+        <label className="block text-xs font-medium text-ink-secondary">{label}</label>
         {children}
       </div>
     )
   }
 
   return (
-    <>
-      <style>{`
-        .admin {
-          max-width: 800px;
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-        }
+    <form className="max-w-3xl flex flex-col gap-4" onSubmit={handleSubmit}>
+      <h1 className="text-2xl font-bold">Adicionar Componente</h1>
 
-        .admin__title {
-          font-size: var(--text-2xl);
-          font-weight: 700;
-        }
+      {feedback && (
+        <div className={`${badgeBase} ${feedback.type === 'ok' ? 'bg-ok/20 text-ok' : 'bg-fail/20 text-fail'} px-3 py-2`}>
+          {feedback.message}
+        </div>
+      )}
 
-        .admin__row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--space-3);
-        }
-
-        .admin__full {
-          grid-column: 1 / -1;
-        }
-
-        .admin__props-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--space-2);
-        }
-
-        .admin__prop-item {
-          display: grid;
-          grid-template-columns: 1fr 100px 80px 1fr 1fr 40px;
-          gap: var(--space-2);
-          align-items: end;
-          padding: var(--space-2) 0;
-          border-bottom: 1px solid var(--border);
-        }
-
-        .admin__prop-item:last-child {
-          border-bottom: none;
-        }
-
-        .admin__code-area {
-          width: 100%;
-          min-height: 300px;
-          font-family: var(--font-mono);
-          font-size: var(--text-sm);
-          resize: vertical;
-        }
-
-        .admin__generated {
-          background: var(--surface-2);
-          padding: var(--space-3);
-          border-radius: var(--radius);
-          font-family: var(--font-mono);
-          font-size: var(--text-xs);
-          white-space: pre-wrap;
-          max-height: 200px;
-          overflow-y: auto;
-        }
-
-        .admin__id-preview {
-          margin-top: var(--space-2);
-        }
-      `}</style>
-
-      <form className="admin" onSubmit={handleSubmit}>
-        <h1 className="admin__title">Adicionar Componente</h1>
-
-        {feedback && (
-          <div className={`badge ${feedback.type === 'ok' ? 'badge-ok' : 'badge-fail'}`}>
-            {feedback.message}
-          </div>
-        )}
-
-        <div className="card">
-          <h2 className="section-title">Informacoes Basicas</h2>
-          <div className="admin__row">
-            <Field label="Nome (PascalCase)">
+      <div className={cardBase}>
+        <h2 className="text-lg font-semibold mb-4">Informacoes Basicas</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Nome (PascalCase)">
+            <input
+              className={inputBase}
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="HeroSplit"
+              required
+            />
+          </Field>
+          <Field label="Categoria">
+            <select className={inputBase} value={category} onChange={e => setCategory(e.target.value)}>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </Field>
+          <div className="col-span-2">
+            <Field label="Descricao">
               <input
-                className="input"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="HeroSplit"
+                className={inputBase}
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder="Descricao curta do componente"
                 required
               />
             </Field>
-            <Field label="Categoria">
-              <select
-                className="input"
-                value={category}
-                onChange={e => setCategory(e.target.value)}
-              >
-                {CATEGORIES.map(c => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <div className="admin__full">
-              <Field label="Descricao">
-                <input
-                  className="input"
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  placeholder="Descricao curta do componente"
-                  required
-                />
-              </Field>
-            </div>
-            <Field label="Tags (separadas por virgula)">
-              <input
-                className="input"
-                value={tags}
-                onChange={e => setTags(e.target.value)}
-                placeholder="hero, split, imagem"
-              />
-            </Field>
-            <Field label="Melhor para">
-              <input
-                className="input"
-                value={bestFor}
-                onChange={e => setBestFor(e.target.value)}
-                placeholder="Landing pages com imagem lateral"
-              />
-            </Field>
           </div>
-
-          {name && (
-            <div className="admin__id-preview">
-              <span className="label">ID gerado: </span>
-              <code>{generateId(name)}</code>
-            </div>
-          )}
+          <Field label="Tags (separadas por virgula)">
+            <input
+              className={inputBase}
+              value={tags}
+              onChange={e => setTags(e.target.value)}
+              placeholder="hero, split, imagem"
+            />
+          </Field>
+          <Field label="Melhor para">
+            <input
+              className={inputBase}
+              value={bestFor}
+              onChange={e => setBestFor(e.target.value)}
+              placeholder="Landing pages com imagem lateral"
+            />
+          </Field>
         </div>
 
-        <div className="card">
-          <div className="admin__props-header">
-            <h2 className="section-title">Props</h2>
-            <button type="button" className="btn btn-outline btn-sm" onClick={addProp}>
-              + Adicionar Prop
-            </button>
-          </div>
-
-          {props.length === 0 && (
-            <div className="empty-state">Nenhuma prop adicionada ainda.</div>
-          )}
-
-          {props.map((prop, i) => (
-            <div key={i} className="admin__prop-item">
-              <Field label="Nome">
-                <input
-                  className="input"
-                  value={prop.name}
-                  onChange={e => updateProp(i, 'name', e.target.value)}
-                  placeholder="titulo"
-                />
-              </Field>
-              <Field label="Tipo">
-                <select
-                  className="input"
-                  value={prop.type}
-                  onChange={e => updateProp(i, 'type', e.target.value)}
-                >
-                  <option value="string">string</option>
-                  <option value="number">number</option>
-                  <option value="boolean">boolean</option>
-                  <option value="string[]">string[]</option>
-                  <option value="Record<string, string>">Record</option>
-                </select>
-              </Field>
-              <Field label="Obrig.">
-                <input
-                  type="checkbox"
-                  checked={prop.required}
-                  onChange={e => updateProp(i, 'required', e.target.checked)}
-                />
-              </Field>
-              <Field label="Descricao">
-                <input
-                  className="input"
-                  value={prop.description}
-                  onChange={e => updateProp(i, 'description', e.target.value)}
-                  placeholder="Descricao da prop"
-                />
-              </Field>
-              <Field label="Preview Value">
-                <input
-                  className="input"
-                  value={prop.previewValue}
-                  onChange={e => updateProp(i, 'previewValue', e.target.value)}
-                  placeholder="Valor no preview"
-                />
-              </Field>
-              <div>
-                <button
-                  type="button"
-                  className="btn btn-danger btn-sm btn-icon"
-                  onClick={() => removeProp(i)}
-                >
-                  x
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="card">
-          <h2 className="section-title">Codigo do Componente (.astro)</h2>
-          <textarea
-            className="input admin__code-area"
-            value={astroCode}
-            onChange={e => setAstroCode(e.target.value)}
-            placeholder={'---\ninterface Props {\n  titulo: string\n}\nconst { titulo } = Astro.props\n---\n\n<section>\n  <h1>{titulo}</h1>\n</section>'}
-            required
-          />
-        </div>
-
-        {name && props.length > 0 && (
-          <div className="card">
-            <h2 className="section-title">Preview Gerado</h2>
-            <div className="admin__generated">{generatePreviewCode()}</div>
-
-            <h2 className="section-title">index.ts Gerado</h2>
-            <div className="admin__generated">{generateIndexCode()}</div>
+        {name && (
+          <div className="mt-3 text-sm">
+            <span className="text-ink-muted">ID gerado: </span>
+            <code className="bg-raised px-1.5 py-0.5 rounded text-xs">{generateId(name)}</code>
           </div>
         )}
+      </div>
 
-        <button
-          type="submit"
-          className="btn btn-primary btn-lg"
-          disabled={submitting || !name || !astroCode}
-        >
-          {submitting ? 'Publicando...' : 'Publicar Componente'}
-        </button>
-      </form>
-    </>
+      <div className={cardBase}>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Props</h2>
+          <button type="button" className={`${btnOutline} py-1 px-3 text-xs`} onClick={addProp}>
+            + Adicionar Prop
+          </button>
+        </div>
+
+        {props.length === 0 && (
+          <div className="text-ink-secondary py-4 text-center">Nenhuma prop adicionada ainda.</div>
+        )}
+
+        {props.map((prop, i) => (
+          <div key={i} className="grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-border-subtle last:border-0">
+            <Field label="Nome">
+              <input className={inputBase} value={prop.name} onChange={e => updateProp(i, 'name', e.target.value)} placeholder="titulo" />
+            </Field>
+            <Field label="Tipo">
+              <select className={inputBase} value={prop.type} onChange={e => updateProp(i, 'type', e.target.value)}>
+                <option value="string">string</option>
+                <option value="number">number</option>
+                <option value="boolean">boolean</option>
+                <option value="string[]">string[]</option>
+                <option value="Record<string, string>">Record</option>
+              </select>
+            </Field>
+            <Field label="Obrig.">
+              <input type="checkbox" checked={prop.required} onChange={e => updateProp(i, 'required', e.target.checked)} />
+            </Field>
+            <Field label="Descricao">
+              <input className={inputBase} value={prop.description} onChange={e => updateProp(i, 'description', e.target.value)} placeholder="Descricao" />
+            </Field>
+            <Field label="Preview">
+              <input className={inputBase} value={prop.previewValue} onChange={e => updateProp(i, 'previewValue', e.target.value)} placeholder="Valor" />
+            </Field>
+            <button type="button" className={btnDanger} onClick={() => removeProp(i)}>×</button>
+          </div>
+        ))}
+      </div>
+
+      <div className={cardBase}>
+        <h2 className="text-lg font-semibold mb-4">Codigo do Componente (.astro)</h2>
+        <textarea
+          className={`${inputBase} min-h-[300px] font-mono text-sm resize-y`}
+          value={astroCode}
+          onChange={e => setAstroCode(e.target.value)}
+          placeholder={'---\ninterface Props {\n  titulo: string\n}\nconst { titulo } = Astro.props\n---\n\n<section>\n  <h1>{titulo}</h1>\n</section>'}
+          required
+        />
+      </div>
+
+      {name && props.length > 0 && (
+        <div className={cardBase}>
+          <h2 className="text-lg font-semibold mb-2">Preview Gerado</h2>
+          <pre className="bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto mb-4">{generatePreviewCode()}</pre>
+
+          <h2 className="text-lg font-semibold mb-2">index.ts Gerado</h2>
+          <pre className="bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto">{generateIndexCode()}</pre>
+        </div>
+      )}
+
+      <button type="submit" className={`${btnPrimary} py-3 text-base`} disabled={submitting || !name || !astroCode}>
+        {submitting ? 'Publicando...' : 'Publicar Componente'}
+      </button>
+    </form>
   )
 }
