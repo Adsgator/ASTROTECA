@@ -1,6 +1,5 @@
 ---
-// src/components/Hero/HeroCentered.preview.astro
-import HeroCentered from './HeroCentered.astro'
+import ContactSection from '../../../minha-lib-astro/src/components/Contact/ContactSection.astro'
 ---
 
 <!DOCTYPE html>
@@ -23,11 +22,11 @@ import HeroCentered from './HeroCentered.astro'
   </style>
 </head>
 <body>
-  <HeroCentered
-    headline="Crie landing pages profissionais em minutos"
-    subheadline="Componentes prontos, design consistente, resultado garantido."
-    ctaLabel="Comecar gratuitamente"
-    ctaHref="#"
+  <ContactSection
+    email="contato@exemplo.com"
+    phone="(31) 99999-9999"
+    whatsapp="5531999999999"
+    address="Rua Exemplo, 123 - Belo Horizonte, MG"
   />
 </body>
 </html>

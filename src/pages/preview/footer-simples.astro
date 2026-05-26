@@ -1,6 +1,5 @@
 ---
-// src/components/Hero/HeroCentered.preview.astro
-import HeroCentered from './HeroCentered.astro'
+import FooterSimples from '../../../minha-lib-astro/src/components/Footer/FooterSimples.astro'
 ---
 
 <!DOCTYPE html>
@@ -23,11 +22,24 @@ import HeroCentered from './HeroCentered.astro'
   </style>
 </head>
 <body>
-  <HeroCentered
-    headline="Crie landing pages profissionais em minutos"
-    subheadline="Componentes prontos, design consistente, resultado garantido."
-    ctaLabel="Comecar gratuitamente"
-    ctaHref="#"
+  <FooterSimples
+    brandName="Joao Silva Design"
+    tagline="Landing pages que convertem. Feitas com cuidado, entregues com prazo."
+    links={[
+    { label: "Inicio", href: "#inicio" },
+    { label: "Servicos", href: "#servicos" },
+    { label: "Portfolio", href: "#portfolio" },
+    { label: "Contato", href: "#contato" },
+  ]}
+    socialLinks={[
+    { platform: "Instagram", href: "https://instagram.com/seuusuario", icon: "📸" },
+    { platform: "LinkedIn", href: "https://linkedin.com/in/seuusuario", icon: "💼" },
+    { platform: "WhatsApp", href: "https://wa.me/5531999999999", icon: "💬" },
+  ]}
+    bottomLinks={[
+    { label: "Politica de Privacidade", href: "/privacidade" },
+    { label: "Termos de Uso", href: "/termos" },
+  ]}
   />
 </body>
 </html>

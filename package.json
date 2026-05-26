@@ -6,7 +6,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "start": "node dist/server/entry.mjs"
+    "start": "node dist/server/entry.mjs",
+    "new": "node scripts/add-component.mjs",
+    "extract": "node scripts/extract-component.mjs",
+    "previews": "node scripts/generate-previews.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^3.0.0",

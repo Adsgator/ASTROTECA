@@ -1,6 +1,5 @@
 ---
-// src/components/Hero/HeroCentered.preview.astro
-import HeroCentered from './HeroCentered.astro'
+import FeaturesGrid3 from '../../../minha-lib-astro/src/components/Features/FeaturesGrid3.astro'
 ---
 
 <!DOCTYPE html>
@@ -23,11 +22,25 @@ import HeroCentered from './HeroCentered.astro'
   </style>
 </head>
 <body>
-  <HeroCentered
-    headline="Crie landing pages profissionais em minutos"
-    subheadline="Componentes prontos, design consistente, resultado garantido."
-    ctaLabel="Comecar gratuitamente"
-    ctaHref="#"
+  <FeaturesGrid3
+    sectionTitle="Por que nos escolher?"
+    items={[
+    {
+      icon: "⚡",
+      title: "Rapidez",
+      description: "Entregamos seu projeto em tempo recorde sem comprometer a qualidade."
+    },
+    {
+      icon: "🎯",
+      title: "Foco em Resultados",
+      description: "Design estrategico que converte visitantes em clientes."
+    },
+    {
+      icon: "💎",
+      title: "Qualidade Premium",
+      description: "Acabamento profissional que eleva a percepcao da sua marca."
+    }
+  ]}
   />
 </body>
 </html>

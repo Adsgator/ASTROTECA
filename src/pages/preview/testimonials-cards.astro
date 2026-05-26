@@ -1,6 +1,5 @@
 ---
-// src/components/Hero/HeroCentered.preview.astro
-import HeroCentered from './HeroCentered.astro'
+import TestimonialsCards from '../../../minha-lib-astro/src/components/Testimonials/TestimonialsCards.astro'
 ---
 
 <!DOCTYPE html>
@@ -23,11 +22,27 @@ import HeroCentered from './HeroCentered.astro'
   </style>
 </head>
 <body>
-  <HeroCentered
-    headline="Crie landing pages profissionais em minutos"
-    subheadline="Componentes prontos, design consistente, resultado garantido."
-    ctaLabel="Comecar gratuitamente"
-    ctaHref="#"
+  <TestimonialsCards
+    testimonials={[
+    {
+      quote: "A landing page superou todas as minhas expectativas. Em uma semana ja tinha 15 novos leads qualificados.",
+      author: "Maria Silva",
+      role: "Nutricionista",
+      avatar: "/images/testimonial-1.jpg"
+    },
+    {
+      quote: "Profissionalismo impecavel. O processo foi rapido e o resultado ficou incredivel.",
+      author: "Joao Pedro",
+      role: "Consultor Financeiro",
+      avatar: "/images/testimonial-2.jpg"
+    },
+    {
+      quote: "Investimento que se pagou em menos de um mes. Recomendo para todos os meus colegas.",
+      author: "Ana Costa",
+      role: "Personal Trainer",
+      avatar: "/images/testimonial-3.jpg"
+    }
+  ]}
   />
 </body>
 </html>

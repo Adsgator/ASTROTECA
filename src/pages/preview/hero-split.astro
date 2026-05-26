@@ -1,6 +1,7 @@
 ---
-// src/components/Hero/HeroCentered.preview.astro
-import HeroCentered from './HeroCentered.astro'
+// src/components/Hero/HeroSplit.preview.astro
+// Este arquivo só existe para a biblioteca — nunca vai para produção
+import HeroSplit from '../../../minha-lib-astro/src/components/Hero/HeroSplit.astro'
 ---
 
 <!DOCTYPE html>
@@ -23,11 +24,12 @@ import HeroCentered from './HeroCentered.astro'
   </style>
 </head>
 <body>
-  <HeroCentered
-    headline="Crie landing pages profissionais em minutos"
-    subheadline="Componentes prontos, design consistente, resultado garantido."
-    ctaLabel="Comecar gratuitamente"
+  <HeroSplit
+    headline="Transforme sua presenca digital"
+    subheadline="Resultados reais para negocios que querem crescer. Sem enrolacao."
+    ctaLabel="Quero saber mais"
     ctaHref="#"
+    imageSrc="/preview-assets/placeholder-hero.svg"
   />
 </body>
 </html>

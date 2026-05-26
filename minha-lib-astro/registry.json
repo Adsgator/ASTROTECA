@@ -1,5 +1,26 @@
 [
   {
+    "id": "hero-simples",
+    "name": "Hero Simples",
+    "category": "Hero",
+    "description": "Hero centralizado, limpo e direto. Ideal para qualquer nicho.",
+    "previewPath": "/preview/hero-simples",
+    "screenshot": "",
+    "componentFile": "Hero/HeroSimples.astro",
+    "tags": ["hero", "centralizado", "simples"],
+    "bestFor": ["qualquer nicho"],
+    "props": [
+      { "name": "headline", "type": "string", "required": true },
+      { "name": "subheadline", "type": "string", "required": false },
+      { "name": "ctaLabel", "type": "string", "required": false, "default": "Saiba mais" },
+      { "name": "ctaHref", "type": "string", "required": false, "default": "#contato" },
+      { "name": "badge", "type": "string", "required": false }
+    ],
+    "order": 0,
+    "createdAt": "2026-05-26T00:00:00.000Z",
+    "updatedAt": "2026-05-26T00:00:00.000Z"
+  },
+  {
     "id": "hero-split",
     "name": "Hero Split",
     "category": "Hero",
