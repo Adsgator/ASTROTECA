@@ -1,6 +1,6 @@
 import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
 import 'kleur/colors';
-import { $ as $$AppLayout } from '../chunks/AppLayout_CKk9I17a.mjs';
+import { $ as $$AppLayout } from '../chunks/AppLayout_CMGUMeQX.mjs';
 import { jsxs, Fragment, jsx } from 'react/jsx-runtime';
 import { useState } from 'react';
 export { renderers } from '../renderers.mjs';

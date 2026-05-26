@@ -5,6 +5,13 @@ interface Props {
 
 const { title = 'Astroteca' } = Astro.props
 const currentPath = Astro.url.pathname
+
+const navItems = [
+  { href: '/', label: 'Biblioteca' },
+  { href: '/builder', label: 'Builder' },
+  { href: '/admin', label: 'Adicionar' },
+  { href: '/config', label: 'Configuracoes' },
+]
 ---
 
 <!DOCTYPE html>
@@ -15,83 +22,44 @@ const currentPath = Astro.url.pathname
   <title>{title}</title>
   <link rel="stylesheet" href="/styles/app.css" />
 </head>
-<body>
-  <div class="app-shell">
-    <aside class="app-sidebar">
-      <div class="app-sidebar__header">
-        <span class="app-sidebar__logo">Astroteca</span>
+<body class="bg-bg text-ink-primary font-body antialiased">
+  <div class="flex min-h-screen">
+    {/* Sidebar */}
+    <aside class="sticky top-0 h-screen w-sidebar flex flex-col border-r border-border bg-surface">
+      {/* Header */}
+      <div class="border-b border-border px-5 pb-5 pt-5">
+        <span class="font-heading text-xl font-bold text-accent tracking-tight">Astroteca</span>
       </div>
 
-      <nav class="app-sidebar__links">
-        <a href="/" class:list={['sidebar-link', { active: currentPath === '/' }]}>
-          Biblioteca
-        </a>
-        <a href="/builder" class:list={['sidebar-link', { active: currentPath === '/builder' }]}>
-          Builder
-        </a>
-        <a href="/admin" class:list={['sidebar-link', { active: currentPath === '/admin' }]}>
-          Adicionar
-        </a>
-        <a href="/config" class:list={['sidebar-link', { active: currentPath === '/config' }]}>
-          Configuracoes
-        </a>
+      {/* Navigation */}
+      <nav class="flex-1 space-y-1 px-3 py-4">
+        {navItems.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              'block rounded-lg px-4 py-2 text-sm font-medium transition-colors',
+              currentPath === item.href
+                ? 'bg-accent-dim text-accent'
+                : 'text-ink-secondary hover:bg-raised hover:text-ink-primary',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))}
       </nav>
 
-      <div class="app-sidebar__footer">
-        <span class="badge badge-default">v2.0.0</span>
+      {/* Footer */}
+      <div class="border-t border-border px-5 py-4 text-center">
+        <span class="inline-flex items-center rounded-full bg-raised px-2.5 py-0.5 text-xs font-medium text-ink-secondary">
+          v2.0.0
+        </span>
       </div>
     </aside>
 
-    <main class="app-main">
+    {/* Main Content */}
+    <main class="flex-1 overflow-y-auto p-8">
       <slot />
     </main>
   </div>
-
-  <style>
-    .app-sidebar {
-      display: flex;
-      flex-direction: column;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      padding: 20px 0;
-      height: 100vh;
-      position: sticky;
-      top: 0;
-    }
-
-    .app-sidebar__header {
-      padding: 0 20px 20px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 12px;
-    }
-
-    .app-sidebar__logo {
-      font-size: var(--text-lg);
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: -0.02em;
-      font-family: 'Syne', sans-serif;
-    }
-
-    .app-sidebar__links {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 8px 12px;
-      flex: 1;
-    }
-
-    .app-sidebar__footer {
-      padding: 16px 20px 0;
-      border-top: 1px solid var(--border);
-      text-align: center;
-    }
-
-    .app-main {
-      padding: 32px;
-      overflow-y: auto;
-      height: 100vh;
-    }
-  </style>
 </body>
 </html>
