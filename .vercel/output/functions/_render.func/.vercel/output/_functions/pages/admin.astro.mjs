@@ -1,8 +1,9 @@
-import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
+import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_7dOsTLek.mjs';
 import 'kleur/colors';
-import { $ as $$AppLayout } from '../chunks/AppLayout_CEliHCVs.mjs';
+import { $ as $$AppLayout } from '../chunks/AppLayout_D2cBKWlO.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState } from 'react';
+import { b as badgeBase, g as cardBase, i as inputBase, d as btnOutline, a as btnDanger, e as btnPrimary } from '../chunks/ui_CsSBPcYY.mjs';
 export { renderers } from '../renderers.mjs';
 
 const CATEGORIES = [
@@ -28,13 +29,6 @@ const EMPTY_PROP = {
   description: "",
   previewValue: ""
 };
-const inputBase = "w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
-const btnBase = "px-4 py-2 rounded-lg text-sm font-medium transition-colors";
-const btnPrimary = `${btnBase} bg-accent text-black hover:bg-accent-hover disabled:opacity-50`;
-const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`;
-const btnDanger = `${btnBase} bg-fail/10 text-fail border border-fail/20 hover:bg-fail/20 px-2 py-1`;
-const cardBase = "rounded-xl border border-border bg-surface p-5";
-const badgeBase = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium";
 function AdminForm() {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Hero");
@@ -166,10 +160,10 @@ ${propsStr}
       children
     ] });
   }
-  return /* @__PURE__ */ jsxs("form", { className: "max-w-3xl flex flex-col gap-4", onSubmit: handleSubmit, children: [
+  return /* @__PURE__ */ jsxs("form", { className: "max-w-3xl flex flex-col gap-4 stagger", onSubmit: handleSubmit, children: [
     /* @__PURE__ */ jsx("h1", { className: "text-2xl font-bold", children: "Adicionar Componente" }),
-    feedback && /* @__PURE__ */ jsx("div", { className: `${badgeBase} ${feedback.type === "ok" ? "bg-ok/10 text-ok border border-ok/20" : "bg-fail/10 text-fail border border-fail/20"} px-3 py-2`, children: feedback.message }),
-    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+    feedback && /* @__PURE__ */ jsx("div", { className: `${badgeBase} ${feedback.type === "ok" ? "bg-ok/10 text-ok border border-ok/20" : "bg-fail/10 text-fail border border-fail/20"} px-3 py-2 animate-slide-down`, children: feedback.message }),
+    /* @__PURE__ */ jsxs("div", { className: `${cardBase} p-5`, children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Informacoes Basicas" }),
       /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
         /* @__PURE__ */ jsx(Field, { label: "Nome (PascalCase)", children: /* @__PURE__ */ jsx(
@@ -217,13 +211,13 @@ ${propsStr}
         /* @__PURE__ */ jsx("code", { className: "bg-raised px-1.5 py-0.5 rounded text-xs", children: generateId(name) })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+    /* @__PURE__ */ jsxs("div", { className: `${cardBase} p-5`, children: [
       /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-4", children: [
         /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold", children: "Props" }),
         /* @__PURE__ */ jsx("button", { type: "button", className: `${btnOutline} py-1 px-3 text-xs`, onClick: addProp, children: "+ Adicionar Prop" })
       ] }),
       props.length === 0 && /* @__PURE__ */ jsx("div", { className: "text-ink-secondary py-4 text-center", children: "Nenhuma prop adicionada ainda." }),
-      props.map((prop, i) => /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-border last:border-0", children: [
+      props.map((prop, i) => /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-border last:border-0 animate-slide-down", children: [
         /* @__PURE__ */ jsx(Field, { label: "Nome", children: /* @__PURE__ */ jsx("input", { className: inputBase, value: prop.name, onChange: (e) => updateProp(i, "name", e.target.value), placeholder: "titulo" }) }),
         /* @__PURE__ */ jsx(Field, { label: "Tipo", children: /* @__PURE__ */ jsxs("select", { className: inputBase, value: prop.type, onChange: (e) => updateProp(i, "type", e.target.value), children: [
           /* @__PURE__ */ jsx("option", { value: "string", children: "string" }),
@@ -235,10 +229,10 @@ ${propsStr}
         /* @__PURE__ */ jsx(Field, { label: "Obrig.", children: /* @__PURE__ */ jsx("input", { type: "checkbox", checked: prop.required, onChange: (e) => updateProp(i, "required", e.target.checked) }) }),
         /* @__PURE__ */ jsx(Field, { label: "Descricao", children: /* @__PURE__ */ jsx("input", { className: inputBase, value: prop.description, onChange: (e) => updateProp(i, "description", e.target.value), placeholder: "Descricao" }) }),
         /* @__PURE__ */ jsx(Field, { label: "Preview", children: /* @__PURE__ */ jsx("input", { className: inputBase, value: prop.previewValue, onChange: (e) => updateProp(i, "previewValue", e.target.value), placeholder: "Valor" }) }),
-        /* @__PURE__ */ jsx("button", { type: "button", className: btnDanger, onClick: () => removeProp(i), children: "×" })
+        /* @__PURE__ */ jsx("button", { type: "button", className: `${btnDanger} hover-scale`, onClick: () => removeProp(i), children: "×" })
       ] }, i))
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+    /* @__PURE__ */ jsxs("div", { className: `${cardBase} p-5`, children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Codigo do Componente (.astro)" }),
       /* @__PURE__ */ jsx(
         "textarea",
@@ -251,7 +245,7 @@ ${propsStr}
         }
       )
     ] }),
-    name && props.length > 0 && /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+    name && props.length > 0 && /* @__PURE__ */ jsxs("div", { className: `${cardBase} p-5`, children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-2", children: "Preview Gerado" }),
       /* @__PURE__ */ jsx("pre", { className: "bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto mb-4", children: generatePreviewCode() }),
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-2", children: "index.ts Gerado" }),

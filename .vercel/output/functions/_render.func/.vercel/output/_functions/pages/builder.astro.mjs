@@ -1,8 +1,9 @@
-import { Q as createComponent, $ as renderComponent, a6 as renderTemplate$1, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
+import { Q as createComponent, $ as renderComponent, a6 as renderTemplate$1, O as createAstro } from '../chunks/astro/server_7dOsTLek.mjs';
 import 'kleur/colors';
-import { $ as $$AppLayout } from '../chunks/AppLayout_CEliHCVs.mjs';
+import { $ as $$AppLayout } from '../chunks/AppLayout_D2cBKWlO.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState, useEffect, useMemo } from 'react';
+import { g as cardBase, e as btnPrimary, d as btnOutline, i as inputBase, c as btnGhost, h as cardInteractive, b as badgeBase, a as btnDanger } from '../chunks/ui_CsSBPcYY.mjs';
 import { f as fetchRegistry } from '../chunks/github_oIhC-tBw.mjs';
 export { renderers } from '../renderers.mjs';
 
@@ -124,15 +125,6 @@ function generateManifest(project, artDirection, components, settings) {
   return renderTemplate(template, vars);
 }
 
-const inputBase = "w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
-const btnBase = "px-4 py-2 rounded-lg text-sm font-medium transition-colors";
-const btnPrimary = `${btnBase} bg-accent text-black hover:bg-accent-hover disabled:opacity-50`;
-const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`;
-const btnGhost = `${btnBase} bg-transparent text-ink-secondary hover:bg-raised hover:text-ink-primary`;
-const btnDanger = `${btnBase} bg-fail/10 text-fail border border-fail/20 hover:bg-fail/20`;
-const cardBase = "rounded-xl border border-border bg-surface overflow-hidden";
-const cardInteractive = `${cardBase} cursor-pointer transition-all hover:border-accent/30 hover:shadow-lg`;
-const badgeBase = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium";
 function Field({ label, children }) {
   return /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
     /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-ink-secondary uppercase tracking-wider", children: label }),
@@ -159,7 +151,7 @@ function ColorSwatch({
           type: "color",
           value,
           onChange: (e) => onChange(e.target.value),
-          className: "w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5 flex-shrink-0"
+          className: "w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5 flex-shrink-0 hover-scale"
         }
       ),
       /* @__PURE__ */ jsx(
@@ -382,351 +374,373 @@ function Builder({ availableComponents }) {
       ] })
     ] });
   }
-  return /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[minmax(0,1fr)_280px] gap-6 min-h-[calc(100vh-4rem)] max-w-[1400px]", children: [
-    /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4 min-w-0 overflow-x-hidden", children: [
-      /* @__PURE__ */ jsx("div", { className: "flex gap-2 border-b border-border pb-2", children: STEPS.map((s, i) => /* @__PURE__ */ jsxs(
-        "button",
-        {
-          className: `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${step === s ? "bg-accent text-black" : "text-ink-secondary hover:bg-raised hover:text-ink-primary"}`,
-          onClick: () => setStep(s),
-          children: [
-            i + 1,
-            ". ",
-            s
-          ]
-        },
-        s
-      )) }),
-      step === "Configurar" && /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-5 space-y-6", children: [
-        /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold", children: "Dados do Projeto" }),
-        /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
-          /* @__PURE__ */ jsx(Field, { label: "Nome do cliente", children: /* @__PURE__ */ jsx(
-            "input",
+  return /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-6", children: [
+    /* @__PURE__ */ jsx("div", { className: "flex items-end justify-between gap-4", children: /* @__PURE__ */ jsxs("div", { children: [
+      /* @__PURE__ */ jsx("h1", { className: "text-2xl font-bold font-heading tracking-tight text-ink-primary", children: "Builder" }),
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-ink-secondary mt-1", children: "Monte seu projeto escolhendo componentes e configuracoes" })
+    ] }) }),
+    /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[minmax(0,1fr)_300px] gap-6 min-h-[calc(100vh-14rem)]", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-5 min-w-0 overflow-x-hidden", children: [
+        /* @__PURE__ */ jsx("div", { className: "flex items-center gap-1 p-1 rounded-xl bg-surface/60 border border-white/[0.06] backdrop-blur-xl w-fit", children: STEPS.map((s, i) => {
+          const isActive = step === s;
+          const stepIdx = STEPS.indexOf(step);
+          const isPast = i < stepIdx;
+          return /* @__PURE__ */ jsxs(
+            "button",
             {
-              className: inputBase,
-              value: project.clientName,
-              onChange: (e) => updateProject("clientName", e.target.value),
-              placeholder: "acme-corp"
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Tipo de projeto", children: /* @__PURE__ */ jsxs(
-            "select",
-            {
-              className: inputBase,
-              value: project.projectType,
-              onChange: (e) => updateProject("projectType", e.target.value),
+              className: `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${isActive ? "bg-accent text-black shadow-[0_2px_8px_rgba(240,165,0,0.25)]" : isPast ? "text-accent hover:bg-raised" : "text-ink-secondary hover:bg-raised hover:text-ink-primary"}`,
+              onClick: () => setStep(s),
               children: [
-                /* @__PURE__ */ jsx("option", { value: "landing-page", children: "Landing Page" }),
-                /* @__PURE__ */ jsx("option", { value: "site-institucional", children: "Site Institucional" }),
-                /* @__PURE__ */ jsx("option", { value: "portfolio", children: "Portfolio" }),
-                /* @__PURE__ */ jsx("option", { value: "blog", children: "Blog" }),
-                /* @__PURE__ */ jsx("option", { value: "ecommerce", children: "E-commerce" })
+                /* @__PURE__ */ jsx("span", { className: `w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isActive ? "bg-black/20 text-black animate-glow" : isPast ? "bg-accent/10 text-accent" : "bg-raised text-ink-muted"}`, children: isPast ? "✓" : i + 1 }),
+                s
               ]
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Nicho", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: inputBase,
-              value: project.niche,
-              onChange: (e) => updateProject("niche", e.target.value),
-              placeholder: "ex: saude, tech, educacao"
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Objetivo da pagina", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: inputBase,
-              value: project.pageGoal,
-              onChange: (e) => updateProject("pageGoal", e.target.value),
-              placeholder: "ex: captar leads, vender produto"
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "URL do site", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: inputBase,
-              value: project.siteUrl,
-              onChange: (e) => updateProject("siteUrl", e.target.value),
-              placeholder: "https://..."
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Google Analytics ID", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: inputBase,
-              value: project.googleAnalyticsId,
-              onChange: (e) => updateProject("googleAnalyticsId", e.target.value),
-              placeholder: "G-XXXXXXXXXX"
-            }
-          ) })
+            },
+            s
+          );
+        }) }),
+        step === "Configurar" && /* @__PURE__ */ jsx("div", { className: `${cardBase} animate-scale-in`, children: /* @__PURE__ */ jsxs("div", { className: "p-5 space-y-6", children: [
+          /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold", children: "Dados do Projeto" }),
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
+            /* @__PURE__ */ jsx(Field, { label: "Nome do cliente", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inputBase,
+                value: project.clientName,
+                onChange: (e) => updateProject("clientName", e.target.value),
+                placeholder: "acme-corp"
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field, { label: "Tipo de projeto", children: /* @__PURE__ */ jsxs(
+              "select",
+              {
+                className: inputBase,
+                value: project.projectType,
+                onChange: (e) => updateProject("projectType", e.target.value),
+                children: [
+                  /* @__PURE__ */ jsx("option", { value: "landing-page", children: "Landing Page" }),
+                  /* @__PURE__ */ jsx("option", { value: "site-institucional", children: "Site Institucional" }),
+                  /* @__PURE__ */ jsx("option", { value: "portfolio", children: "Portfolio" }),
+                  /* @__PURE__ */ jsx("option", { value: "blog", children: "Blog" }),
+                  /* @__PURE__ */ jsx("option", { value: "ecommerce", children: "E-commerce" })
+                ]
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field, { label: "Nicho", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inputBase,
+                value: project.niche,
+                onChange: (e) => updateProject("niche", e.target.value),
+                placeholder: "ex: saude, tech, educacao"
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field, { label: "Objetivo da pagina", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inputBase,
+                value: project.pageGoal,
+                onChange: (e) => updateProject("pageGoal", e.target.value),
+                placeholder: "ex: captar leads, vender produto"
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field, { label: "URL do site", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inputBase,
+                value: project.siteUrl,
+                onChange: (e) => updateProject("siteUrl", e.target.value),
+                placeholder: "https://..."
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field, { label: "Google Analytics ID", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inputBase,
+                value: project.googleAnalyticsId,
+                onChange: (e) => updateProject("googleAnalyticsId", e.target.value),
+                placeholder: "G-XXXXXXXXXX"
+              }
+            ) })
+          ] }),
+          /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold pt-4 border-t border-border", children: "Direcao de Arte" }),
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
+            /* @__PURE__ */ jsx(
+              ColorSwatch,
+              {
+                label: "Cor Primaria",
+                value: art.colorPrimary,
+                onChange: (v) => updateArt("colorPrimary", v)
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              ColorSwatch,
+              {
+                label: "Cor Secundaria",
+                value: art.colorSecondary,
+                onChange: (v) => updateArt("colorSecondary", v)
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              ColorSwatch,
+              {
+                label: "Cor de Fundo",
+                value: art.colorBackground,
+                onChange: (v) => updateArt("colorBackground", v)
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              ColorSwatch,
+              {
+                label: "Cor do Texto",
+                value: art.colorText,
+                onChange: (v) => updateArt("colorText", v)
+              }
+            ),
+            /* @__PURE__ */ jsx(Field, { label: "Fonte dos titulos", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inputBase,
+                value: art.fontHeading,
+                onChange: (e) => updateArt("fontHeading", e.target.value),
+                placeholder: "Inter"
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Field, { label: "Fonte do corpo", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inputBase,
+                value: art.fontBody,
+                onChange: (e) => updateArt("fontBody", e.target.value),
+                placeholder: "Inter"
+              }
+            ) }),
+            /* @__PURE__ */ jsx("div", { className: "col-span-2", children: /* @__PURE__ */ jsx(Field, { label: "Mood / Tom", children: /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: inputBase,
+                value: art.mood,
+                onChange: (e) => updateArt("mood", e.target.value),
+                placeholder: "ex: profissional, acolhedor, moderno"
+              }
+            ) }) }),
+            /* @__PURE__ */ jsx("div", { className: "col-span-2", children: /* @__PURE__ */ jsx(Field, { label: "Referencias visuais", children: /* @__PURE__ */ jsx(
+              "textarea",
+              {
+                className: `${inputBase} min-h-[80px] resize-y`,
+                value: art.references,
+                onChange: (e) => updateArt("references", e.target.value),
+                placeholder: "Links ou descricao de referencias",
+                rows: 3
+              }
+            ) }) }),
+            /* @__PURE__ */ jsx("div", { className: "col-span-2", children: /* @__PURE__ */ jsx(Field, { label: "Observacoes", children: /* @__PURE__ */ jsx(
+              "textarea",
+              {
+                className: `${inputBase} min-h-[80px] resize-y`,
+                value: art.notes,
+                onChange: (e) => updateArt("notes", e.target.value),
+                placeholder: "Qualquer nota adicional sobre o projeto",
+                rows: 3
+              }
+            ) }) })
+          ] })
+        ] }) }),
+        step === "Componentes" && /* @__PURE__ */ jsxs("div", { className: "space-y-4 animate-scale-in", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                className: `${inputBase} max-w-xs`,
+                placeholder: "Buscar componentes...",
+                value: search,
+                onChange: (e) => setSearch(e.target.value)
+              }
+            ),
+            /* @__PURE__ */ jsxs("div", { className: "flex gap-2 flex-wrap", children: [
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  className: !filterCategory ? btnPrimary : btnGhost,
+                  onClick: () => setFilterCategory(null),
+                  children: "Todos"
+                }
+              ),
+              categories.map((cat) => /* @__PURE__ */ jsx(
+                "button",
+                {
+                  className: filterCategory === cat ? btnPrimary : btnGhost,
+                  onClick: () => setFilterCategory(cat),
+                  children: cat
+                },
+                cat
+              ))
+            ] })
+          ] }),
+          filteredComponents.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-ink-secondary py-8 text-center", children: "Nenhum componente encontrado." }) : /* @__PURE__ */ jsx("div", { className: "grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3", children: filteredComponents.map((c) => {
+            const sel = isSelected(c.id);
+            const pos = getPosition(c.id);
+            return /* @__PURE__ */ jsxs(
+              "div",
+              {
+                className: `${cardInteractive} ${sel ? "ring-2 ring-accent" : ""} p-4`,
+                onClick: () => toggleComponent(c),
+                children: [
+                  /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-start mb-1", children: [
+                    /* @__PURE__ */ jsx("span", { className: "font-semibold text-sm", children: c.name }),
+                    pos !== null && /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-accent/10 text-accent`, children: pos })
+                  ] }),
+                  /* @__PURE__ */ jsx("div", { className: "text-xs text-ink-secondary line-clamp-2", children: c.description }),
+                  /* @__PURE__ */ jsx("div", { className: "mt-2", children: /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-raised text-ink-secondary`, children: c.category }) })
+                ]
+              },
+              c.id
+            );
+          }) })
         ] }),
-        /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold pt-4 border-t border-border", children: "Direcao de Arte" }),
-        /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
-          /* @__PURE__ */ jsx(
-            ColorSwatch,
-            {
-              label: "Cor Primaria",
-              value: art.colorPrimary,
-              onChange: (v) => updateArt("colorPrimary", v)
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            ColorSwatch,
-            {
-              label: "Cor Secundaria",
-              value: art.colorSecondary,
-              onChange: (v) => updateArt("colorSecondary", v)
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            ColorSwatch,
-            {
-              label: "Cor de Fundo",
-              value: art.colorBackground,
-              onChange: (v) => updateArt("colorBackground", v)
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            ColorSwatch,
-            {
-              label: "Cor do Texto",
-              value: art.colorText,
-              onChange: (v) => updateArt("colorText", v)
-            }
-          ),
-          /* @__PURE__ */ jsx(Field, { label: "Fonte dos titulos", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: inputBase,
-              value: art.fontHeading,
-              onChange: (e) => updateArt("fontHeading", e.target.value),
-              placeholder: "Inter"
-            }
-          ) }),
-          /* @__PURE__ */ jsx(Field, { label: "Fonte do corpo", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: inputBase,
-              value: art.fontBody,
-              onChange: (e) => updateArt("fontBody", e.target.value),
-              placeholder: "Inter"
-            }
-          ) }),
-          /* @__PURE__ */ jsx("div", { className: "col-span-2", children: /* @__PURE__ */ jsx(Field, { label: "Mood / Tom", children: /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: inputBase,
-              value: art.mood,
-              onChange: (e) => updateArt("mood", e.target.value),
-              placeholder: "ex: profissional, acolhedor, moderno"
-            }
-          ) }) }),
-          /* @__PURE__ */ jsx("div", { className: "col-span-2", children: /* @__PURE__ */ jsx(Field, { label: "Referencias visuais", children: /* @__PURE__ */ jsx(
-            "textarea",
-            {
-              className: `${inputBase} min-h-[80px] resize-y`,
-              value: art.references,
-              onChange: (e) => updateArt("references", e.target.value),
-              placeholder: "Links ou descricao de referencias",
-              rows: 3
-            }
-          ) }) }),
-          /* @__PURE__ */ jsx("div", { className: "col-span-2", children: /* @__PURE__ */ jsx(Field, { label: "Observacoes", children: /* @__PURE__ */ jsx(
-            "textarea",
-            {
-              className: `${inputBase} min-h-[80px] resize-y`,
-              value: art.notes,
-              onChange: (e) => updateArt("notes", e.target.value),
-              placeholder: "Qualquer nota adicional sobre o projeto",
-              rows: 3
-            }
-          ) }) })
-        ] })
-      ] }) }),
-      step === "Componentes" && /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              className: `${inputBase} max-w-xs`,
-              placeholder: "Buscar componentes...",
-              value: search,
-              onChange: (e) => setSearch(e.target.value)
-            }
-          ),
-          /* @__PURE__ */ jsxs("div", { className: "flex gap-2 flex-wrap", children: [
+        step === "Revisar" && /* @__PURE__ */ jsxs("div", { className: "space-y-4 animate-scale-in", children: [
+          /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-5", children: [
+            /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Resumo do Projeto" }),
+            /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-x-4", children: [
+              /* @__PURE__ */ jsx(Pair, { label: "Cliente", value: project.clientName }),
+              /* @__PURE__ */ jsx(Pair, { label: "Tipo", value: project.projectType }),
+              /* @__PURE__ */ jsx(Pair, { label: "Nicho", value: project.niche }),
+              /* @__PURE__ */ jsx(Pair, { label: "Objetivo", value: project.pageGoal }),
+              /* @__PURE__ */ jsx(Pair, { label: "URL", value: project.siteUrl }),
+              /* @__PURE__ */ jsx(Pair, { label: "GA ID", value: project.googleAnalyticsId })
+            ] })
+          ] }) }),
+          /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-5", children: [
+            /* @__PURE__ */ jsxs("h2", { className: "text-lg font-semibold mb-4", children: [
+              "Componentes (",
+              selected.length,
+              ")"
+            ] }),
+            selected.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-ink-secondary py-4 text-center", children: "Nenhum componente selecionado." }) : /* @__PURE__ */ jsx("div", { className: "space-y-4", children: selected.map((sc, index) => /* @__PURE__ */ jsxs("div", { className: "border-b border-border last:border-0 pb-4 last:pb-0", children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
+                /* @__PURE__ */ jsx("span", { className: "w-6 h-6 rounded bg-accent/10 text-accent flex items-center justify-center text-sm font-bold", children: sc.position }),
+                /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
+                  /* @__PURE__ */ jsx("strong", { className: "block", children: sc.meta.name }),
+                  /* @__PURE__ */ jsx("div", { className: "text-sm text-ink-secondary", children: sc.meta.description })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
+                  /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      className: `${btnGhost} px-2 py-1`,
+                      onClick: () => moveComponent(index, "up"),
+                      disabled: index === 0,
+                      children: "↑"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      className: `${btnGhost} px-2 py-1`,
+                      onClick: () => moveComponent(index, "down"),
+                      disabled: index === selected.length - 1,
+                      children: "↓"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      className: `${btnDanger} px-2 py-1`,
+                      onClick: () => removeComponent(sc.meta.id),
+                      children: "×"
+                    }
+                  )
+                ] })
+              ] }),
+              sc.meta.copy && Object.keys(sc.meta.copy).length > 0 && /* @__PURE__ */ jsxs("div", { className: "mt-3 pt-3 border-t border-border pl-9", children: [
+                /* @__PURE__ */ jsxs(
+                  "button",
+                  {
+                    className: "text-accent text-sm font-medium hover:underline",
+                    onClick: () => toggleCopyExpand(sc.meta.id),
+                    children: [
+                      expandedCopy[sc.meta.id] ? "▼" : "▶",
+                      " Editar textos (",
+                      Object.keys(sc.meta.copy).length,
+                      " campos)"
+                    ]
+                  }
+                ),
+                expandedCopy[sc.meta.id] && /* @__PURE__ */ jsx("div", { className: "mt-2 space-y-3", children: Object.entries(copyEdits[sc.meta.id] || sc.meta.copy).map(
+                  ([key, value]) => /* @__PURE__ */ jsxs("div", { children: [
+                    /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-ink-muted mb-1", children: key }),
+                    /* @__PURE__ */ jsx(
+                      "textarea",
+                      {
+                        className: `${inputBase} min-h-[60px] resize-y`,
+                        value,
+                        onChange: (e) => updateCopy(sc.meta.id, key, e.target.value),
+                        rows: 2
+                      }
+                    )
+                  ] }, key)
+                ) })
+              ] })
+            ] }, sc.meta.id)) })
+          ] }) }),
+          error && /* @__PURE__ */ jsx("div", { className: "p-4 border border-fail rounded-lg text-fail text-sm", children: error }),
+          /* @__PURE__ */ jsxs("div", { className: "flex gap-3 pt-4 border-t border-border", children: [
+            /* @__PURE__ */ jsx("button", { className: btnOutline, onClick: downloadManifest, children: "Baixar Manifesto (.md)" }),
             /* @__PURE__ */ jsx(
               "button",
               {
-                className: !filterCategory ? btnPrimary : btnGhost,
-                onClick: () => setFilterCategory(null),
-                children: "Todos"
+                className: btnPrimary,
+                onClick: createProject,
+                disabled: creating || !project.clientName,
+                children: creating ? "Criando..." : "Criar Projeto no GitHub"
               }
-            ),
-            categories.map((cat) => /* @__PURE__ */ jsx(
-              "button",
-              {
-                className: filterCategory === cat ? btnPrimary : btnGhost,
-                onClick: () => setFilterCategory(cat),
-                children: cat
-              },
-              cat
-            ))
+            )
           ] })
-        ] }),
-        filteredComponents.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-ink-secondary py-8 text-center", children: "Nenhum componente encontrado." }) : /* @__PURE__ */ jsx("div", { className: "grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3", children: filteredComponents.map((c) => {
-          const sel = isSelected(c.id);
-          const pos = getPosition(c.id);
-          return /* @__PURE__ */ jsxs(
-            "div",
-            {
-              className: `${cardInteractive} ${sel ? "ring-2 ring-accent" : ""} p-4`,
-              onClick: () => toggleComponent(c),
-              children: [
-                /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-start mb-1", children: [
-                  /* @__PURE__ */ jsx("span", { className: "font-semibold text-sm", children: c.name }),
-                  pos !== null && /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-accent/10 text-accent`, children: pos })
-                ] }),
-                /* @__PURE__ */ jsx("div", { className: "text-xs text-ink-secondary line-clamp-2", children: c.description }),
-                /* @__PURE__ */ jsx("div", { className: "mt-2", children: /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-raised text-ink-secondary`, children: c.category }) })
-              ]
-            },
-            c.id
-          );
-        }) })
+        ] })
       ] }),
-      step === "Revisar" && /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-        /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-5", children: [
-          /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Resumo do Projeto" }),
-          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-x-4", children: [
-            /* @__PURE__ */ jsx(Pair, { label: "Cliente", value: project.clientName }),
-            /* @__PURE__ */ jsx(Pair, { label: "Tipo", value: project.projectType }),
-            /* @__PURE__ */ jsx(Pair, { label: "Nicho", value: project.niche }),
-            /* @__PURE__ */ jsx(Pair, { label: "Objetivo", value: project.pageGoal }),
-            /* @__PURE__ */ jsx(Pair, { label: "URL", value: project.siteUrl }),
-            /* @__PURE__ */ jsx(Pair, { label: "GA ID", value: project.googleAnalyticsId })
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-3 animate-slide-right stagger", children: [
+        /* @__PURE__ */ jsx("div", { className: "rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl overflow-hidden", children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
+          /* @__PURE__ */ jsxs("div", { className: "text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-3 flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-accent" }),
+            "Cliente"
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "font-medium", children: project.clientName || "(nao definido)" }),
+          /* @__PURE__ */ jsxs("div", { className: "text-sm text-ink-secondary", children: [
+            project.projectType,
+            " - ",
+            project.niche || "-"
           ] })
         ] }) }),
-        /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-5", children: [
-          /* @__PURE__ */ jsxs("h2", { className: "text-lg font-semibold mb-4", children: [
-            "Componentes (",
-            selected.length,
-            ")"
+        /* @__PURE__ */ jsx("div", { className: "rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl overflow-hidden", children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
+          /* @__PURE__ */ jsxs("div", { className: "text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-3 flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-blue-500" }),
+            "Estrutura da Pagina"
           ] }),
-          selected.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-ink-secondary py-4 text-center", children: "Nenhum componente selecionado." }) : /* @__PURE__ */ jsx("div", { className: "space-y-4", children: selected.map((sc, index) => /* @__PURE__ */ jsxs("div", { className: "border-b border-border last:border-0 pb-4 last:pb-0", children: [
-            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-              /* @__PURE__ */ jsx("span", { className: "w-6 h-6 rounded bg-accent/10 text-accent flex items-center justify-center text-sm font-bold", children: sc.position }),
-              /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
-                /* @__PURE__ */ jsx("strong", { className: "block", children: sc.meta.name }),
-                /* @__PURE__ */ jsx("div", { className: "text-sm text-ink-secondary", children: sc.meta.description })
-              ] }),
-              /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
-                /* @__PURE__ */ jsx(
-                  "button",
-                  {
-                    className: `${btnGhost} px-2 py-1`,
-                    onClick: () => moveComponent(index, "up"),
-                    disabled: index === 0,
-                    children: "↑"
-                  }
-                ),
-                /* @__PURE__ */ jsx(
-                  "button",
-                  {
-                    className: `${btnGhost} px-2 py-1`,
-                    onClick: () => moveComponent(index, "down"),
-                    disabled: index === selected.length - 1,
-                    children: "↓"
-                  }
-                ),
-                /* @__PURE__ */ jsx(
-                  "button",
-                  {
-                    className: `${btnDanger} px-2 py-1`,
-                    onClick: () => removeComponent(sc.meta.id),
-                    children: "×"
-                  }
-                )
-              ] })
-            ] }),
-            sc.meta.copy && Object.keys(sc.meta.copy).length > 0 && /* @__PURE__ */ jsxs("div", { className: "mt-3 pt-3 border-t border-border pl-9", children: [
-              /* @__PURE__ */ jsxs(
-                "button",
-                {
-                  className: "text-accent text-sm font-medium hover:underline",
-                  onClick: () => toggleCopyExpand(sc.meta.id),
-                  children: [
-                    expandedCopy[sc.meta.id] ? "▼" : "▶",
-                    " Editar textos (",
-                    Object.keys(sc.meta.copy).length,
-                    " campos)"
-                  ]
-                }
-              ),
-              expandedCopy[sc.meta.id] && /* @__PURE__ */ jsx("div", { className: "mt-2 space-y-3", children: Object.entries(copyEdits[sc.meta.id] || sc.meta.copy).map(
-                ([key, value]) => /* @__PURE__ */ jsxs("div", { children: [
-                  /* @__PURE__ */ jsx("label", { className: "block text-xs font-medium text-ink-muted mb-1", children: key }),
-                  /* @__PURE__ */ jsx(
-                    "textarea",
-                    {
-                      className: `${inputBase} min-h-[60px] resize-y`,
-                      value,
-                      onChange: (e) => updateCopy(sc.meta.id, key, e.target.value),
-                      rows: 2
-                    }
-                  )
-                ] }, key)
-              ) })
-            ] })
+          selected.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-sm text-ink-secondary", children: "Nenhum componente adicionado" }) : /* @__PURE__ */ jsx("div", { className: "space-y-1", children: selected.map((sc) => /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 text-sm", children: [
+            /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-accent/10 text-accent`, children: sc.position }),
+            /* @__PURE__ */ jsx("span", { children: sc.meta.name })
           ] }, sc.meta.id)) })
         ] }) }),
-        error && /* @__PURE__ */ jsx("div", { className: "p-4 border border-fail rounded-lg text-fail text-sm", children: error }),
-        /* @__PURE__ */ jsxs("div", { className: "flex gap-3 pt-4 border-t border-border", children: [
-          /* @__PURE__ */ jsx("button", { className: btnOutline, onClick: downloadManifest, children: "Baixar Manifesto (.md)" }),
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              className: btnPrimary,
-              onClick: createProject,
-              disabled: creating || !project.clientName,
-              children: creating ? "Criando..." : "Criar Projeto no GitHub"
-            }
-          )
-        ] })
+        /* @__PURE__ */ jsx("div", { className: "rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl overflow-hidden", children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
+          /* @__PURE__ */ jsxs("div", { className: "text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-3 flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-purple-500" }),
+            "Cores"
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "flex gap-2 flex-wrap", children: [
+            /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorPrimary }, title: "Primaria" }),
+            /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorSecondary }, title: "Secundaria" }),
+            /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorBackground }, title: "Fundo" }),
+            /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorText }, title: "Texto" })
+          ] })
+        ] }) }),
+        /* @__PURE__ */ jsx("div", { className: "rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl overflow-hidden", children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
+          /* @__PURE__ */ jsxs("div", { className: "text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-3 flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-emerald-500" }),
+            "Tipografia"
+          ] }),
+          /* @__PURE__ */ jsx(Pair, { label: "Titulos", value: art.fontHeading }),
+          /* @__PURE__ */ jsx(Pair, { label: "Corpo", value: art.fontBody })
+        ] }) })
       ] })
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4", children: [
-      /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3", children: "Cliente" }),
-        /* @__PURE__ */ jsx("div", { className: "font-medium", children: project.clientName || "(nao definido)" }),
-        /* @__PURE__ */ jsxs("div", { className: "text-sm text-ink-secondary", children: [
-          project.projectType,
-          " - ",
-          project.niche || "-"
-        ] })
-      ] }) }),
-      /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3", children: "Estrutura da Pagina" }),
-        selected.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-sm text-ink-secondary", children: "Nenhum componente adicionado" }) : /* @__PURE__ */ jsx("div", { className: "space-y-1", children: selected.map((sc) => /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 text-sm", children: [
-          /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-accent/10 text-accent`, children: sc.position }),
-          /* @__PURE__ */ jsx("span", { children: sc.meta.name })
-        ] }, sc.meta.id)) })
-      ] }) }),
-      /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3", children: "Cores" }),
-        /* @__PURE__ */ jsxs("div", { className: "flex gap-2 flex-wrap", children: [
-          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorPrimary }, title: "Primaria" }),
-          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorSecondary }, title: "Secundaria" }),
-          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorBackground }, title: "Fundo" }),
-          /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-lg border border-border", style: { background: art.colorText }, title: "Texto" })
-        ] })
-      ] }) }),
-      /* @__PURE__ */ jsx("div", { className: cardBase, children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3", children: "Tipografia" }),
-        /* @__PURE__ */ jsx(Pair, { label: "Titulos", value: art.fontHeading }),
-        /* @__PURE__ */ jsx(Pair, { label: "Corpo", value: art.fontBody })
-      ] }) })
     ] })
   ] });
 }
@@ -736,7 +750,7 @@ const $$Builder = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
   Astro2.self = $$Builder;
   let components = [];
-  const registryUrl = "https://raw.githubusercontent.com/seuusuario/minha-lib-astro/main/registry.json";
+  const registryUrl = "https://raw.githubusercontent.com/xXSirius/minha-lib-astro/main/registry.json";
   {
     try {
       components = await fetchRegistry(registryUrl);

@@ -1,15 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings } from '../types'
 import { validateGithubToken } from '../lib/github'
-
-/* --- Tailwind classes (dark theme) --- */
-const inputBase = 'w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent'
-const btnBase = 'px-4 py-2 rounded-lg text-sm font-medium transition-colors'
-const btnPrimary = `${btnBase} bg-accent text-black hover:bg-accent-hover disabled:opacity-50`
-const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`
-const btnSuccess = `${btnBase} bg-ok text-black hover:bg-ok/80`
-const cardBase = 'rounded-xl border border-border bg-surface p-5'
-const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium'
+import * as ui from '../styles/ui'
 
 const DEFAULT_SETTINGS: AppSettings = {
   githubToken: '',
@@ -82,42 +74,60 @@ export default function ConfigPanel() {
   }
 
   return (
-    <div className="max-w-3xl flex flex-col gap-4">
+    <div className="max-w-3xl flex flex-col gap-4 stagger">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Configuracoes</h1>
-        <button onClick={handleSave} className={saved ? btnSuccess : btnPrimary}>
+        <button onClick={handleSave} className={`${saved ? ui.btnSuccess : ui.btnPrimary} ${saved ? 'animate-scale-in' : ''}`}>
           {saved ? 'Salvo!' : 'Salvar'}
         </button>
       </div>
 
-      <div className={cardBase}>
+      {(!settings.githubToken || !settings.githubOwner || !settings.registryUrl) && (
+        <div className={`${ui.cardBase} p-4 bg-amber-50/10 border-l-2 border-amber-500`}>
+          <div className="text-sm text-amber-700 font-medium">⚠️ Configuração incompleta</div>
+          <div className="text-xs text-amber-600 mt-1">
+            Você precisa configurar: {[
+              !settings.githubToken && 'Token',
+              !settings.githubOwner && 'Owner',
+              !settings.registryUrl && 'URL do Registry'
+            ].filter(Boolean).join(', ')}. Sem isso, os botões de publicar e criar projetos não funcionarão.
+          </div>
+        </div>
+      )}
+
+      <div className={`${ui.cardBase} p-5`}>
         <h2 className="text-lg font-semibold mb-4">GitHub</h2>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
             <Field label="Token de Acesso">
               <input
-                className={inputBase}
+                className={ui.inputBase}
                 type="password"
                 value={settings.githubToken}
-                onChange={e => update('githubToken', e.target.value)}
+                onChange={e => {
+                  update('githubToken', e.target.value)
+                  setTokenUser(null)
+                  setTokenError('')
+                }}
                 placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
               />
             </Field>
             <div className="flex gap-2 mt-2">
               <button
-                className={`${btnOutline} py-1 px-3 text-xs`}
+                className={`${ui.btnOutline} py-1 px-3 text-xs`}
                 onClick={handleValidateToken}
                 disabled={validating || !settings.githubToken}
+                title={!settings.githubToken ? 'Digite um token antes de validar' : 'Verificar se o token é válido'}
               >
                 {validating ? 'Validando...' : 'Validar Token'}
               </button>
-              {tokenUser && <span className={`${badgeBase} bg-ok/10 text-ok border border-ok/20`}>✓ {tokenUser}</span>}
-              {tokenError && <span className={`${badgeBase} bg-fail/10 text-fail border border-fail/20`}>✗ {tokenError}</span>}
+              {tokenUser && <span className={`${ui.badgeBase} bg-ok/10 text-ok border border-ok/20 animate-scale-in`}>✓ {tokenUser}</span>}
+              {tokenError && <span className={`${ui.badgeBase} bg-fail/10 text-fail border border-fail/20 animate-scale-in`}>✗ {tokenError}</span>}
             </div>
           </div>
           <Field label="Owner (usuario ou org)">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={settings.githubOwner}
               onChange={e => update('githubOwner', e.target.value)}
               placeholder="seuusuario"
@@ -125,7 +135,7 @@ export default function ConfigPanel() {
           </Field>
           <Field label="Repo de Componentes">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={settings.componentsRepo}
               onChange={e => update('componentsRepo', e.target.value)}
               placeholder="minha-lib-astro"
@@ -133,7 +143,7 @@ export default function ConfigPanel() {
           </Field>
           <Field label="Repo Base (template)">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={settings.baseProjectRepo}
               onChange={e => update('baseProjectRepo', e.target.value)}
               placeholder="_base-project"
@@ -142,7 +152,7 @@ export default function ConfigPanel() {
           <div className="col-span-2">
             <Field label="URL do Registry">
               <input
-                className={inputBase}
+                className={ui.inputBase}
                 value={settings.registryUrl}
                 onChange={e => update('registryUrl', e.target.value)}
                 placeholder="https://raw.githubusercontent.com/.../registry.json"
@@ -152,12 +162,12 @@ export default function ConfigPanel() {
         </div>
       </div>
 
-      <div className={cardBase}>
+      <div className={`${ui.cardBase} p-5`}>
         <h2 className="text-lg font-semibold mb-4">Padroes</h2>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Fonte dos Titulos">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={settings.defaultFontHeading}
               onChange={e => update('defaultFontHeading', e.target.value)}
               placeholder="Inter"
@@ -165,7 +175,7 @@ export default function ConfigPanel() {
           </Field>
           <Field label="Fonte do Corpo">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={settings.defaultFontBody}
               onChange={e => update('defaultFontBody', e.target.value)}
               placeholder="Inter"
@@ -177,11 +187,11 @@ export default function ConfigPanel() {
                 type="color"
                 value={settings.defaultColorPrimary}
                 onChange={e => update('defaultColorPrimary', e.target.value)}
-                className="w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5"
+                className="w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5 hover-scale"
               />
               <input
                 type="text"
-                className={inputBase}
+                className={ui.inputBase}
                 value={settings.defaultColorPrimary}
                 onChange={e => update('defaultColorPrimary', e.target.value)}
                 placeholder="#6366f1"
@@ -191,12 +201,12 @@ export default function ConfigPanel() {
         </div>
       </div>
 
-      <div className={cardBase}>
+      <div className={`${ui.cardBase} p-5`}>
         <h2 className="text-lg font-semibold mb-4">Studio</h2>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Nome do Studio">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={settings.studioName}
               onChange={e => update('studioName', e.target.value)}
               placeholder="Astroteca Studio"
@@ -204,7 +214,7 @@ export default function ConfigPanel() {
           </Field>
           <Field label="Namespace NPM">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={settings.npmNamespace}
               onChange={e => update('npmNamespace', e.target.value)}
               placeholder="@astroteca"
@@ -213,12 +223,12 @@ export default function ConfigPanel() {
         </div>
       </div>
 
-      <div className={cardBase}>
+      <div className={`${ui.cardBase} p-5`}>
         <h2 className="text-lg font-semibold mb-4">Usuario Git</h2>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Nome">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={settings.userName}
               onChange={e => update('userName', e.target.value)}
               placeholder="Seu Nome"
@@ -226,7 +236,7 @@ export default function ConfigPanel() {
           </Field>
           <Field label="Email">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               type="email"
               value={settings.userEmail}
               onChange={e => update('userEmail', e.target.value)}
@@ -236,10 +246,10 @@ export default function ConfigPanel() {
         </div>
       </div>
 
-      <div className={cardBase}>
+      <div className={`${ui.cardBase} p-5`}>
         <h2 className="text-lg font-semibold mb-4">Template do Manifesto</h2>
         <textarea
-          className={`${inputBase} min-h-[200px] font-mono text-sm resize-y`}
+          className={`${ui.inputBase} min-h-[200px] font-mono text-sm resize-y`}
           value={settings.manifestTemplate}
           onChange={e => update('manifestTemplate', e.target.value)}
           placeholder="# {{PROJECT_NAME}}\n\n## Art Direction\n..."

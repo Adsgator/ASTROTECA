@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { ComponentMeta, PropDefinition, PropDraft, AppSettings } from '../types'
+import * as ui from '../styles/ui'
 
 const CATEGORIES = [
   'Hero', 'Features', 'Pricing', 'Testimonials', 'CTA', 'Footer',
@@ -13,15 +14,6 @@ const EMPTY_PROP: PropDraft = {
   description: '',
   previewValue: '',
 }
-
-/* --- Tailwind classes (dark theme) --- */
-const inputBase = 'w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent'
-const btnBase = 'px-4 py-2 rounded-lg text-sm font-medium transition-colors'
-const btnPrimary = `${btnBase} bg-accent text-black hover:bg-accent-hover disabled:opacity-50`
-const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`
-const btnDanger = `${btnBase} bg-fail/10 text-fail border border-fail/20 hover:bg-fail/20 px-2 py-1`
-const cardBase = 'rounded-xl border border-border bg-surface p-5'
-const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium'
 
 export default function AdminForm() {
   const [name, setName] = useState('')
@@ -115,6 +107,12 @@ export default function AdminForm() {
       if (!raw) throw new Error('Configure o GitHub em Configuracoes primeiro.')
       const settings: AppSettings = JSON.parse(raw)
 
+      // Validar campos obrigatórios
+      if (!settings.githubToken) throw new Error('GitHub token não configurado. Vá para Configuracoes.')
+      if (!settings.githubOwner) throw new Error('GitHub owner não configurado. Vá para Configuracoes.')
+      if (!settings.componentsRepo) throw new Error('Repo de componentes não configurado. Vá para Configuracoes.')
+      if (!settings.registryUrl) throw new Error('URL do registry não configurada. Vá para Configuracoes.')
+
       const propsMeta: PropDefinition[] = props.map(p => ({
         name: p.name,
         type: p.type as PropDefinition['type'],
@@ -179,21 +177,21 @@ export default function AdminForm() {
   }
 
   return (
-    <form className="max-w-3xl flex flex-col gap-4" onSubmit={handleSubmit}>
+    <form className="max-w-3xl flex flex-col gap-4 stagger" onSubmit={handleSubmit}>
       <h1 className="text-2xl font-bold">Adicionar Componente</h1>
 
       {feedback && (
-        <div className={`${badgeBase} ${feedback.type === 'ok' ? 'bg-ok/10 text-ok border border-ok/20' : 'bg-fail/10 text-fail border border-fail/20'} px-3 py-2`}>
+        <div className={`${ui.badgeBase} ${feedback.type === 'ok' ? 'bg-ok/10 text-ok border border-ok/20' : 'bg-fail/10 text-fail border border-fail/20'} px-3 py-2 animate-slide-down`}>
           {feedback.message}
         </div>
       )}
 
-      <div className={cardBase}>
+      <div className={`${ui.cardBase} p-5`}>
         <h2 className="text-lg font-semibold mb-4">Informacoes Basicas</h2>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Nome (PascalCase)">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="HeroSplit"
@@ -201,14 +199,14 @@ export default function AdminForm() {
             />
           </Field>
           <Field label="Categoria">
-            <select className={inputBase} value={category} onChange={e => setCategory(e.target.value)}>
+            <select className={ui.inputBase} value={category} onChange={e => setCategory(e.target.value)}>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </Field>
           <div className="col-span-2">
             <Field label="Descricao">
               <input
-                className={inputBase}
+                className={ui.inputBase}
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Descricao curta do componente"
@@ -218,7 +216,7 @@ export default function AdminForm() {
           </div>
           <Field label="Tags (separadas por virgula)">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={tags}
               onChange={e => setTags(e.target.value)}
               placeholder="hero, split, imagem"
@@ -226,7 +224,7 @@ export default function AdminForm() {
           </Field>
           <Field label="Melhor para">
             <input
-              className={inputBase}
+              className={ui.inputBase}
               value={bestFor}
               onChange={e => setBestFor(e.target.value)}
               placeholder="Landing pages com imagem lateral"
@@ -242,10 +240,10 @@ export default function AdminForm() {
         )}
       </div>
 
-      <div className={cardBase}>
+      <div className={`${ui.cardBase} p-5`}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Props</h2>
-          <button type="button" className={`${btnOutline} py-1 px-3 text-xs`} onClick={addProp}>
+          <button type="button" className={`${ui.btnOutline} py-1 px-3 text-xs`} onClick={addProp}>
             + Adicionar Prop
           </button>
         </div>
@@ -255,12 +253,12 @@ export default function AdminForm() {
         )}
 
         {props.map((prop, i) => (
-          <div key={i} className="grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-border last:border-0">
+          <div key={i} className="grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-border last:border-0 animate-slide-down">
             <Field label="Nome">
-              <input className={inputBase} value={prop.name} onChange={e => updateProp(i, 'name', e.target.value)} placeholder="titulo" />
+              <input className={ui.inputBase} value={prop.name} onChange={e => updateProp(i, 'name', e.target.value)} placeholder="titulo" />
             </Field>
             <Field label="Tipo">
-              <select className={inputBase} value={prop.type} onChange={e => updateProp(i, 'type', e.target.value)}>
+              <select className={ui.inputBase} value={prop.type} onChange={e => updateProp(i, 'type', e.target.value)}>
                 <option value="string">string</option>
                 <option value="number">number</option>
                 <option value="boolean">boolean</option>
@@ -272,20 +270,20 @@ export default function AdminForm() {
               <input type="checkbox" checked={prop.required} onChange={e => updateProp(i, 'required', e.target.checked)} />
             </Field>
             <Field label="Descricao">
-              <input className={inputBase} value={prop.description} onChange={e => updateProp(i, 'description', e.target.value)} placeholder="Descricao" />
+              <input className={ui.inputBase} value={prop.description} onChange={e => updateProp(i, 'description', e.target.value)} placeholder="Descricao" />
             </Field>
             <Field label="Preview">
-              <input className={inputBase} value={prop.previewValue} onChange={e => updateProp(i, 'previewValue', e.target.value)} placeholder="Valor" />
+              <input className={ui.inputBase} value={prop.previewValue} onChange={e => updateProp(i, 'previewValue', e.target.value)} placeholder="Valor" />
             </Field>
-            <button type="button" className={btnDanger} onClick={() => removeProp(i)}>×</button>
+            <button type="button" className={`${ui.btnDanger} hover-scale`} onClick={() => removeProp(i)}>×</button>
           </div>
         ))}
       </div>
 
-      <div className={cardBase}>
+      <div className={`${ui.cardBase} p-5`}>
         <h2 className="text-lg font-semibold mb-4">Codigo do Componente (.astro)</h2>
         <textarea
-          className={`${inputBase} min-h-[300px] font-mono text-sm resize-y`}
+          className={`${ui.inputBase} min-h-[300px] font-mono text-sm resize-y`}
           value={astroCode}
           onChange={e => setAstroCode(e.target.value)}
           placeholder={'---\ninterface Props {\n  titulo: string\n}\nconst { titulo } = Astro.props\n---\n\n<section>\n  <h1>{titulo}</h1>\n</section>'}
@@ -294,7 +292,7 @@ export default function AdminForm() {
       </div>
 
       {name && props.length > 0 && (
-        <div className={cardBase}>
+        <div className={`${ui.cardBase} p-5`}>
           <h2 className="text-lg font-semibold mb-2">Preview Gerado</h2>
           <pre className="bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto mb-4">{generatePreviewCode()}</pre>
 
@@ -303,7 +301,12 @@ export default function AdminForm() {
         </div>
       )}
 
-      <button type="submit" className={`${btnPrimary} py-3 text-base`} disabled={submitting || !name || !astroCode}>
+      <button
+        type="submit"
+        className={`${ui.btnPrimary} py-3 text-base`}
+        disabled={submitting || !name || !astroCode}
+        title={!name ? 'Nome do componente é obrigatório' : !astroCode ? 'Código Astro é obrigatório' : 'Publicar componente'}
+      >
         {submitting ? 'Publicando...' : 'Publicar Componente'}
       </button>
     </form>

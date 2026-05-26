@@ -1,18 +1,12 @@
-import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
+import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_7dOsTLek.mjs';
 import 'kleur/colors';
-import { $ as $$AppLayout } from '../chunks/AppLayout_CEliHCVs.mjs';
+import { $ as $$AppLayout } from '../chunks/AppLayout_D2cBKWlO.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import { useState, useEffect } from 'react';
 import { v as validateGithubToken } from '../chunks/github_oIhC-tBw.mjs';
+import { f as btnSuccess, e as btnPrimary, g as cardBase, i as inputBase, d as btnOutline, b as badgeBase } from '../chunks/ui_CsSBPcYY.mjs';
 export { renderers } from '../renderers.mjs';
 
-const inputBase = "w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
-const btnBase = "px-4 py-2 rounded-lg text-sm font-medium transition-colors";
-const btnPrimary = `${btnBase} bg-accent text-black hover:bg-accent-hover disabled:opacity-50`;
-const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`;
-const btnSuccess = `${btnBase} bg-ok text-black hover:bg-ok/80`;
-const cardBase = "rounded-xl border border-border bg-surface p-5";
-const badgeBase = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium";
 const DEFAULT_SETTINGS = {
   githubToken: "",
   githubOwner: "",
@@ -74,12 +68,12 @@ function ConfigPanel() {
       children
     ] });
   }
-  return /* @__PURE__ */ jsxs("div", { className: "max-w-3xl flex flex-col gap-4", children: [
+  return /* @__PURE__ */ jsxs("div", { className: "max-w-3xl flex flex-col gap-4 stagger", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
       /* @__PURE__ */ jsx("h1", { className: "text-2xl font-bold", children: "Configuracoes" }),
-      /* @__PURE__ */ jsx("button", { onClick: handleSave, className: saved ? btnSuccess : btnPrimary, children: saved ? "Salvo!" : "Salvar" })
+      /* @__PURE__ */ jsx("button", { onClick: handleSave, className: `${saved ? btnSuccess : btnPrimary} ${saved ? "animate-scale-in" : ""}`, children: saved ? "Salvo!" : "Salvar" })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+    /* @__PURE__ */ jsxs("div", { className: `${cardBase} p-5`, children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "GitHub" }),
       /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
         /* @__PURE__ */ jsxs("div", { className: "col-span-2", children: [
@@ -103,11 +97,11 @@ function ConfigPanel() {
                 children: validating ? "Validando..." : "Validar Token"
               }
             ),
-            tokenUser && /* @__PURE__ */ jsxs("span", { className: `${badgeBase} bg-ok/10 text-ok border border-ok/20`, children: [
+            tokenUser && /* @__PURE__ */ jsxs("span", { className: `${badgeBase} bg-ok/10 text-ok border border-ok/20 animate-scale-in`, children: [
               "✓ ",
               tokenUser
             ] }),
-            tokenError && /* @__PURE__ */ jsxs("span", { className: `${badgeBase} bg-fail/10 text-fail border border-fail/20`, children: [
+            tokenError && /* @__PURE__ */ jsxs("span", { className: `${badgeBase} bg-fail/10 text-fail border border-fail/20 animate-scale-in`, children: [
               "✗ ",
               tokenError
             ] })
@@ -151,7 +145,7 @@ function ConfigPanel() {
         ) }) })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+    /* @__PURE__ */ jsxs("div", { className: `${cardBase} p-5`, children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Padroes" }),
       /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
         /* @__PURE__ */ jsx(Field, { label: "Fonte dos Titulos", children: /* @__PURE__ */ jsx(
@@ -179,7 +173,7 @@ function ConfigPanel() {
               type: "color",
               value: settings.defaultColorPrimary,
               onChange: (e) => update("defaultColorPrimary", e.target.value),
-              className: "w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5"
+              className: "w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5 hover-scale"
             }
           ),
           /* @__PURE__ */ jsx(
@@ -195,7 +189,7 @@ function ConfigPanel() {
         ] }) })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+    /* @__PURE__ */ jsxs("div", { className: `${cardBase} p-5`, children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Studio" }),
       /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
         /* @__PURE__ */ jsx(Field, { label: "Nome do Studio", children: /* @__PURE__ */ jsx(
@@ -218,7 +212,7 @@ function ConfigPanel() {
         ) })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+    /* @__PURE__ */ jsxs("div", { className: `${cardBase} p-5`, children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Usuario Git" }),
       /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
         /* @__PURE__ */ jsx(Field, { label: "Nome", children: /* @__PURE__ */ jsx(
@@ -242,7 +236,7 @@ function ConfigPanel() {
         ) })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: cardBase, children: [
+    /* @__PURE__ */ jsxs("div", { className: `${cardBase} p-5`, children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-semibold mb-4", children: "Template do Manifesto" }),
       /* @__PURE__ */ jsx(
         "textarea",

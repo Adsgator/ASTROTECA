@@ -7,17 +7,7 @@ import type {
   AppSettings,
 } from '../types'
 import { generateManifest } from '../lib/manifest'
-
-/* --- Tailwind classes (dark theme) --- */
-const inputBase = 'w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent'
-const btnBase = 'px-4 py-2 rounded-lg text-sm font-medium transition-colors'
-const btnPrimary = `${btnBase} bg-accent text-black hover:bg-accent-hover disabled:opacity-50`
-const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`
-const btnGhost = `${btnBase} bg-transparent text-ink-secondary hover:bg-raised hover:text-ink-primary`
-const btnDanger = `${btnBase} bg-fail/10 text-fail border border-fail/20 hover:bg-fail/20`
-const cardBase = 'rounded-xl border border-border bg-surface overflow-hidden'
-const cardInteractive = `${cardBase} cursor-pointer transition-all hover:border-accent/30 hover:shadow-lg`
-const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium'
+import * as ui from '../styles/ui'
 
 /* --- Helper sub-components --- */
 
@@ -56,11 +46,11 @@ function ColorSwatch({
           type="color"
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5 flex-shrink-0"
+          className="w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5 flex-shrink-0 hover-scale"
         />
         <input
           type="text"
-          className={`${inputBase} min-w-0`}
+          className={`${ui.inputBase} min-w-0`}
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder="#000000"
@@ -267,6 +257,12 @@ export default function Builder({ availableComponents }: Props) {
       const raw = localStorage.getItem('acs-settings')
       if (!raw) throw new Error('Configure o GitHub em Configuracoes primeiro.')
       const settings: AppSettings = JSON.parse(raw)
+
+      // Validar campos obrigatórios
+      if (!settings.githubToken) throw new Error('GitHub token não configurado. Vá para Configuracoes.')
+      if (!settings.githubOwner) throw new Error('GitHub owner não configurado. Vá para Configuracoes.')
+      if (!settings.baseProjectRepo) throw new Error('Repo base não configurado. Vá para Configuracoes.')
+      if (!project.clientName) throw new Error('Nome do cliente é obrigatório.')
       const manifest = getManifest()
 
       const res = await fetch('/api/create-project', {
@@ -304,19 +300,19 @@ export default function Builder({ availableComponents }: Props) {
     return (
       <div className="max-w-xl mx-auto flex flex-col gap-4 pt-12">
         <h1 className="text-2xl font-bold text-accent">Projeto criado com sucesso!</h1>
-        <div className={`${cardBase} p-5 space-y-4`}>
+        <div className={`${ui.cardBase} p-5 space-y-4`}>
           <Pair label="Repositorio" value={result.repoUrl} />
           <div className="flex flex-col gap-2 pt-2">
-            <a href={result.repoUrl} target="_blank" rel="noopener" className={btnPrimary}>
+            <a href={result.repoUrl} target="_blank" rel="noopener" className={ui.btnPrimary}>
               Abrir no GitHub
             </a>
             <a
               href={`vscode://vscode.git/clone?url=${encodeURIComponent(result.cloneUrl)}`}
-              className={btnOutline}
+              className={ui.btnOutline}
             >
               Abrir no VS Code
             </a>
-            <button className={btnOutline} onClick={downloadManifest}>
+            <button className={ui.btnOutline} onClick={downloadManifest}>
               Baixar Manifesto (.md)
             </button>
           </div>
@@ -328,34 +324,55 @@ export default function Builder({ availableComponents }: Props) {
   /* --- Main render --- */
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_280px] gap-6 min-h-[calc(100vh-4rem)] max-w-[1400px]">
-      <div className="flex flex-col gap-4 min-w-0 overflow-x-hidden">
-        {/* Tab navigation */}
-        <div className="flex gap-2 border-b border-border pb-2">
-          {STEPS.map((s, i) => (
-            <button
-              key={s}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                step === s
-                  ? 'bg-accent text-black'
-                  : 'text-ink-secondary hover:bg-raised hover:text-ink-primary'
-              }`}
-              onClick={() => setStep(s)}
-            >
-              {i + 1}. {s}
-            </button>
-          ))}
+    <div className="flex flex-col gap-6">
+      {/* ── Page Header ── */}
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold font-heading tracking-tight text-ink-primary">Builder</h1>
+          <p className="text-sm text-ink-secondary mt-1">Monte seu projeto escolhendo componentes e configuracoes</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-6 min-h-[calc(100vh-14rem)]">
+      <div className="flex flex-col gap-5 min-w-0 overflow-x-hidden">
+        {/* Step navigation */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-surface/60 border border-white/[0.06] backdrop-blur-xl w-fit">
+          {STEPS.map((s, i) => {
+            const isActive = step === s
+            const stepIdx = STEPS.indexOf(step)
+            const isPast = i < stepIdx
+            return (
+              <button
+                key={s}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  isActive
+                    ? 'bg-accent text-black shadow-[0_2px_8px_rgba(240,165,0,0.25)]'
+                    : isPast
+                    ? 'text-accent hover:bg-raised'
+                    : 'text-ink-secondary hover:bg-raised hover:text-ink-primary'
+                }`}
+                onClick={() => setStep(s)}
+              >
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                  isActive ? 'bg-black/20 text-black animate-glow' : isPast ? 'bg-accent/10 text-accent' : 'bg-raised text-ink-muted'
+                }`}>
+                  {isPast ? '✓' : i + 1}
+                </span>
+                {s}
+              </button>
+            )
+          })}
         </div>
 
         {/* --- Step 1: Configurar --- */}
         {step === 'Configurar' && (
-          <div className={cardBase}>
+          <div className={`${ui.cardBase} animate-scale-in`}>
             <div className="p-5 space-y-6">
               <h2 className="text-lg font-semibold">Dados do Projeto</h2>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Nome do cliente">
                   <input
-                    className={inputBase}
+                    className={ui.inputBase}
                     value={project.clientName}
                     onChange={e => updateProject('clientName', e.target.value)}
                     placeholder="acme-corp"
@@ -363,7 +380,7 @@ export default function Builder({ availableComponents }: Props) {
                 </Field>
                 <Field label="Tipo de projeto">
                   <select
-                    className={inputBase}
+                    className={ui.inputBase}
                     value={project.projectType}
                     onChange={e => updateProject('projectType', e.target.value)}
                   >
@@ -376,7 +393,7 @@ export default function Builder({ availableComponents }: Props) {
                 </Field>
                 <Field label="Nicho">
                   <input
-                    className={inputBase}
+                    className={ui.inputBase}
                     value={project.niche}
                     onChange={e => updateProject('niche', e.target.value)}
                     placeholder="ex: saude, tech, educacao"
@@ -384,7 +401,7 @@ export default function Builder({ availableComponents }: Props) {
                 </Field>
                 <Field label="Objetivo da pagina">
                   <input
-                    className={inputBase}
+                    className={ui.inputBase}
                     value={project.pageGoal}
                     onChange={e => updateProject('pageGoal', e.target.value)}
                     placeholder="ex: captar leads, vender produto"
@@ -392,7 +409,7 @@ export default function Builder({ availableComponents }: Props) {
                 </Field>
                 <Field label="URL do site">
                   <input
-                    className={inputBase}
+                    className={ui.inputBase}
                     value={project.siteUrl}
                     onChange={e => updateProject('siteUrl', e.target.value)}
                     placeholder="https://..."
@@ -400,7 +417,7 @@ export default function Builder({ availableComponents }: Props) {
                 </Field>
                 <Field label="Google Analytics ID">
                   <input
-                    className={inputBase}
+                    className={ui.inputBase}
                     value={project.googleAnalyticsId}
                     onChange={e => updateProject('googleAnalyticsId', e.target.value)}
                     placeholder="G-XXXXXXXXXX"
@@ -432,7 +449,7 @@ export default function Builder({ availableComponents }: Props) {
                 />
                 <Field label="Fonte dos titulos">
                   <input
-                    className={inputBase}
+                    className={ui.inputBase}
                     value={art.fontHeading}
                     onChange={e => updateArt('fontHeading', e.target.value)}
                     placeholder="Inter"
@@ -440,7 +457,7 @@ export default function Builder({ availableComponents }: Props) {
                 </Field>
                 <Field label="Fonte do corpo">
                   <input
-                    className={inputBase}
+                    className={ui.inputBase}
                     value={art.fontBody}
                     onChange={e => updateArt('fontBody', e.target.value)}
                     placeholder="Inter"
@@ -449,7 +466,7 @@ export default function Builder({ availableComponents }: Props) {
                 <div className="col-span-2">
                   <Field label="Mood / Tom">
                     <input
-                      className={inputBase}
+                      className={ui.inputBase}
                       value={art.mood}
                       onChange={e => updateArt('mood', e.target.value)}
                       placeholder="ex: profissional, acolhedor, moderno"
@@ -459,7 +476,7 @@ export default function Builder({ availableComponents }: Props) {
                 <div className="col-span-2">
                   <Field label="Referencias visuais">
                     <textarea
-                      className={`${inputBase} min-h-[80px] resize-y`}
+                      className={`${ui.inputBase} min-h-[80px] resize-y`}
                       value={art.references}
                       onChange={e => updateArt('references', e.target.value)}
                       placeholder="Links ou descricao de referencias"
@@ -470,7 +487,7 @@ export default function Builder({ availableComponents }: Props) {
                 <div className="col-span-2">
                   <Field label="Observacoes">
                     <textarea
-                      className={`${inputBase} min-h-[80px] resize-y`}
+                      className={`${ui.inputBase} min-h-[80px] resize-y`}
                       value={art.notes}
                       onChange={e => updateArt('notes', e.target.value)}
                       placeholder="Qualquer nota adicional sobre o projeto"
@@ -485,17 +502,17 @@ export default function Builder({ availableComponents }: Props) {
 
         {/* --- Step 2: Componentes --- */}
         {step === 'Componentes' && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-scale-in">
             <div className="flex gap-3">
               <input
-                className={`${inputBase} max-w-xs`}
+                className={`${ui.inputBase} max-w-xs`}
                 placeholder="Buscar componentes..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
               <div className="flex gap-2 flex-wrap">
                 <button
-                  className={!filterCategory ? btnPrimary : btnGhost}
+                  className={!filterCategory ? ui.btnPrimary : ui.btnGhost}
                   onClick={() => setFilterCategory(null)}
                 >
                   Todos
@@ -503,7 +520,7 @@ export default function Builder({ availableComponents }: Props) {
                 {categories.map(cat => (
                   <button
                     key={cat}
-                    className={filterCategory === cat ? btnPrimary : btnGhost}
+                    className={filterCategory === cat ? ui.btnPrimary : ui.btnGhost}
                     onClick={() => setFilterCategory(cat)}
                   >
                     {cat}
@@ -522,16 +539,16 @@ export default function Builder({ availableComponents }: Props) {
                   return (
                     <div
                       key={c.id}
-                      className={`${cardInteractive} ${sel ? 'ring-2 ring-accent' : ''} p-4`}
+                      className={`${ui.cardInteractive} ${sel ? 'ring-2 ring-accent' : ''} p-4`}
                       onClick={() => toggleComponent(c)}
                     >
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-semibold text-sm">{c.name}</span>
-                        {pos !== null && <span className={`${badgeBase} bg-accent/10 text-accent`}>{pos}</span>}
+                        {pos !== null && <span className={`${ui.badgeBase} bg-accent/10 text-accent`}>{pos}</span>}
                       </div>
                       <div className="text-xs text-ink-secondary line-clamp-2">{c.description}</div>
                       <div className="mt-2">
-                        <span className={`${badgeBase} bg-raised text-ink-secondary`}>{c.category}</span>
+                        <span className={`${ui.badgeBase} bg-raised text-ink-secondary`}>{c.category}</span>
                       </div>
                     </div>
                   )
@@ -543,9 +560,9 @@ export default function Builder({ availableComponents }: Props) {
 
         {/* --- Step 3: Revisar --- */}
         {step === 'Revisar' && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-scale-in">
             {/* Project summary */}
-            <div className={cardBase}>
+            <div className={ui.cardBase}>
               <div className="p-5">
                 <h2 className="text-lg font-semibold mb-4">Resumo do Projeto</h2>
                 <div className="grid grid-cols-2 gap-x-4">
@@ -560,7 +577,7 @@ export default function Builder({ availableComponents }: Props) {
             </div>
 
             {/* Components list */}
-            <div className={cardBase}>
+            <div className={ui.cardBase}>
               <div className="p-5">
                 <h2 className="text-lg font-semibold mb-4">Componentes ({selected.length})</h2>
                 {selected.length === 0 ? (
@@ -577,21 +594,21 @@ export default function Builder({ availableComponents }: Props) {
                           </div>
                           <div className="flex gap-1">
                             <button
-                              className={`${btnGhost} px-2 py-1`}
+                              className={`${ui.btnGhost} px-2 py-1`}
                               onClick={() => moveComponent(index, 'up')}
                               disabled={index === 0}
                             >
                               ↑
                             </button>
                             <button
-                              className={`${btnGhost} px-2 py-1`}
+                              className={`${ui.btnGhost} px-2 py-1`}
                               onClick={() => moveComponent(index, 'down')}
                               disabled={index === selected.length - 1}
                             >
                               ↓
                             </button>
                             <button
-                              className={`${btnDanger} px-2 py-1`}
+                              className={`${ui.btnDanger} px-2 py-1`}
                               onClick={() => removeComponent(sc.meta.id)}
                             >
                               ×
@@ -615,7 +632,7 @@ export default function Builder({ availableComponents }: Props) {
                                     <div key={key}>
                                       <label className="block text-xs font-medium text-ink-muted mb-1">{key}</label>
                                       <textarea
-                                        className={`${inputBase} min-h-[60px] resize-y`}
+                                        className={`${ui.inputBase} min-h-[60px] resize-y`}
                                         value={value}
                                         onChange={e => updateCopy(sc.meta.id, key, e.target.value)}
                                         rows={2}
@@ -640,13 +657,20 @@ export default function Builder({ availableComponents }: Props) {
             )}
 
             <div className="flex gap-3 pt-4 border-t border-border">
-              <button className={btnOutline} onClick={downloadManifest}>
+              <button className={ui.btnOutline} onClick={downloadManifest} title={selected.length === 0 ? 'Adicione componentes antes de baixar' : 'Baixar manifesto como arquivo Markdown'}>
                 Baixar Manifesto (.md)
               </button>
               <button
-                className={btnPrimary}
+                className={ui.btnPrimary}
                 onClick={createProject}
                 disabled={creating || !project.clientName}
+                title={
+                  !project.clientName
+                    ? 'Nome do cliente é obrigatório'
+                    : selected.length === 0
+                    ? 'Adicione pelo menos um componente'
+                    : 'Criar projeto no GitHub (requer configuração do GitHub em Configuracoes)'
+                }
               >
                 {creating ? 'Criando...' : 'Criar Projeto no GitHub'}
               </button>
@@ -656,10 +680,13 @@ export default function Builder({ availableComponents }: Props) {
       </div>
 
       {/* --- Right Sidebar --- */}
-      <div className="flex flex-col gap-4">
-        <div className={cardBase}>
+      <div className="flex flex-col gap-3 animate-slide-right stagger">
+        <div className="rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl overflow-hidden">
           <div className="p-4">
-            <div className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3">Cliente</div>
+            <div className="text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+              Cliente
+            </div>
             <div className="font-medium">{project.clientName || '(nao definido)'}</div>
             <div className="text-sm text-ink-secondary">
               {project.projectType} - {project.niche || '-'}
@@ -667,16 +694,19 @@ export default function Builder({ availableComponents }: Props) {
           </div>
         </div>
 
-        <div className={cardBase}>
+        <div className="rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl overflow-hidden">
           <div className="p-4">
-            <div className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3">Estrutura da Pagina</div>
+            <div className="text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              Estrutura da Pagina
+            </div>
             {selected.length === 0 ? (
               <div className="text-sm text-ink-secondary">Nenhum componente adicionado</div>
             ) : (
               <div className="space-y-1">
                 {selected.map(sc => (
                   <div key={sc.meta.id} className="flex items-center gap-2 text-sm">
-                    <span className={`${badgeBase} bg-accent/10 text-accent`}>{sc.position}</span>
+                    <span className={`${ui.badgeBase} bg-accent/10 text-accent`}>{sc.position}</span>
                     <span>{sc.meta.name}</span>
                   </div>
                 ))}
@@ -685,9 +715,12 @@ export default function Builder({ availableComponents }: Props) {
           </div>
         </div>
 
-        <div className={cardBase}>
+        <div className="rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl overflow-hidden">
           <div className="p-4">
-            <div className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3">Cores</div>
+            <div className="text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+              Cores
+            </div>
             <div className="flex gap-2 flex-wrap">
               <div className="w-8 h-8 rounded-lg border border-border" style={{ background: art.colorPrimary }} title="Primaria" />
               <div className="w-8 h-8 rounded-lg border border-border" style={{ background: art.colorSecondary }} title="Secundaria" />
@@ -697,14 +730,18 @@ export default function Builder({ availableComponents }: Props) {
           </div>
         </div>
 
-        <div className={cardBase}>
+        <div className="rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl overflow-hidden">
           <div className="p-4">
-            <div className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3">Tipografia</div>
+            <div className="text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Tipografia
+            </div>
             <Pair label="Titulos" value={art.fontHeading} />
             <Pair label="Corpo" value={art.fontBody} />
           </div>
         </div>
       </div>
+    </div>
     </div>
   )
 }
