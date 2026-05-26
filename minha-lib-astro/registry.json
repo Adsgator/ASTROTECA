@@ -1,1 +1,161 @@
-[]
+[
+  {
+    "id": "hero-split",
+    "name": "Hero Split",
+    "category": "Hero",
+    "description": "Hero com imagem ao lado. Ideal para servicos com foto do profissional ou do produto.",
+    "previewPath": "/preview/hero-split",
+    "screenshot": "",
+    "componentFile": "Hero/HeroSplit.astro",
+    "tags": ["hero", "acima-da-dobra", "imagem", "split"],
+    "props": [
+      { "name": "headline", "type": "string", "required": true, "description": "Titulo principal" },
+      { "name": "subheadline", "type": "string", "required": false, "description": "Subtitulo ou descricao curta" },
+      { "name": "ctaLabel", "type": "string", "required": false, "default": "Saiba mais" },
+      { "name": "ctaHref", "type": "string", "required": false, "default": "#contato" },
+      { "name": "imageSrc", "type": "string", "required": false, "description": "Caminho para a imagem" }
+    ],
+    "bestFor": ["servicos", "profissionais liberais", "consultorios"],
+    "order": 1
+  },
+  {
+    "id": "hero-centered",
+    "name": "Hero Centered",
+    "category": "Hero",
+    "description": "Hero centralizado com call to action em destaque. Ideal para produtos e SaaS.",
+    "previewPath": "/preview/hero-centered",
+    "screenshot": "",
+    "componentFile": "Hero/HeroCentered.astro",
+    "tags": ["hero", "acima-da-dobra", "centralizado", "produto"],
+    "props": [
+      { "name": "headline", "type": "string", "required": true },
+      { "name": "subheadline", "type": "string", "required": false },
+      { "name": "ctaLabel", "type": "string", "required": false, "default": "Comecar agora" },
+      { "name": "ctaHref", "type": "string", "required": false }
+    ],
+    "bestFor": ["produtos digitais", "SaaS", "apps"],
+    "order": 2
+  },
+  {
+    "id": "features-grid-3",
+    "name": "Features Grid 3",
+    "category": "Features",
+    "description": "3 diferenciais em grid. Cada card com icone, titulo e descricao.",
+    "previewPath": "/preview/features-grid-3",
+    "screenshot": "",
+    "componentFile": "Features/FeaturesGrid3.astro",
+    "tags": ["features", "diferenciais", "grid", "icones"],
+    "props": [
+      { "name": "sectionTitle", "type": "string", "required": false },
+      { "name": "items", "type": "array", "required": true, "description": "Array de {icon, title, description}" }
+    ],
+    "bestFor": ["qualquer nicho"],
+    "order": 10
+  },
+  {
+    "id": "testimonials-cards",
+    "name": "Testimonials Cards",
+    "category": "Testimonials",
+    "description": "Depoimentos em cards com foto, quote e informacoes do cliente.",
+    "previewPath": "/preview/testimonials-cards",
+    "screenshot": "",
+    "componentFile": "Testimonials/TestimonialsCards.astro",
+    "tags": ["testimonials", "depoimentos", "social-proof", "cards"],
+    "props": [
+      { "name": "sectionTitle", "type": "string", "required": false },
+      { "name": "testimonials", "type": "array", "required": true, "description": "Array de {quote, author, role, avatar}" }
+    ],
+    "bestFor": ["qualquer nicho com prova social"],
+    "order": 20
+  },
+  {
+    "id": "pricing-cards",
+    "name": "Pricing Cards",
+    "category": "Pricing",
+    "description": "Tabela de precos em cards. Destaque para plano recomendado.",
+    "previewPath": "/preview/pricing-cards",
+    "screenshot": "",
+    "componentFile": "Pricing/PricingCards.astro",
+    "tags": ["pricing", "precos", "planos", "cards"],
+    "props": [
+      { "name": "sectionTitle", "type": "string", "required": false },
+      { "name": "plans", "type": "array", "required": true, "description": "Array de planos" }
+    ],
+    "bestFor": ["servicos com pacotes", "SaaS", "assinaturas"],
+    "order": 30
+  },
+  {
+    "id": "cta-banner",
+    "name": "CTA Banner",
+    "category": "CTA",
+    "description": "Banner de call-to-action final com headline, subheadline e botao.",
+    "previewPath": "/preview/cta-banner",
+    "screenshot": "",
+    "componentFile": "CTA/CTABanner.astro",
+    "tags": ["cta", "call-to-action", "banner", "final"],
+    "props": [
+      { "name": "headline", "type": "string", "required": true },
+      { "name": "subheadline", "type": "string", "required": false },
+      { "name": "ctaLabel", "type": "string", "required": true },
+      { "name": "ctaHref", "type": "string", "required": true }
+    ],
+    "bestFor": ["toda landing page"],
+    "order": 40
+  },
+  {
+    "id": "faq-accordion",
+    "name": "FAQ Accordion",
+    "category": "FAQ",
+    "description": "Perguntas frequentes em accordion. Melhora SEO e converte objecoes.",
+    "previewPath": "/preview/faq-accordion",
+    "screenshot": "",
+    "componentFile": "FAQ/FAQAccordion.astro",
+    "tags": ["faq", "perguntas", "accordion", "objecoes"],
+    "props": [
+      { "name": "sectionTitle", "type": "string", "required": false },
+      { "name": "items", "type": "array", "required": true, "description": "Array de {question, answer}" }
+    ],
+    "bestFor": ["toda landing page"],
+    "order": 50
+  },
+  {
+    "id": "contact-section",
+    "name": "Contact Section",
+    "category": "Contact",
+    "description": "Secao de contato com formulario e informacoes de contato.",
+    "previewPath": "/preview/contact-section",
+    "screenshot": "",
+    "componentFile": "Contact/ContactSection.astro",
+    "tags": ["contact", "contato", "formulario", "localizacao"],
+    "props": [
+      { "name": "sectionTitle", "type": "string", "required": false },
+      { "name": "subtitle", "type": "string", "required": false },
+      { "name": "email", "type": "string", "required": false },
+      { "name": "phone", "type": "string", "required": false },
+      { "name": "whatsapp", "type": "string", "required": false },
+      { "name": "address", "type": "string", "required": false },
+      { "name": "formAction", "type": "string", "required": false }
+    ],
+    "bestFor": ["toda landing page"],
+    "order": 60
+  },
+  {
+    "id": "footer-simples",
+    "name": "Footer Simples",
+    "category": "Footer",
+    "description": "Rodape com logo, links rapidos, redes sociais e copyright.",
+    "previewPath": "/preview/footer-simples",
+    "screenshot": "",
+    "componentFile": "Footer/FooterSimples.astro",
+    "tags": ["footer", "rodape", "links", "social"],
+    "props": [
+      { "name": "brandName", "type": "string", "required": true },
+      { "name": "tagline", "type": "string", "required": false },
+      { "name": "links", "type": "array", "required": false, "description": "Array de {label, href}" },
+      { "name": "socialLinks", "type": "array", "required": false, "description": "Array de {platform, href, icon}" },
+      { "name": "bottomLinks", "type": "array", "required": false, "description": "Array de {label, href}" }
+    ],
+    "bestFor": ["toda landing page"],
+    "order": 70
+  }
+]

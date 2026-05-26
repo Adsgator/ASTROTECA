@@ -1,0 +1,50 @@
+---
+import PricingCards from './PricingCards.astro'
+---
+
+<PricingCards
+  plans={[
+    {
+      name: "Basico",
+      price: "R$ 997",
+      period: "unico",
+      features: [
+        "Landing page one-page",
+        "Design responsivo",
+        "SEO basico",
+        "1 revisao"
+      ],
+      ctaLabel: "Escolher Basico",
+      ctaHref: "#contato"
+    },
+    {
+      name: "Profissional",
+      price: "R$ 1.997",
+      period: "unico",
+      features: [
+        "Landing page completa",
+        "Copywriting persuasivo",
+        "Integracao com email",
+        "Analytics avancado",
+        "3 revisoes"
+      ],
+      ctaLabel: "Escolher Profissional",
+      ctaHref: "#contato",
+      highlighted: true
+    },
+    {
+      name: "Premium",
+      price: "R$ 3.997",
+      period: "unico",
+      features: [
+        "Tudo do Profissional",
+        "Site multi-paginas",
+        "Blog integrado",
+        "Suporte 30 dias",
+        "Revisoes ilimitadas"
+      ],
+      ctaLabel: "Escolher Premium",
+      ctaHref: "#contato"
+    }
+  ]}
+/>

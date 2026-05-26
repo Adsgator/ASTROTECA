@@ -1,0 +1,62 @@
+---
+// src/components/Pricing/PricingCards.astro
+
+interface PricingPlan {
+  name: string
+  price: string
+  period?: string
+  features: string[]
+  ctaLabel: string
+  ctaHref: string
+  highlighted?: boolean
+}
+
+interface Props {
+  sectionTitle?: string
+  plans: PricingPlan[]
+}
+
+const { sectionTitle = "Escolha seu plano", plans } = Astro.props
+---
+
+<section class="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto">
+  {sectionTitle && (
+    <h2 class="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-4">
+      {sectionTitle}
+    </h2>
+  )}
+  
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+    {plans.map((plan) => (
+      <div class={`rounded-2xl p-8 ${plan.highlighted ? 'bg-primary text-white shadow-xl scale-105' : 'bg-white border border-gray-200'}`}>
+        <h3 class={`text-xl font-semibold mb-2 ${plan.highlighted ? 'text-white' : 'text-gray-900'}`}>
+          {plan.name}
+        </h3>
+        <div class="mb-6">
+          <span class={`text-4xl font-bold ${plan.highlighted ? 'text-white' : 'text-gray-900'}`}>{plan.price}</span>
+          {plan.period && (
+            <span class={`text-sm ${plan.highlighted ? 'text-white/80' : 'text-gray-500'}`}>/{plan.period}</span>
+          )}
+        </div>
+        <ul class="space-y-3 mb-8">
+          {plan.features.map((feature) => (
+            <li class={`flex items-center gap-2 ${plan.highlighted ? 'text-white/90' : 'text-gray-600'}`}>
+              <span class={plan.highlighted ? 'text-white' : 'text-primary'}>✓</span>
+              {feature}
+            </li>
+          ))}
+        </ul>
+        <a
+          href={plan.ctaHref}
+          class={`block w-full text-center py-3 rounded-lg font-semibold transition-opacity hover:opacity-90 ${
+            plan.highlighted 
+              ? 'bg-white text-primary' 
+              : 'bg-primary text-white'
+          }`}
+        >
+          {plan.ctaLabel}
+        </a>
+      </div>
+    ))}
+  </div>
+</section>

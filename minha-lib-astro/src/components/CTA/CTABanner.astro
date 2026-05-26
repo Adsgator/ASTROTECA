@@ -1,0 +1,31 @@
+---
+// src/components/CTA/CTABanner.astro
+
+interface Props {
+  headline: string
+  subheadline?: string
+  ctaLabel: string
+  ctaHref: string
+}
+
+const { headline, subheadline, ctaLabel, ctaHref } = Astro.props
+---
+
+<section class="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 bg-primary">
+  <div class="max-w-4xl mx-auto text-center">
+    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+      {headline}
+    </h2>
+    {subheadline && (
+      <p class="text-lg sm:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+        {subheadline}
+      </p>
+    )}
+    <a
+      href={ctaHref}
+      class="inline-flex items-center px-8 py-4 bg-white text-primary font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+    >
+      {ctaLabel}
+    </a>
+  </div>
+</section>

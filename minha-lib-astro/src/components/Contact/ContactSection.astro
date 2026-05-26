@@ -1,0 +1,90 @@
+---
+// src/components/Contact/ContactSection.astro
+
+interface ContactInfo {
+  icon: string
+  label: string
+  value: string
+  href?: string
+}
+
+interface Props {
+  sectionTitle?: string
+  subtitle?: string
+  email?: string
+  phone?: string
+  whatsapp?: string
+  address?: string
+  formAction?: string
+}
+
+const { 
+  sectionTitle = "Entre em Contato",
+  subtitle = "Preencha o formulario ou use um dos canais abaixo",
+  email,
+  phone,
+  whatsapp,
+  address,
+  formAction = "#"
+} = Astro.props
+
+const contactInfo: ContactInfo[] = [
+  email && { icon: "✉️", label: "Email", value: email, href: `mailto:${email}` },
+  phone && { icon: "📞", label: "Telefone", value: phone, href: `tel:${phone}` },
+  whatsapp && { icon: "💬", label: "WhatsApp", value: whatsapp, href: `https://wa.me/${whatsapp.replace(/\D/g, '')}` },
+  address && { icon: "📍", label: "Endereco", value: address },
+].filter(Boolean) as ContactInfo[]
+---
+
+<section class="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto bg-gray-50">
+  <div class="text-center mb-12">
+    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{sectionTitle}</h2>
+    {subtitle && <p class="text-lg text-gray-600 max-w-2xl mx-auto">{subtitle}</p>}
+  </div>
+  
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    {/* Contact Info */}
+    <div class="space-y-6">
+      {contactInfo.map((info) => (
+        <div class="flex items-start gap-4">
+          <span class="text-2xl">{info.icon}</span>
+          <div>
+            <div class="font-medium text-gray-900">{info.label}</div>
+            {info.href ? (
+              <a href={info.href} class="text-gray-600 hover:text-primary transition-colors">
+                {info.value}
+              </a>
+            ) : (
+              <div class="text-gray-600">{info.value}</div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+    
+    {/* Form */}
+    <form action={formAction} method="POST" class="bg-white rounded-2xl p-8 shadow-lg space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+          <input type="text" name="name" required class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input type="email" name="email" required class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Assunto</label>
+        <input type="text" name="subject" class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Mensagem</label>
+        <textarea name="message" rows={4} required class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none resize-y"></textarea>
+      </div>
+      <button type="submit" class="w-full py-3 bg-primary text-white font-semibold rounded-lg hover:opacity-90 transition-opacity">
+        Enviar mensagem
+      </button>
+    </form>
+  </div>
+</section>
