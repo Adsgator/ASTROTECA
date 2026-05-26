@@ -67,9 +67,18 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
   const categoriesCount = useMemo(() => [...new Set(components.map(c => c.category))], [components])
   const categoriesCountUp = useCountUp(categoriesCount.length, 600)
 
+  function normalizeComponents(list: ComponentMeta[]): ComponentMeta[] {
+    return list.map(c => ({
+      ...c,
+      previewUrl: c.previewUrl || (c.previewPath ? c.previewPath : undefined),
+    }))
+  }
+
   useEffect(() => {
     if (initialComponents.length === 0 && !initialError) {
       setComponents(getFallbackRegistry())
+    } else if (initialComponents.length > 0) {
+      setComponents(normalizeComponents(initialComponents))
     }
   }, [initialComponents.length, initialError])
 
@@ -424,13 +433,24 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
                 {/* Preview area */}
                 <div className="rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl overflow-hidden">
                   {selected.previewUrl && !previewError ? (
-                    <iframe
-                      src={selected.previewUrl}
-                      title={`Preview de ${selected.name}`}
-                      className="w-full h-[260px] border-0"
-                      loading="lazy"
-                      onError={() => setPreviewError(true)}
-                    />
+                    <div className="relative group">
+                      <a
+                        href={selected.previewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 hover:bg-black/80 text-white rounded-lg p-1.5"
+                        title="Ver em tela cheia"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                      </a>
+                      <iframe
+                        src={selected.previewUrl}
+                        title={`Preview de ${selected.name}`}
+                        className="w-full h-[260px] border-0"
+                        loading="lazy"
+                        onError={() => setPreviewError(true)}
+                      />
+                    </div>
                   ) : selected.previewUrl && previewError ? (
                     <div style={{
                       display: 'flex',
