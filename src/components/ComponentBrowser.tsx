@@ -61,6 +61,15 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
   const [loading, setLoading] = useState(false)
   const [addedId, setAddedId] = useState<string | null>(null)
   const [previewError, setPreviewError] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+  const [builderIds, setBuilderIds] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set()
+    try {
+      const raw = localStorage.getItem('acs-builder-components')
+      const list: SelectedComponent[] = raw ? JSON.parse(raw) : []
+      return new Set(list.map(s => s.meta.id))
+    } catch { return new Set() }
+  })
 
   // Count-up animations for stats
   const totalCount = useCountUp(components.length, 600)
@@ -242,15 +251,29 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
   function addToBuilder(meta: ComponentMeta) {
     const raw = localStorage.getItem('acs-builder-components')
     const list: SelectedComponent[] = raw ? JSON.parse(raw) : []
-    if (list.some(s => s.meta.id === meta.id)) return
+    if (list.some(s => s.meta.id === meta.id)) {
+      setToast(`${meta.name} já está no Builder`)
+      setTimeout(() => setToast(null), 3000)
+      return
+    }
     list.push({ meta, position: list.length + 1 })
     localStorage.setItem('acs-builder-components', JSON.stringify(list))
+    setBuilderIds(prev => new Set([...prev, meta.id]))
     setAddedId(meta.id)
+    setToast(`${meta.name} adicionado ao Builder!`)
     setTimeout(() => setAddedId(null), 2000)
+    setTimeout(() => setToast(null), 3000)
   }
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-surface border border-white/[0.08] shadow-2xl text-sm text-ink-primary animate-fade-in">
+          <svg className="w-4 h-4 text-ok shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+          {toast}
+        </div>
+      )}
       {/* ── Page Header ── */}
       <div className="flex items-end justify-between gap-4">
         <div>
@@ -507,16 +530,23 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
 
                   <button
                     className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                      addedId === selected.id
-                        ? 'bg-ok text-black shadow-[0_2px_12px_rgba(34,197,94,0.3)]'
-                        : 'bg-gradient-to-r from-accent to-[#d4920a] text-black shadow-[0_2px_12px_rgba(240,165,0,0.25)] hover:shadow-[0_4px_20px_rgba(240,165,0,0.35)]'
+                      builderIds.has(selected.id)
+                        ? 'bg-ok/20 text-ok border border-ok/30 cursor-default'
+                        : addedId === selected.id
+                          ? 'bg-ok text-black shadow-[0_2px_12px_rgba(34,197,94,0.3)]'
+                          : 'bg-gradient-to-r from-accent to-[#d4920a] text-black shadow-[0_2px_12px_rgba(240,165,0,0.25)] hover:shadow-[0_4px_20px_rgba(240,165,0,0.35)]'
                     }`}
                     onClick={() => addToBuilder(selected)}
                   >
-                    {addedId === selected.id ? (
+                    {builderIds.has(selected.id) ? (
                       <span className="flex items-center justify-center gap-2">
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
-                        Adicionado ao Builder!
+                        Já no Builder
+                      </span>
+                    ) : addedId === selected.id ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        Adicionado!
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-2">
