@@ -1,0 +1,7 @@
+// Export all components
+export * from './components/Hero/index'
+export * from './components/Features/index'
+export * from './components/Testimonials/index'
+export * from './components/Pricing/index'
+export * from './components/CTA/index'
+export * from './components/Footer/index'

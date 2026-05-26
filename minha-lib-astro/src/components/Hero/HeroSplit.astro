@@ -1,0 +1,88 @@
+---
+// src/components/Hero/HeroSplit.astro
+
+interface Props {
+  headline: string
+  subheadline?: string
+  ctaLabel?: string
+  ctaHref?: string
+  imageSrc?: string
+}
+
+const {
+  headline,
+  subheadline = '',
+  ctaLabel = 'Saiba mais',
+  ctaHref = '#contato',
+  imageSrc,
+} = Astro.props
+---
+
+<section class="hero hero--split">
+  <div class="hero__content">
+    <h1 class="hero__headline">{headline}</h1>
+    {subheadline && <p class="hero__subheadline">{subheadline}</p>}
+    <a href={ctaHref} class="btn btn--primary">{ctaLabel}</a>
+  </div>
+
+  {imageSrc && (
+    <div class="hero__image-wrapper">
+      <img src={imageSrc} alt="" class="hero__image" loading="eager" />
+    </div>
+  )}
+</section>
+
+<style>
+  .hero--split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl, 4rem);
+    align-items: center;
+    padding: var(--space-2xl, 6rem) var(--container-padding, 1.5rem);
+    max-width: var(--container-max, 1200px);
+    margin: 0 auto;
+  }
+
+  .hero__headline {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: var(--color-heading, #111);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  .hero__subheadline {
+    font-size: 1.125rem;
+    color: var(--color-text-muted, #555);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .btn--primary {
+    display: inline-block;
+    background: var(--color-primary, #333);
+    color: var(--color-on-primary, #fff);
+    padding: 0.875rem 2rem;
+    border-radius: var(--radius, 6px);
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+
+  .btn--primary:hover {
+    opacity: 0.88;
+  }
+
+  .hero__image {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg, 12px);
+    object-fit: cover;
+  }
+
+  @media (max-width: 768px) {
+    .hero--split {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

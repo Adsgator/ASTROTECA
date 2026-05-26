@@ -1,0 +1,97 @@
+---
+interface Props {
+  title?: string
+}
+
+const { title = 'Astroteca' } = Astro.props
+const currentPath = Astro.url.pathname
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <link rel="stylesheet" href="/styles/app.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar">
+      <div class="app-sidebar__header">
+        <span class="app-sidebar__logo">Astroteca</span>
+      </div>
+
+      <nav class="app-sidebar__links">
+        <a href="/" class:list={['sidebar-link', { active: currentPath === '/' }]}>
+          Biblioteca
+        </a>
+        <a href="/builder" class:list={['sidebar-link', { active: currentPath === '/builder' }]}>
+          Builder
+        </a>
+        <a href="/admin" class:list={['sidebar-link', { active: currentPath === '/admin' }]}>
+          Adicionar
+        </a>
+        <a href="/config" class:list={['sidebar-link', { active: currentPath === '/config' }]}>
+          Configuracoes
+        </a>
+      </nav>
+
+      <div class="app-sidebar__footer">
+        <span class="badge badge-default">v2.0.0</span>
+      </div>
+    </aside>
+
+    <main class="app-main">
+      <slot />
+    </main>
+  </div>
+
+  <style>
+    .app-sidebar {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+
+    .app-sidebar__header {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .app-sidebar__logo {
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .app-sidebar__links {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 12px;
+      flex: 1;
+    }
+
+    .app-sidebar__footer {
+      padding: 16px 20px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .app-main {
+      padding: 32px;
+      overflow-y: auto;
+      height: 100vh;
+    }
+  </style>
+</body>
+</html>

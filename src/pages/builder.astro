@@ -1,0 +1,21 @@
+---
+import AppLayout from '../layouts/AppLayout.astro'
+import Builder from '../components/Builder'
+import { fetchRegistry } from '../lib/github'
+
+let components: import('../types').ComponentMeta[] = []
+
+const registryUrl = import.meta.env.PUBLIC_REGISTRY_URL || ''
+
+if (registryUrl) {
+  try {
+    components = await fetchRegistry(registryUrl)
+  } catch {
+    // sera carregado client-side
+  }
+}
+---
+
+<AppLayout title="Builder - Astroteca">
+  <Builder client:load availableComponents={components} />
+</AppLayout>

@@ -1,0 +1,27 @@
+---
+import AppLayout from '../layouts/AppLayout.astro'
+import ComponentBrowser from '../components/ComponentBrowser'
+import { fetchRegistry } from '../lib/github'
+
+let components: import('../types').ComponentMeta[] = []
+let error = ''
+
+const registryUrl = import.meta.env.PUBLIC_REGISTRY_URL || ''
+
+if (registryUrl) {
+  try {
+    components = await fetchRegistry(registryUrl)
+  } catch (e) {
+    error = e instanceof Error ? e.message : 'Erro ao carregar registro'
+  }
+}
+---
+
+<AppLayout title="Biblioteca - Astroteca">
+  <ComponentBrowser
+    client:load
+    initialComponents={components}
+    registryUrl={registryUrl}
+    initialError={error}
+  />
+</AppLayout>
