@@ -18,71 +18,32 @@ const {
 } = Astro.props
 ---
 
-<section class="hero hero--split">
-  <div class="hero__content">
-    <h1 class="hero__headline">{headline}</h1>
-    {subheadline && <p class="hero__subheadline">{subheadline}</p>}
-    <a href={ctaHref} class="btn btn--primary">{ctaLabel}</a>
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto">
+  <div class="space-y-6">
+    <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+      {headline}
+    </h1>
+    {subheadline && (
+      <p class="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-lg">
+        {subheadline}
+      </p>
+    )}
+    <a
+      href={ctaHref}
+      class="inline-flex items-center px-8 py-3.5 bg-primary text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
+    >
+      {ctaLabel}
+    </a>
   </div>
 
   {imageSrc && (
-    <div class="hero__image-wrapper">
-      <img src={imageSrc} alt="" class="hero__image" loading="eager" />
+    <div class="relative">
+      <img
+        src={imageSrc}
+        alt=""
+        class="w-full h-auto rounded-2xl object-cover shadow-xl"
+        loading="eager"
+      />
     </div>
   )}
 </section>
-
-<style>
-  .hero--split {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-xl, 4rem);
-    align-items: center;
-    padding: var(--space-2xl, 6rem) var(--container-padding, 1.5rem);
-    max-width: var(--container-max, 1200px);
-    margin: 0 auto;
-  }
-
-  .hero__headline {
-    font-family: var(--font-heading, serif);
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    color: var(--color-heading, #111);
-    line-height: 1.1;
-    margin-bottom: 1rem;
-  }
-
-  .hero__subheadline {
-    font-size: 1.125rem;
-    color: var(--color-text-muted, #555);
-    margin-bottom: 2rem;
-    line-height: 1.6;
-  }
-
-  .btn--primary {
-    display: inline-block;
-    background: var(--color-primary, #333);
-    color: var(--color-on-primary, #fff);
-    padding: 0.875rem 2rem;
-    border-radius: var(--radius, 6px);
-    font-weight: 600;
-    text-decoration: none;
-    transition: opacity 0.2s;
-  }
-
-  .btn--primary:hover {
-    opacity: 0.88;
-  }
-
-  .hero__image {
-    width: 100%;
-    height: auto;
-    border-radius: var(--radius-lg, 12px);
-    object-fit: cover;
-  }
-
-  @media (max-width: 768px) {
-    .hero--split {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
