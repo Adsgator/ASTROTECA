@@ -2,7 +2,7 @@
 
 > Documento unificado para implementação do ecossistema completo de criação de landing pages profissionais com componentes reutilizáveis, biblioteca visual, builder interativo, painel admin, gerador de manifesto e automação via GitHub API.
 > 
-> **Stack:** Astro SSR + React Islands + CSS puro com design tokens
+> **Stack:** Astro SSR + React Islands + Tailwind CSS com design tokens customizados
 > **Objetivo:** Landing pages de alta qualidade para negócios locais, prestadores de serviço, cursos e mentorias — com aspecto profissional de projetos de R$10k+
 
 ---
@@ -150,11 +150,10 @@ minha-lib-astro/
 │   │       └── ...
 │   ├── layouts/
 │   │   └── BaseLayout.astro
-│   ├── styles/
-│   │   └── base.css
 │   └── index.ts
 ├── registry.json                 ← CATÁLOGO DE COMPONENTES
 ├── package.json
+├── tailwind.config.mjs
 └── tsconfig.json
 ```
 
@@ -166,14 +165,16 @@ minha-lib-astro/
   "version": "1.0.0",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./styles": "./src/styles/base.css"
+    ".": "./src/index.ts"
   },
   "peerDependencies": {
-    "astro": "^4.0.0"
+    "astro": "^4.0.0",
+    "tailwindcss": "^3.4.0"
   },
   "devDependencies": {
+    "@astrojs/tailwind": "^5.0.0",
     "astro": "^4.0.0",
+    "tailwindcss": "^3.4.0",
     "typescript": "^5.0.0"
   }
 }
@@ -270,74 +271,35 @@ const {
 } = Astro.props
 ---
 
-<section class="hero hero--split">
-  <div class="hero__content">
-    <h1 class="hero__headline">{headline}</h1>
-    {subheadline && <p class="hero__subheadline">{subheadline}</p>}
-    <a href={ctaHref} class="btn btn--primary">{ctaLabel}</a>
+<section class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center py-24 px-6 max-w-[1200px] mx-auto">
+  <div>
+    <h1 class="font-[var(--font-heading,serif)] text-[clamp(2rem,5vw,3.5rem)] text-[var(--color-heading,#111)] leading-[1.1] mb-4">
+      {headline}
+    </h1>
+    {subheadline && (
+      <p class="text-lg text-[var(--color-text-muted,#555)] mb-8 leading-relaxed">
+        {subheadline}
+      </p>
+    )}
+    <a
+      href={ctaHref}
+      class="inline-block bg-[var(--color-primary,#333)] text-[var(--color-on-primary,#fff)] px-8 py-3.5 rounded-[var(--radius,6px)] font-semibold no-underline transition-opacity duration-200 hover:opacity-[0.88]"
+    >
+      {ctaLabel}
+    </a>
   </div>
 
   {imageSrc && (
-    <div class="hero__image-wrapper">
-      <img src={imageSrc} alt="" class="hero__image" loading="eager" />
+    <div>
+      <img
+        src={imageSrc}
+        alt=""
+        class="w-full h-auto rounded-[var(--radius-lg,12px)] object-cover"
+        loading="eager"
+      />
     </div>
   )}
 </section>
-
-<style>
-  .hero--split {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-xl, 4rem);
-    align-items: center;
-    padding: var(--space-2xl, 6rem) var(--container-padding, 1.5rem);
-    max-width: var(--container-max, 1200px);
-    margin: 0 auto;
-  }
-
-  .hero__headline {
-    font-family: var(--font-heading, serif);
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    color: var(--color-heading, #111);
-    line-height: 1.1;
-    margin-bottom: 1rem;
-  }
-
-  .hero__subheadline {
-    font-size: 1.125rem;
-    color: var(--color-text-muted, #555);
-    margin-bottom: 2rem;
-    line-height: 1.6;
-  }
-
-  .btn--primary {
-    display: inline-block;
-    background: var(--color-primary, #333);
-    color: var(--color-on-primary, #fff);
-    padding: 0.875rem 2rem;
-    border-radius: var(--radius, 6px);
-    font-weight: 600;
-    text-decoration: none;
-    transition: opacity 0.2s;
-  }
-
-  .btn--primary:hover {
-    opacity: 0.88;
-  }
-
-  .hero__image {
-    width: 100%;
-    height: auto;
-    border-radius: var(--radius-lg, 12px);
-    object-fit: cover;
-  }
-
-  @media (max-width: 768px) {
-    .hero--split {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
 ```
 
 #### `ComponentName.preview.astro` — para a biblioteca visual
@@ -448,8 +410,7 @@ const siteUrl = canonicalUrl || Astro.url.href
       </>
     )}
 
-    <!-- Estilos base da lib -->
-    <link rel="stylesheet" href="/styles/theme.css" />
+    <!-- Estilos base: Tailwind já inclui via astro.config.mjs -->
   </head>
   <body>
     <slot />
@@ -528,12 +489,13 @@ astro-library-browser/
 // astro.config.mjs
 import { defineConfig } from 'astro/config'
 import react from '@astrojs/react'
+import tailwind from '@astrojs/tailwind'
 import vercel from '@astrojs/vercel/serverless'
 
 export default defineConfig({
   output: 'server',
   adapter: vercel(),
-  integrations: [react()],
+  integrations: [react(), tailwind()],
 })
 ```
 
@@ -553,13 +515,17 @@ export default defineConfig({
   "dependencies": {
     "astro": "^4.0.0",
     "@astrojs/react": "^3.0.0",
+    "@astrojs/tailwind": "^5.0.0",
     "@astrojs/vercel": "^7.0.0",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.0",
     "typescript": "^5.0.0"
   }
 }
@@ -589,407 +555,259 @@ PUBLIC_REGISTRY_URL=https://raw.githubusercontent.com/seuusuario/minha-lib-astro
 
 > **Importante:** Variáveis com `PUBLIC_` são acessíveis ao cliente e server. Variáveis sem `PUBLIC_` só funcionam no server-side (API routes). No código Astro, acesse via `import.meta.env.VARIAVEL`.
 
-### 4.5 Design System (app.css)
+### 4.5 Design System — tailwind.config.mjs + app.css
 
-Este é o design system completo da aplicação. Sem Tailwind — CSS puro com design tokens.
+Com Tailwind, o design system vive no `tailwind.config.mjs` (tokens como valores de tema) e num `app.css` mínimo só para o que o Tailwind não consegue gerar (scrollbar customizado, grain texture, animações de keyframe).
+
+#### `tailwind.config.mjs`
+
+```javascript
+// tailwind.config.mjs
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./src/**/*.{astro,html,js,jsx,md,mdx,ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        bg:      '#080810',
+        surface: '#0f0f1c',
+        raised:  '#161625',
+        hover:   '#1c1c2e',
+        border: {
+          DEFAULT: '#1f1f35',
+          subtle:  '#141428',
+        },
+        ink: {
+          primary:   '#ededf5',
+          secondary: '#6b6b85',
+          muted:     '#35354a',
+        },
+        accent: {
+          DEFAULT: '#f0a500',
+          hover:   '#fbbf24',
+        },
+        ok:   '#22c55e',
+        fail: '#ef4444',
+        warn: '#f59e0b',
+      },
+      fontFamily: {
+        syne: ['Syne', 'system-ui', 'sans-serif'],
+        dm:   ['DM Sans', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      borderRadius: {
+        DEFAULT: '10px',
+        sm: '6px',
+        lg: '14px',
+      },
+      width: {
+        sidebar: '220px',
+      },
+    },
+  },
+}
+```
+
+#### `src/styles/app.css`
+
+O CSS agora só contém: Google Fonts, scrollbar, grain texture e animações de keyframe — tudo que o Tailwind não gera nativamente. As classes de componente (card, btn, badge, input, etc.) ficam em `@layer components` usando `@apply`.
 
 ```css
 /* src/styles/app.css */
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ─── Design Tokens ──────────────────────────────────────────────────────── */
-:root {
-  --bg:            #080810;
-  --surface:       #0f0f1c;
-  --raised:        #161625;
-  --hover:         #1c1c2e;
-  --border:        #1f1f35;
-  --border-subtle: #141428;
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
 
-  --ink-primary:   #ededf5;
-  --ink-secondary: #6b6b85;
-  --ink-muted:     #35354a;
+  body {
+    @apply bg-bg text-ink-primary font-dm min-h-screen;
+    /* Grain texture — não tem equivalente em utilitários Tailwind */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  }
 
-  --accent:        #f0a500;
-  --accent-dim:    rgba(240,165,0,0.10);
-  --accent-hover:  #fbbf24;
+  a { @apply text-inherit no-underline; }
+  img { @apply block max-w-full; }
+  button { font-family: inherit; }
 
-  --ok:   #22c55e;
-  --fail: #ef4444;
-  --warn: #f59e0b;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-syne font-bold leading-tight tracking-tight text-ink-primary;
+    letter-spacing: -0.02em;
+  }
 
-  --sidebar-w: 220px;
-  --radius:    10px;
-  --radius-sm: 6px;
-  --radius-lg: 14px;
+  ::-webkit-scrollbar       { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-ink-muted; }
 }
 
-/* ─── Reset & Base ───────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─── Component layer — classes reutilizáveis via @apply ─────────────────── */
+@layer components {
 
-html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+  /* Layout shell */
+  .app-shell {
+    @apply grid min-h-screen;
+    grid-template-columns: theme('width.sidebar') 1fr;
+  }
+  .app-sidebar {
+    @apply sticky top-0 h-screen overflow-y-auto bg-surface border-r border-border py-5 flex flex-col gap-1;
+  }
+  .app-main {
+    @apply overflow-y-auto h-screen p-8;
+  }
 
-body {
-  background: var(--bg);
-  color: var(--ink-primary);
-  font-family: 'DM Sans', system-ui, sans-serif;
-  min-height: 100vh;
-  /* Grain texture */
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  /* Cards */
+  .card {
+    @apply bg-surface border border-border rounded-[10px] shadow-[0_1px_3px_rgba(0,0,0,0.4)] transition-all duration-200;
+  }
+  .card-interactive {
+    @apply hover:border-accent/30 hover:shadow-[0_4px_20px_rgba(0,0,0,0.5),0_0_0_1px_rgba(240,165,0,0.15)] hover:-translate-y-px hover:cursor-pointer;
+  }
+  .card-selected {
+    @apply !border-accent shadow-[0_0_0_1px_theme('colors.accent.DEFAULT'),0_4px_20px_rgba(240,165,0,0.1)];
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-sm font-dm text-[13px] font-medium border-0 cursor-pointer transition-all duration-150 whitespace-nowrap no-underline disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply bg-accent text-black hover:bg-accent-hover;
+  }
+  .btn-outline {
+    @apply bg-transparent text-ink-primary border border-border hover:bg-raised hover:border-ink-muted;
+  }
+  .btn-ghost {
+    @apply bg-transparent text-ink-secondary hover:bg-raised hover:text-ink-primary;
+  }
+  .btn-danger {
+    @apply bg-fail/10 text-fail border border-fail/20 hover:bg-fail/20;
+  }
+  .btn-sm  { @apply px-2.5 py-1 text-xs; }
+  .btn-lg  { @apply px-5 py-2.5 text-[15px]; }
+  .btn-icon { @apply p-1.5 aspect-square; }
+
+  /* Form controls */
+  .input {
+    @apply bg-raised border border-border rounded-sm text-ink-primary font-dm text-[13px] px-3 py-2 w-full outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink-muted focus:border-accent focus:shadow-[0_0_0_2px_rgba(240,165,0,0.10)] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  textarea.input {
+    @apply resize-y min-h-[80px] leading-snug;
+  }
+  select.input {
+    @apply appearance-none pr-8;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b85' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .label {
+    @apply block text-[11px] font-semibold tracking-[0.06em] uppercase text-ink-secondary mb-1.5;
+  }
+  .field { @apply flex flex-col gap-1; }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-[0.04em] font-dm;
+  }
+  .badge-default { @apply bg-raised text-ink-secondary border border-border; }
+  .badge-accent  { @apply bg-accent/10 text-accent border border-accent/20; }
+  .badge-ok      { @apply bg-ok/10 text-ok border border-ok/20; }
+  .badge-fail    { @apply bg-fail/10 text-fail border border-fail/20; }
+
+  /* Sidebar links */
+  .sidebar-link {
+    @apply flex items-center gap-2.5 py-2 px-3 mx-2 rounded-sm text-ink-secondary text-[13px] font-medium no-underline transition-all duration-150 cursor-pointer border-0 bg-transparent w-[calc(100%-1rem)] hover:bg-raised hover:text-ink-primary;
+  }
+  .sidebar-link.active {
+    @apply bg-accent/10 text-accent;
+    border: 1px solid rgba(240,165,0,0.15);
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      theme('colors.surface') 0%,
+      theme('colors.raised') 50%,
+      theme('colors.surface') 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite linear;
+    @apply rounded-sm;
+  }
+
+  /* Stagger animation helper */
+  .stagger > * {
+    opacity: 0;
+    animation: fade-up 0.4s ease forwards;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.10s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.15s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.20s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.25s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.30s; }
+  .stagger > *:nth-child(7) { animation-delay: 0.35s; }
+  .stagger > *:nth-child(8) { animation-delay: 0.40s; }
+  .stagger > *:nth-child(n+9) { animation-delay: 0.45s; }
+
+  /* Code block */
+  .code-block {
+    @apply bg-[#050509] border border-border rounded-[10px] p-4 font-mono text-xs leading-[1.7] text-[#9d9dbf] overflow-x-auto whitespace-pre;
+  }
+
+  /* Drag handle */
+  .drag-handle {
+    @apply cursor-grab text-ink-muted transition-colors duration-150 hover:text-ink-secondary active:cursor-grabbing;
+  }
+
+  /* Divider */
+  .divider { @apply h-px bg-border m-0; }
+
+  /* Tabs */
+  .tab-bar {
+    @apply flex gap-0.5 p-[3px] bg-raised rounded-sm border border-border;
+  }
+  .tab {
+    @apply flex-1 py-1.5 px-3 rounded-[5px] text-xs font-medium cursor-pointer border-0 bg-transparent text-ink-secondary transition-all duration-150 font-dm hover:text-ink-primary;
+  }
+  .tab.active {
+    @apply bg-surface text-ink-primary shadow-[0_1px_3px_rgba(0,0,0,0.3)];
+  }
+
+  /* Empty state */
+  .empty-state {
+    @apply flex flex-col items-center justify-center gap-3 py-[60px] px-6 text-ink-muted text-center;
+  }
+  .empty-state p { @apply text-[13px] max-w-[240px] leading-relaxed; }
+
+  /* Color swatch */
+  .color-swatch {
+    @apply w-7 h-7 rounded-[6px] border border-white/10 cursor-pointer flex-shrink-0;
+  }
+
+  /* Section title */
+  .section-title {
+    @apply text-[10px] font-bold tracking-[0.1em] uppercase text-ink-muted px-3 mb-1;
+  }
 }
 
-a { color: inherit; text-decoration: none; }
-img { display: block; max-width: 100%; }
-button { font-family: inherit; }
-
-/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--ink-muted); }
-
-/* ─── Typography ─────────────────────────────────────────────────────────── */
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Syne', system-ui, sans-serif;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: var(--ink-primary);
-}
-
-code, kbd, pre, .mono {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.875em;
-}
-
-/* ─── Layout Shell ───────────────────────────────────────────────────────── */
-.app-shell {
-  display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr;
-  min-height: 100vh;
-}
-
-.app-sidebar {
-  grid-column: 1;
-  grid-row: 1;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  padding: 20px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.app-main {
-  grid-column: 2;
-  grid-row: 1;
-  overflow-y: auto;
-  height: 100vh;
-  padding: 32px;
-}
-
-/* ─── Cards ──────────────────────────────────────────────────────────────── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-}
-
-.card-interactive:hover {
-  border-color: rgba(240,165,0,0.3);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(240,165,0,0.15);
-  transform: translateY(-1px);
-  cursor: pointer;
-}
-
-.card-selected {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 1px var(--accent), 0 4px 20px rgba(240,165,0,0.1) !important;
-}
-
-/* ─── Buttons ────────────────────────────────────────────────────────────── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.btn-primary {
-  background: var(--accent);
-  color: #000;
-}
-.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
-
-.btn-outline {
-  background: transparent;
-  color: var(--ink-primary);
-  border: 1px solid var(--border);
-}
-.btn-outline:hover:not(:disabled) {
-  background: var(--raised);
-  border-color: var(--ink-muted);
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--ink-secondary);
-}
-.btn-ghost:hover:not(:disabled) {
-  background: var(--raised);
-  color: var(--ink-primary);
-}
-
-.btn-danger {
-  background: rgba(239,68,68,0.1);
-  color: var(--fail);
-  border: 1px solid rgba(239,68,68,0.2);
-}
-.btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.2); }
-
-.btn-sm { padding: 5px 10px; font-size: 12px; }
-.btn-lg { padding: 11px 22px; font-size: 15px; }
-.btn-icon { padding: 7px; aspect-ratio: 1; }
-
-/* ─── Form Controls ──────────────────────────────────────────────────────── */
-.input {
-  background: var(--raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--ink-primary);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  padding: 8px 12px;
-  width: 100%;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.input::placeholder { color: var(--ink-muted); }
-.input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-dim);
-}
-.input:disabled { opacity: 0.5; cursor: not-allowed; }
-
-textarea.input {
-  resize: vertical;
-  min-height: 80px;
-  line-height: 1.5;
-}
-
-select.input {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b85' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 30px;
-}
-
-.label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-secondary);
-  margin-bottom: 6px;
-}
-
-.field { display: flex; flex-direction: column; gap: 4px; }
-
-/* ─── Badge ──────────────────────────────────────────────────────────────── */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  font-family: 'DM Sans', sans-serif;
-}
-
-.badge-default { background: var(--raised); color: var(--ink-secondary); border: 1px solid var(--border); }
-.badge-accent  { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(240,165,0,0.2); }
-.badge-ok      { background: rgba(34,197,94,0.1); color: var(--ok); border: 1px solid rgba(34,197,94,0.2); }
-.badge-fail    { background: rgba(239,68,68,0.1); color: var(--fail); border: 1px solid rgba(239,68,68,0.2); }
-
-/* ─── Sidebar ────────────────────────────────────────────────────────────── */
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  margin: 0 8px;
-  border-radius: var(--radius-sm);
-  color: var(--ink-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.15s;
-  cursor: pointer;
-  border: none;
-  background: none;
-  width: calc(100% - 16px);
-}
-.sidebar-link:hover { background: var(--raised); color: var(--ink-primary); }
-.sidebar-link.active {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border: 1px solid rgba(240,165,0,0.15);
-}
-.sidebar-link.active svg { color: var(--accent); }
-
-/* ─── Skeleton ───────────────────────────────────────────────────────────── */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--surface) 0%,
-    var(--raised) 50%,
-    var(--surface) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.8s infinite linear;
-  border-radius: var(--radius-sm);
-}
-
+/* ─── Keyframes (não gráveis via @apply) ─────────────────────────────────── */
 @keyframes shimmer {
   from { background-position: -200% 0; }
   to   { background-position:  200% 0; }
 }
 
-/* ─── Stagger Animation ─────────────────────────────────────────────────── */
-.stagger > * {
-  opacity: 0;
-  animation: fade-up 0.4s ease forwards;
-}
-.stagger > *:nth-child(1) { animation-delay: 0.05s; }
-.stagger > *:nth-child(2) { animation-delay: 0.10s; }
-.stagger > *:nth-child(3) { animation-delay: 0.15s; }
-.stagger > *:nth-child(4) { animation-delay: 0.20s; }
-.stagger > *:nth-child(5) { animation-delay: 0.25s; }
-.stagger > *:nth-child(6) { animation-delay: 0.30s; }
-.stagger > *:nth-child(7) { animation-delay: 0.35s; }
-.stagger > *:nth-child(8) { animation-delay: 0.40s; }
-.stagger > *:nth-child(n+9) { animation-delay: 0.45s; }
-
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── Code Preview ───────────────────────────────────────────────────────── */
-.code-block {
-  background: #050509;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius);
-  padding: 16px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  line-height: 1.7;
-  color: #9d9dbf;
-  overflow-x: auto;
-  white-space: pre;
-}
-
-/* ─── Drag Handle ────────────────────────────────────────────────────────── */
-.drag-handle {
-  cursor: grab;
-  color: var(--ink-muted);
-  transition: color 0.15s;
-}
-.drag-handle:hover { color: var(--ink-secondary); }
-.drag-handle:active { cursor: grabbing; }
-
-/* ─── Divider ────────────────────────────────────────────────────────────── */
-.divider {
-  height: 1px;
-  background: var(--border);
-  margin: 0;
-}
-
-/* ─── Tabs ───────────────────────────────────────────────────────────────── */
-.tab-bar {
-  display: flex;
-  gap: 2px;
-  padding: 3px;
-  background: var(--raised);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-}
-
-.tab {
-  flex: 1;
-  padding: 6px 12px;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  color: var(--ink-secondary);
-  transition: all 0.15s;
-  font-family: 'DM Sans', sans-serif;
-}
-.tab:hover { color: var(--ink-primary); }
-.tab.active {
-  background: var(--surface);
-  color: var(--ink-primary);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-
-/* ─── Empty State ────────────────────────────────────────────────────────── */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 60px 24px;
-  color: var(--ink-muted);
-  text-align: center;
-}
-.empty-state svg { opacity: 0.3; }
-.empty-state p { font-size: 13px; max-width: 240px; line-height: 1.6; }
-
-/* ─── Color Swatch ───────────────────────────────────────────────────────── */
-.color-swatch {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.1);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-/* ─── Section Title ──────────────────────────────────────────────────────── */
-.section-title {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  padding: 0 12px;
-  margin-bottom: 4px;
 }
 ```
 
@@ -1117,6 +935,13 @@ Toda lógica de negócio fica em `lib/`. As API routes e componentes React **del
 
 ```typescript
 // src/lib/utils.ts
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+/** Utilitário padrão para combinar classes Tailwind de forma segura */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
 export function slugify(str: string): string {
   return str
@@ -1148,7 +973,7 @@ export function wait(ms: number): Promise<void> {
 }
 ```
 
-> **Nota:** Sem `cn()`, sem `clsx`, sem `tailwind-merge`. Usamos classes CSS diretas do design system.
+> **Nota:** O `cn()` combina `clsx` (condicionais legíveis) com `tailwind-merge` (resolve conflitos entre classes Tailwind, ex: `px-2 px-4` → só fica `px-4`). Use sempre que montar classes condicionalmente nos componentes React.
 
 #### `lib/github.ts`
 
@@ -1533,12 +1358,12 @@ const currentPath = Astro.url.pathname
 </head>
 <body>
   <div class="app-shell">
-    <aside class="app-nav">
-      <div class="app-nav__header">
-        <span class="app-nav__logo">Astroteca</span>
+    <aside class="app-sidebar">
+      <div class="px-4 pb-4 border-b border-border mb-2">
+        <span class="text-lg font-bold text-accent tracking-tight" style="letter-spacing:-0.02em">Astroteca</span>
       </div>
 
-      <nav class="app-nav__links">
+      <nav class="flex flex-col gap-1 px-2 flex-1">
         <a href="/" class:list={['sidebar-link', { active: currentPath === '/' }]}>
           Biblioteca
         </a>
@@ -1553,7 +1378,7 @@ const currentPath = Astro.url.pathname
         </a>
       </nav>
 
-      <div class="app-nav__footer">
+      <div class="pt-3 px-4 border-t border-border text-center">
         <span class="badge badge-default">v2.0.0</span>
       </div>
     </aside>
@@ -1562,52 +1387,6 @@ const currentPath = Astro.url.pathname
       <slot />
     </main>
   </div>
-
-  <style>
-    .app-nav {
-      display: flex;
-      flex-direction: column;
-      background: var(--surface-1);
-      border-right: 1px solid var(--border);
-      padding: var(--space-4) 0;
-      height: 100vh;
-      position: sticky;
-      top: 0;
-    }
-
-    .app-nav__header {
-      padding: 0 var(--space-4) var(--space-4);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: var(--space-2);
-    }
-
-    .app-nav__logo {
-      font-size: var(--text-lg);
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: -0.02em;
-    }
-
-    .app-nav__links {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-      padding: var(--space-2) var(--space-2);
-      flex: 1;
-    }
-
-    .app-nav__footer {
-      padding: var(--space-3) var(--space-4) 0;
-      border-top: 1px solid var(--border);
-      text-align: center;
-    }
-
-    .app-main {
-      padding: var(--space-6);
-      overflow-y: auto;
-      height: 100vh;
-    }
-  </style>
 </body>
 </html>
 ```
@@ -1653,6 +1432,7 @@ if (registryUrl) {
 ```tsx
 import { useState, useMemo, useEffect } from 'react'
 import type { ComponentMeta, SelectedComponent } from '../types'
+import { cn } from '../lib/utils'
 
 interface Props {
   initialComponents: ComponentMeta[]
@@ -1722,128 +1502,10 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
 
   return (
     <>
-      <style>{`
-        .browser {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--space-6);
-          height: calc(100vh - var(--space-6) * 2);
-        }
-
-        .browser__left {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-          overflow: hidden;
-        }
-
-        .browser__filters {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-3);
-        }
-
-        .browser__categories {
-          display: flex;
-          flex-wrap: wrap;
-          gap: var(--space-1);
-        }
-
-        .browser__grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: var(--space-3);
-          overflow-y: auto;
-          flex: 1;
-          padding-right: var(--space-2);
-        }
-
-        .browser__card-title {
-          font-weight: 600;
-          font-size: var(--text-sm);
-          margin-bottom: var(--space-1);
-        }
-
-        .browser__card-desc {
-          font-size: var(--text-xs);
-          color: var(--muted);
-          margin-bottom: var(--space-2);
-        }
-
-        .browser__card-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: var(--space-1);
-        }
-
-        .browser__right {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-          overflow-y: auto;
-        }
-
-        .browser__preview {
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          overflow: hidden;
-          background: var(--surface-2);
-          min-height: 300px;
-        }
-
-        .browser__preview iframe {
-          width: 100%;
-          height: 300px;
-          border: none;
-        }
-
-        .browser__detail-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: var(--space-3);
-        }
-
-        .browser__detail-title {
-          font-size: var(--text-xl);
-          font-weight: 700;
-        }
-
-        .browser__props-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: var(--text-sm);
-        }
-
-        .browser__props-table th,
-        .browser__props-table td {
-          text-align: left;
-          padding: var(--space-2) var(--space-3);
-          border-bottom: 1px solid var(--border);
-        }
-
-        .browser__props-table th {
-          color: var(--muted);
-          font-weight: 500;
-          text-transform: uppercase;
-          font-size: var(--text-xs);
-        }
-
-        .browser__screenshot {
-          width: 100%;
-          height: 120px;
-          object-fit: cover;
-          border-radius: var(--radius) var(--radius) 0 0;
-        }
-
-        .browser__card-inner {
-          padding: var(--space-3);
-        }
-      `}</style>
-
-      <div className="browser">
-        <div className="browser__left">
-          <div className="browser__filters">
+      <div className="grid grid-cols-2 gap-6 h-[calc(100vh-4rem)]">
+        {/* Left panel */}
+        <div className="flex flex-col gap-4 overflow-hidden">
+          <div className="flex flex-col gap-3">
             <input
               type="text"
               className="input"
@@ -1851,9 +1513,9 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
-            <div className="browser__categories">
+            <div className="flex flex-wrap gap-1">
               <button
-                className={`btn btn-sm ${!activeCategory ? 'btn-primary' : 'btn-ghost'}`}
+                className={cn('btn btn-sm', !activeCategory ? 'btn-primary' : 'btn-ghost')}
                 onClick={() => setActiveCategory(null)}
               >
                 Todos
@@ -1861,7 +1523,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
               {categories.map(cat => (
                 <button
                   key={cat}
-                  className={`btn btn-sm ${activeCategory === cat ? 'btn-primary' : 'btn-ghost'}`}
+                  className={cn('btn btn-sm', activeCategory === cat ? 'btn-primary' : 'btn-ghost')}
                   onClick={() => setActiveCategory(cat)}
                 >
                   {cat}
@@ -1870,38 +1532,30 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
             </div>
           </div>
 
-          {loading && (
-            <div className="empty-state">Carregando componentes...</div>
-          )}
-
-          {error && (
-            <div className="empty-state">{error}</div>
-          )}
-
+          {loading && <div className="empty-state">Carregando componentes...</div>}
+          {error  && <div className="empty-state">{error}</div>}
           {!loading && !error && filtered.length === 0 && (
-            <div className="empty-state">
-              Nenhum componente encontrado.
-            </div>
+            <div className="empty-state">Nenhum componente encontrado.</div>
           )}
 
-          <div className="browser__grid">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 overflow-y-auto flex-1 pr-2">
             {filtered.map(c => (
               <div
                 key={c.id}
-                className={`card card-interactive ${selectedId === c.id ? 'card-selected' : ''}`}
+                className={cn('card card-interactive', selectedId === c.id && 'card-selected')}
                 onClick={() => setSelectedId(c.id)}
               >
                 {c.screenshot && (
                   <img
                     src={c.screenshot}
                     alt={c.name}
-                    className="browser__screenshot"
+                    className="w-full h-[120px] object-cover rounded-t-[10px]"
                   />
                 )}
-                <div className="browser__card-inner">
-                  <div className="browser__card-title">{c.name}</div>
-                  <div className="browser__card-desc">{c.description}</div>
-                  <div className="browser__card-tags">
+                <div className="p-3">
+                  <div className="font-semibold text-sm mb-1">{c.name}</div>
+                  <div className="text-xs text-ink-secondary mb-2">{c.description}</div>
+                  <div className="flex flex-wrap gap-1">
                     <span className="badge badge-default">{c.category}</span>
                     {c.tags.slice(0, 2).map(t => (
                       <span key={t} className="badge">{t}</span>
@@ -1913,30 +1567,29 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
           </div>
         </div>
 
-        <div className="browser__right">
+        {/* Right panel */}
+        <div className="flex flex-col gap-4 overflow-y-auto">
           {!selected ? (
-            <div className="empty-state">
-              Selecione um componente para ver detalhes.
-            </div>
+            <div className="empty-state">Selecione um componente para ver detalhes.</div>
           ) : (
             <>
-              <div className="browser__preview">
+              <div className="border border-border rounded-[10px] overflow-hidden bg-raised min-h-[300px]">
                 {selected.screenshot ? (
                   <img
                     src={selected.screenshot}
                     alt={selected.name}
-                    className="browser__screenshot"
+                    className="w-full h-[300px] object-cover"
                   />
                 ) : (
                   <div className="empty-state">Sem preview disponivel</div>
                 )}
               </div>
 
-              <div className="card">
-                <div className="browser__detail-header">
+              <div className="card p-4 flex flex-col gap-4">
+                <div className="flex justify-between items-start gap-3">
                   <div>
-                    <div className="browser__detail-title">{selected.name}</div>
-                    <p className="browser__card-desc">{selected.description}</p>
+                    <div className="text-xl font-bold">{selected.name}</div>
+                    <p className="text-xs text-ink-secondary mt-1">{selected.description}</p>
                   </div>
                   <button
                     className="btn btn-primary"
@@ -1946,62 +1599,64 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
                   </button>
                 </div>
 
-                <div className="browser__card-tags">
+                <div className="flex flex-wrap gap-1">
                   <span className="badge badge-accent">{selected.category}</span>
                   {selected.tags.map(t => (
                     <span key={t} className="badge badge-default">{t}</span>
                   ))}
                 </div>
 
-                <p className="label">Melhor para</p>
-                <p>{selected.bestFor}</p>
+                <div>
+                  <p className="label">Melhor para</p>
+                  <p className="text-sm text-ink-secondary">{selected.bestFor}</p>
+                </div>
 
                 {selected.props.length > 0 && (
-                  <>
+                  <div>
                     <p className="label">Props</p>
-                    <table className="browser__props-table">
+                    <table className="w-full border-collapse text-sm">
                       <thead>
                         <tr>
-                          <th>Nome</th>
-                          <th>Tipo</th>
-                          <th>Obrigatoria</th>
-                          <th>Descricao</th>
+                          {['Nome','Tipo','Obrigatoria','Descricao'].map(h => (
+                            <th key={h} className="text-left py-2 px-3 border-b border-border text-ink-muted font-medium uppercase text-xs">{h}</th>
+                          ))}
                         </tr>
                       </thead>
                       <tbody>
                         {selected.props.map(p => (
                           <tr key={p.name}>
-                            <td><code>{p.name}</code></td>
-                            <td><code>{p.type}</code></td>
-                            <td>{p.required ? 'Sim' : 'Nao'}</td>
-                            <td>{p.description}</td>
+                            <td className="py-2 px-3 border-b border-border"><code>{p.name}</code></td>
+                            <td className="py-2 px-3 border-b border-border"><code>{p.type}</code></td>
+                            <td className="py-2 px-3 border-b border-border">{p.required ? 'Sim' : 'Nao'}</td>
+                            <td className="py-2 px-3 border-b border-border">{p.description}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </>
+                  </div>
                 )}
 
                 {selected.copy && Object.keys(selected.copy).length > 0 && (
-                  <>
+                  <div>
                     <p className="label">Copy editavel</p>
-                    <table className="browser__props-table">
+                    <table className="w-full border-collapse text-sm">
                       <thead>
                         <tr>
-                          <th>Chave</th>
-                          <th>Valor padrao</th>
+                          {['Chave','Valor padrao'].map(h => (
+                            <th key={h} className="text-left py-2 px-3 border-b border-border text-ink-muted font-medium uppercase text-xs">{h}</th>
+                          ))}
                         </tr>
                       </thead>
                       <tbody>
                         {Object.entries(selected.copy).map(([k, v]) => (
                           <tr key={k}>
-                            <td><code>{k}</code></td>
-                            <td>{v}</td>
+                            <td className="py-2 px-3 border-b border-border"><code>{k}</code></td>
+                            <td className="py-2 px-3 border-b border-border">{v}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </>
+                  </div>
                 )}
               </div>
             </>
@@ -2342,48 +1997,26 @@ export default function Builder({ availableComponents }: Props) {
 
   if (result) {
     return (
-      <>
-        <style>{`
-          .builder__result {
-            max-width: 600px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-4);
-            padding-top: var(--space-8);
-          }
-          .builder__result-title {
-            font-size: var(--text-2xl);
-            font-weight: 700;
-            color: var(--accent);
-          }
-          .builder__result-links {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-2);
-          }
-        `}</style>
-        <div className="builder__result">
-          <div className="builder__result-title">Projeto criado com sucesso!</div>
-          <div className="card">
-            <Pair label="Repositorio" value={result.repoUrl} />
-            <div className="builder__result-links">
-              <a href={result.repoUrl} target="_blank" rel="noopener" className="btn btn-primary">
-                Abrir no GitHub
-              </a>
-              <a
-                href={`vscode://vscode.git/clone?url=${encodeURIComponent(result.cloneUrl)}`}
-                className="btn btn-outline"
-              >
-                Abrir no VS Code
-              </a>
-              <button className="btn btn-outline" onClick={downloadManifest}>
-                Baixar Manifesto (.md)
-              </button>
-            </div>
+      <div className="max-w-[600px] mx-auto flex flex-col gap-4 pt-16">
+        <div className="text-2xl font-bold text-accent">Projeto criado com sucesso!</div>
+        <div className="card p-4">
+          <Pair label="Repositorio" value={result.repoUrl} />
+          <div className="flex flex-col gap-2 mt-3">
+            <a href={result.repoUrl} target="_blank" rel="noopener" className="btn btn-primary">
+              Abrir no GitHub
+            </a>
+            <a
+              href={`vscode://vscode.git/clone?url=${encodeURIComponent(result.cloneUrl)}`}
+              className="btn btn-outline"
+            >
+              Abrir no VS Code
+            </a>
+            <button className="btn btn-outline" onClick={downloadManifest}>
+              Baixar Manifesto (.md)
+            </button>
           </div>
         </div>
-      </>
+      </div>
     )
   }
 
@@ -2391,217 +2024,15 @@ export default function Builder({ availableComponents }: Props) {
 
   return (
     <>
-      <style>{`
-        .builder {
-          display: grid;
-          grid-template-columns: 1fr 300px;
-          gap: var(--space-6);
-          min-height: calc(100vh - var(--space-6) * 2);
-        }
-
-        .builder__content {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-        }
-
-        .builder__aside {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-        }
-
-        .builder__form-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--space-3);
-        }
-
-        .builder__form-full {
-          grid-column: 1 / -1;
-        }
-
-        .builder__color-row {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-        }
-
-        .builder__color-picker {
-          width: 40px;
-          height: 40px;
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 2px;
-          cursor: pointer;
-          background: none;
-        }
-
-        .builder__comp-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: var(--space-3);
-        }
-
-        .builder__comp-card-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: var(--space-1);
-        }
-
-        .builder__comp-card-name {
-          font-weight: 600;
-          font-size: var(--text-sm);
-        }
-
-        .builder__comp-card-desc {
-          font-size: var(--text-xs);
-          color: var(--muted);
-        }
-
-        .builder__review-item {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          padding: var(--space-3);
-          border-bottom: 1px solid var(--border);
-        }
-
-        .builder__review-item:last-child {
-          border-bottom: none;
-        }
-
-        .builder__review-position {
-          font-weight: 700;
-          color: var(--accent);
-          min-width: 24px;
-          text-align: center;
-        }
-
-        .builder__review-info {
-          flex: 1;
-        }
-
-        .builder__review-actions {
-          display: flex;
-          gap: var(--space-1);
-        }
-
-        .builder__copy-section {
-          padding: var(--space-3);
-          border-top: 1px solid var(--border);
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-2);
-        }
-
-        .builder__copy-toggle {
-          cursor: pointer;
-          color: var(--accent);
-          font-size: var(--text-sm);
-          font-weight: 500;
-          background: none;
-          border: none;
-          text-align: left;
-          padding: 0;
-        }
-
-        .builder__copy-field {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-1);
-        }
-
-        .builder__copy-field label {
-          font-size: var(--text-xs);
-          color: var(--muted);
-          font-weight: 500;
-        }
-
-        .builder__copy-field textarea {
-          min-height: 60px;
-          resize: vertical;
-        }
-
-        .builder__pair {
-          display: flex;
-          justify-content: space-between;
-          padding: var(--space-1) 0;
-          font-size: var(--text-sm);
-          border-bottom: 1px solid var(--border);
-        }
-
-        .builder__pair-label {
-          color: var(--muted);
-        }
-
-        .builder__pair-value {
-          font-weight: 500;
-        }
-
-        .builder__error {
-          color: var(--danger);
-          padding: var(--space-3);
-          border: 1px solid var(--danger);
-          border-radius: var(--radius);
-          font-size: var(--text-sm);
-        }
-
-        .builder__aside-section {
-          padding: var(--space-3);
-        }
-
-        .builder__aside-title {
-          font-size: var(--text-sm);
-          font-weight: 600;
-          margin-bottom: var(--space-2);
-          color: var(--muted);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .builder__aside-component {
-          font-size: var(--text-sm);
-          padding: var(--space-1) 0;
-          display: flex;
-          gap: var(--space-2);
-          align-items: center;
-        }
-
-        .builder__actions {
-          display: flex;
-          gap: var(--space-3);
-          padding-top: var(--space-4);
-          border-top: 1px solid var(--border);
-        }
-
-        .builder__comp-card-category {
-          margin-top: var(--space-2);
-        }
-
-        .builder__aside-colors {
-          display: flex;
-          gap: var(--space-2);
-          flex-wrap: wrap;
-        }
-
-        .builder__aside-swatch {
-          width: 32px;
-          height: 32px;
-          border-radius: var(--radius);
-          border: 1px solid var(--border);
-        }
-      `}</style>
-
-      <div className="builder">
-        <div className="builder__content">
+      <div className="grid grid-cols-[1fr_300px] gap-6 min-h-[calc(100vh-4rem)]">
+        {/* Main content */}
+        <div className="flex flex-col gap-4">
           {/* Tab navigation */}
           <div className="tab-bar">
             {STEPS.map((s, i) => (
               <button
                 key={s}
-                className={`tab ${step === s ? 'active' : ''}`}
+                className={cn('tab', step === s && 'active')}
                 onClick={() => setStep(s)}
               >
                 {i + 1}. {s}
@@ -2611,9 +2042,9 @@ export default function Builder({ availableComponents }: Props) {
 
           {/* --- Step 1: Configurar --- */}
           {step === 'Configurar' && (
-            <div className="card">
+            <div className="card p-4 flex flex-col gap-4">
               <h2 className="section-title">Dados do Projeto</h2>
-              <div className="builder__form-grid">
+              <div className="grid grid-cols-2 gap-3">
                 <Field label="Nome do cliente">
                   <input
                     className="input"
@@ -2670,73 +2101,30 @@ export default function Builder({ availableComponents }: Props) {
               </div>
 
               <h2 className="section-title">Direcao de Arte</h2>
-              <div className="builder__form-grid">
-                <ColorSwatch
-                  label="Cor Primaria"
-                  value={art.colorPrimary}
-                  onChange={v => updateArt('colorPrimary', v)}
-                />
-                <ColorSwatch
-                  label="Cor Secundaria"
-                  value={art.colorSecondary}
-                  onChange={v => updateArt('colorSecondary', v)}
-                />
-                <ColorSwatch
-                  label="Cor de Fundo"
-                  value={art.colorBackground}
-                  onChange={v => updateArt('colorBackground', v)}
-                />
-                <ColorSwatch
-                  label="Cor do Texto"
-                  value={art.colorText}
-                  onChange={v => updateArt('colorText', v)}
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <ColorSwatch label="Cor Primaria"   value={art.colorPrimary}    onChange={v => updateArt('colorPrimary', v)} />
+                <ColorSwatch label="Cor Secundaria" value={art.colorSecondary}  onChange={v => updateArt('colorSecondary', v)} />
+                <ColorSwatch label="Cor de Fundo"   value={art.colorBackground} onChange={v => updateArt('colorBackground', v)} />
+                <ColorSwatch label="Cor do Texto"   value={art.colorText}       onChange={v => updateArt('colorText', v)} />
                 <Field label="Fonte dos titulos">
-                  <input
-                    className="input"
-                    value={art.fontHeading}
-                    onChange={e => updateArt('fontHeading', e.target.value)}
-                    placeholder="Inter"
-                  />
+                  <input className="input" value={art.fontHeading} onChange={e => updateArt('fontHeading', e.target.value)} placeholder="Inter" />
                 </Field>
                 <Field label="Fonte do corpo">
-                  <input
-                    className="input"
-                    value={art.fontBody}
-                    onChange={e => updateArt('fontBody', e.target.value)}
-                    placeholder="Inter"
-                  />
+                  <input className="input" value={art.fontBody} onChange={e => updateArt('fontBody', e.target.value)} placeholder="Inter" />
                 </Field>
-                <div className="builder__form-full">
+                <div className="col-span-2">
                   <Field label="Mood / Tom">
-                    <input
-                      className="input"
-                      value={art.mood}
-                      onChange={e => updateArt('mood', e.target.value)}
-                      placeholder="ex: profissional, acolhedor, moderno"
-                    />
+                    <input className="input" value={art.mood} onChange={e => updateArt('mood', e.target.value)} placeholder="ex: profissional, acolhedor, moderno" />
                   </Field>
                 </div>
-                <div className="builder__form-full">
+                <div className="col-span-2">
                   <Field label="Referencias visuais">
-                    <textarea
-                      className="input"
-                      value={art.references}
-                      onChange={e => updateArt('references', e.target.value)}
-                      placeholder="Links ou descricao de referencias"
-                      rows={3}
-                    />
+                    <textarea className="input" value={art.references} onChange={e => updateArt('references', e.target.value)} placeholder="Links ou descricao de referencias" rows={3} />
                   </Field>
                 </div>
-                <div className="builder__form-full">
+                <div className="col-span-2">
                   <Field label="Observacoes">
-                    <textarea
-                      className="input"
-                      value={art.notes}
-                      onChange={e => updateArt('notes', e.target.value)}
-                      placeholder="Qualquer nota adicional sobre o projeto"
-                      rows={3}
-                    />
+                    <textarea className="input" value={art.notes} onChange={e => updateArt('notes', e.target.value)} placeholder="Qualquer nota adicional sobre o projeto" rows={3} />
                   </Field>
                 </div>
               </div>
@@ -2745,29 +2133,13 @@ export default function Builder({ availableComponents }: Props) {
 
           {/* --- Step 2: Componentes --- */}
           {step === 'Componentes' && (
-            <div>
-              <div className="builder__form-grid">
-                <input
-                  className="input"
-                  placeholder="Buscar componentes..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
-                <div className="browser__categories">
-                  <button
-                    className={`btn btn-sm ${!filterCategory ? 'btn-primary' : 'btn-ghost'}`}
-                    onClick={() => setFilterCategory(null)}
-                  >
-                    Todos
-                  </button>
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <input className="input" placeholder="Buscar componentes..." value={search} onChange={e => setSearch(e.target.value)} />
+                <div className="flex flex-wrap gap-1">
+                  <button className={cn('btn btn-sm', !filterCategory ? 'btn-primary' : 'btn-ghost')} onClick={() => setFilterCategory(null)}>Todos</button>
                   {categories.map(cat => (
-                    <button
-                      key={cat}
-                      className={`btn btn-sm ${filterCategory === cat ? 'btn-primary' : 'btn-ghost'}`}
-                      onClick={() => setFilterCategory(cat)}
-                    >
-                      {cat}
-                    </button>
+                    <button key={cat} className={cn('btn btn-sm', filterCategory === cat ? 'btn-primary' : 'btn-ghost')} onClick={() => setFilterCategory(cat)}>{cat}</button>
                   ))}
                 </div>
               </div>
@@ -2775,24 +2147,18 @@ export default function Builder({ availableComponents }: Props) {
               {filteredComponents.length === 0 ? (
                 <div className="empty-state">Nenhum componente encontrado.</div>
               ) : (
-                <div className="builder__comp-grid">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
                   {filteredComponents.map(c => {
                     const sel = isSelected(c.id)
                     const pos = getPosition(c.id)
                     return (
-                      <div
-                        key={c.id}
-                        className={`card card-interactive ${sel ? 'card-selected' : ''}`}
-                        onClick={() => toggleComponent(c)}
-                      >
-                        <div className="builder__comp-card-header">
-                          <span className="builder__comp-card-name">{c.name}</span>
+                      <div key={c.id} className={cn('card card-interactive p-3', sel && 'card-selected')} onClick={() => toggleComponent(c)}>
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="font-semibold text-sm">{c.name}</span>
                           {pos !== null && <span className="badge badge-accent">{pos}</span>}
                         </div>
-                        <div className="builder__comp-card-desc">{c.description}</div>
-                        <div className="builder__comp-card-category">
-                          <span className="badge badge-default">{c.category}</span>
-                        </div>
+                        <div className="text-xs text-ink-secondary mb-2">{c.description}</div>
+                        <span className="badge badge-default">{c.category}</span>
                       </div>
                     )
                   })}
@@ -2803,83 +2169,55 @@ export default function Builder({ availableComponents }: Props) {
 
           {/* --- Step 3: Revisar --- */}
           {step === 'Revisar' && (
-            <div>
-              {/* Project summary */}
-              <div className="card">
+            <div className="flex flex-col gap-4">
+              <div className="card p-4">
                 <h2 className="section-title">Resumo do Projeto</h2>
-                <div className="builder__form-grid">
-                  <Pair label="Cliente" value={project.clientName} />
-                  <Pair label="Tipo" value={project.projectType} />
-                  <Pair label="Nicho" value={project.niche} />
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  <Pair label="Cliente"  value={project.clientName} />
+                  <Pair label="Tipo"     value={project.projectType} />
+                  <Pair label="Nicho"    value={project.niche} />
                   <Pair label="Objetivo" value={project.pageGoal} />
-                  <Pair label="URL" value={project.siteUrl} />
-                  <Pair label="GA ID" value={project.googleAnalyticsId} />
+                  <Pair label="URL"      value={project.siteUrl} />
+                  <Pair label="GA ID"    value={project.googleAnalyticsId} />
                 </div>
               </div>
 
-              {/* Components list */}
               <div className="card">
-                <h2 className="section-title">Componentes ({selected.length})</h2>
+                <h2 className="section-title py-3">Componentes ({selected.length})</h2>
                 {selected.length === 0 ? (
                   <div className="empty-state">Nenhum componente selecionado.</div>
                 ) : (
                   selected.map((sc, index) => (
                     <div key={sc.meta.id}>
-                      <div className="builder__review-item">
-                        <span className="builder__review-position">{sc.position}</span>
-                        <div className="builder__review-info">
+                      <div className="flex items-center gap-3 p-3 border-b border-border last:border-b-0">
+                        <span className="font-bold text-accent min-w-[24px] text-center">{sc.position}</span>
+                        <div className="flex-1">
                           <strong>{sc.meta.name}</strong>
-                          <div className="builder__comp-card-desc">{sc.meta.description}</div>
+                          <div className="text-xs text-ink-secondary mt-0.5">{sc.meta.description}</div>
                         </div>
-                        <div className="builder__review-actions">
-                          <button
-                            className="btn btn-ghost btn-sm btn-icon"
-                            onClick={() => moveComponent(index, 'up')}
-                            disabled={index === 0}
-                          >
-                            ^
-                          </button>
-                          <button
-                            className="btn btn-ghost btn-sm btn-icon"
-                            onClick={() => moveComponent(index, 'down')}
-                            disabled={index === selected.length - 1}
-                          >
-                            v
-                          </button>
-                          <button
-                            className="btn btn-danger btn-sm btn-icon"
-                            onClick={() => removeComponent(sc.meta.id)}
-                          >
-                            x
-                          </button>
+                        <div className="flex gap-1">
+                          <button className="btn btn-ghost btn-sm btn-icon" onClick={() => moveComponent(index, 'up')}  disabled={index === 0}>^</button>
+                          <button className="btn btn-ghost btn-sm btn-icon" onClick={() => moveComponent(index, 'down')} disabled={index === selected.length - 1}>v</button>
+                          <button className="btn btn-danger btn-sm btn-icon" onClick={() => removeComponent(sc.meta.id)}>x</button>
                         </div>
                       </div>
 
-                      {/* Copy editing */}
                       {sc.meta.copy && Object.keys(sc.meta.copy).length > 0 && (
-                        <div className="builder__copy-section">
+                        <div className="px-3 pb-3 pt-2 border-t border-border flex flex-col gap-2">
                           <button
-                            className="builder__copy-toggle"
+                            className="text-accent text-sm font-medium bg-transparent border-0 cursor-pointer text-left p-0"
                             onClick={() => toggleCopyExpand(sc.meta.id)}
                           >
-                            {expandedCopy[sc.meta.id] ? 'v' : '>'} Editar textos (
-                            {Object.keys(sc.meta.copy).length} campos)
+                            {expandedCopy[sc.meta.id] ? 'v' : '>'} Editar textos ({Object.keys(sc.meta.copy).length} campos)
                           </button>
                           {expandedCopy[sc.meta.id] && (
-                            <div>
-                              {Object.entries(copyEdits[sc.meta.id] || sc.meta.copy).map(
-                                ([key, value]) => (
-                                  <div key={key} className="builder__copy-field">
-                                    <label>{key}</label>
-                                    <textarea
-                                      className="input"
-                                      value={value}
-                                      onChange={e => updateCopy(sc.meta.id, key, e.target.value)}
-                                      rows={2}
-                                    />
-                                  </div>
-                                )
-                              )}
+                            <div className="flex flex-col gap-2">
+                              {Object.entries(copyEdits[sc.meta.id] || sc.meta.copy).map(([key, value]) => (
+                                <div key={key} className="flex flex-col gap-1">
+                                  <label className="text-xs text-ink-secondary font-medium">{key}</label>
+                                  <textarea className="input" value={value} onChange={e => updateCopy(sc.meta.id, key, e.target.value)} rows={2} />
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
@@ -2889,18 +2227,13 @@ export default function Builder({ availableComponents }: Props) {
                 )}
               </div>
 
-              {/* Actions */}
-              {error && <div className="builder__error">{error}</div>}
+              {error && (
+                <div className="text-fail px-3 py-2.5 border border-fail/30 rounded-[10px] text-sm">{error}</div>
+              )}
 
-              <div className="builder__actions">
-                <button className="btn btn-outline" onClick={downloadManifest}>
-                  Baixar Manifesto (.md)
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={createProject}
-                  disabled={creating || !project.clientName}
-                >
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <button className="btn btn-outline" onClick={downloadManifest}>Baixar Manifesto (.md)</button>
+                <button className="btn btn-primary" onClick={createProject} disabled={creating || !project.clientName}>
                   {creating ? 'Criando...' : 'Criar Projeto no GitHub'}
                 </button>
               </div>
@@ -2909,51 +2242,41 @@ export default function Builder({ availableComponents }: Props) {
         </div>
 
         {/* --- Right Sidebar --- */}
-        <div className="builder__aside">
-          <div className="card">
-            <div className="builder__aside-section">
-              <div className="builder__aside-title">Cliente</div>
-              <div>{project.clientName || '(nao definido)'}</div>
-              <div className="builder__comp-card-desc">
-                {project.projectType} - {project.niche || '-'}
-              </div>
+        <div className="flex flex-col gap-4">
+          <div className="card p-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.05em] text-ink-secondary mb-2">Cliente</div>
+            <div className="text-sm">{project.clientName || '(nao definido)'}</div>
+            <div className="text-xs text-ink-secondary mt-0.5">{project.projectType} - {project.niche || '-'}</div>
+          </div>
+
+          <div className="card p-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.05em] text-ink-secondary mb-2">Estrutura da Pagina</div>
+            {selected.length === 0 ? (
+              <div className="text-xs text-ink-secondary">Nenhum componente adicionado</div>
+            ) : (
+              selected.map(sc => (
+                <div key={sc.meta.id} className="flex gap-2 items-center text-sm py-1">
+                  <span className="badge badge-accent">{sc.position}</span>
+                  <span>{sc.meta.name}</span>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="card p-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.05em] text-ink-secondary mb-2">Cores</div>
+            <div className="flex gap-2 flex-wrap">
+              <div className="w-8 h-8 rounded-[10px] border border-border" style={{ background: art.colorPrimary }} title="Primaria" />
+              <div className="w-8 h-8 rounded-[10px] border border-border" style={{ background: art.colorSecondary }} title="Secundaria" />
+              <div className="w-8 h-8 rounded-[10px] border border-border" style={{ background: art.colorBackground }} title="Fundo" />
+              <div className="w-8 h-8 rounded-[10px] border border-border" style={{ background: art.colorText }} title="Texto" />
             </div>
           </div>
 
-          <div className="card">
-            <div className="builder__aside-section">
-              <div className="builder__aside-title">Estrutura da Pagina</div>
-              {selected.length === 0 ? (
-                <div className="builder__comp-card-desc">Nenhum componente adicionado</div>
-              ) : (
-                selected.map(sc => (
-                  <div key={sc.meta.id} className="builder__aside-component">
-                    <span className="badge badge-accent">{sc.position}</span>
-                    <span>{sc.meta.name}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="builder__aside-section">
-              <div className="builder__aside-title">Cores</div>
-              <div className="builder__aside-colors">
-                <div className="builder__aside-swatch" style={{ background: art.colorPrimary }} title="Primaria" />
-                <div className="builder__aside-swatch" style={{ background: art.colorSecondary }} title="Secundaria" />
-                <div className="builder__aside-swatch" style={{ background: art.colorBackground }} title="Fundo" />
-                <div className="builder__aside-swatch" style={{ background: art.colorText }} title="Texto" />
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="builder__aside-section">
-              <div className="builder__aside-title">Tipografia</div>
-              <Pair label="Titulos" value={art.fontHeading} />
-              <Pair label="Corpo" value={art.fontBody} />
-            </div>
+          <div className="card p-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.05em] text-ink-secondary mb-2">Tipografia</div>
+            <Pair label="Titulos" value={art.fontHeading} />
+            <Pair label="Corpo"   value={art.fontBody} />
           </div>
         </div>
       </div>

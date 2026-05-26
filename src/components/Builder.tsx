@@ -8,15 +8,15 @@ import type {
 } from '../types'
 import { generateManifest } from '../lib/manifest'
 
-/* --- Tailwind classes --- */
-const inputBase = 'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500'
+/* --- Tailwind classes (dark theme) --- */
+const inputBase = 'w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent'
 const btnBase = 'px-4 py-2 rounded-lg text-sm font-medium transition-colors'
-const btnPrimary = `${btnBase} bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50`
-const btnOutline = `${btnBase} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50`
-const btnGhost = `${btnBase} bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900`
-const btnDanger = `${btnBase} bg-red-600 text-white hover:bg-red-700`
-const cardBase = 'rounded-xl border border-gray-200 bg-white overflow-hidden'
-const cardInteractive = `${cardBase} cursor-pointer transition-all hover:border-blue-300 hover:shadow-sm`
+const btnPrimary = `${btnBase} bg-accent text-black hover:bg-accent-hover disabled:opacity-50`
+const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`
+const btnGhost = `${btnBase} bg-transparent text-ink-secondary hover:bg-raised hover:text-ink-primary`
+const btnDanger = `${btnBase} bg-fail/10 text-fail border border-fail/20 hover:bg-fail/20`
+const cardBase = 'rounded-xl border border-border bg-surface overflow-hidden'
+const cardInteractive = `${cardBase} cursor-pointer transition-all hover:border-accent/30 hover:shadow-lg`
 const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium'
 
 /* --- Helper sub-components --- */
@@ -24,7 +24,7 @@ const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-med
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-gray-600">{label}</label>
+      <label className="block text-xs font-medium text-ink-secondary uppercase tracking-wider">{label}</label>
       {children}
     </div>
   )
@@ -32,9 +32,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Pair({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between py-1 text-sm border-b border-gray-100 last:border-0">
-      <span className="text-gray-500">{label}</span>
-      <span className="font-medium text-gray-900">{value || '-'}</span>
+    <div className="flex justify-between py-1 text-sm border-b border-border last:border-0">
+      <span className="text-ink-secondary">{label}</span>
+      <span className="font-medium text-ink-primary">{value || '-'}</span>
     </div>
   )
 }
@@ -49,18 +49,18 @@ function ColorSwatch({
   onChange: (v: string) => void
 }) {
   return (
-    <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-gray-600">{label}</label>
-      <div className="flex items-center gap-2">
+    <div className="space-y-1.5 min-w-0">
+      <label className="block text-xs font-medium text-ink-secondary truncate">{label}</label>
+      <div className="flex items-center gap-2 min-w-0">
         <input
           type="color"
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-10 h-10 rounded-lg border border-gray-300 bg-transparent cursor-pointer p-0.5"
+          className="w-10 h-10 rounded-lg border border-border bg-transparent cursor-pointer p-0.5 flex-shrink-0"
         />
         <input
           type="text"
-          className={inputBase}
+          className={`${inputBase} min-w-0`}
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder="#000000"
@@ -303,7 +303,7 @@ export default function Builder({ availableComponents }: Props) {
   if (result) {
     return (
       <div className="max-w-xl mx-auto flex flex-col gap-4 pt-12">
-        <h1 className="text-2xl font-bold text-blue-600">Projeto criado com sucesso!</h1>
+        <h1 className="text-2xl font-bold text-accent">Projeto criado com sucesso!</h1>
         <div className={`${cardBase} p-5 space-y-4`}>
           <Pair label="Repositorio" value={result.repoUrl} />
           <div className="flex flex-col gap-2 pt-2">
@@ -328,17 +328,17 @@ export default function Builder({ availableComponents }: Props) {
   /* --- Main render --- */
 
   return (
-    <div className="grid grid-cols-[1fr_280px] gap-6 min-h-[calc(100vh-4rem)]">
-      <div className="flex flex-col gap-4">
+    <div className="grid grid-cols-[minmax(0,1fr)_280px] gap-6 min-h-[calc(100vh-4rem)] max-w-[1400px]">
+      <div className="flex flex-col gap-4 min-w-0 overflow-x-hidden">
         {/* Tab navigation */}
-        <div className="flex gap-2 border-b border-gray-200 pb-2">
+        <div className="flex gap-2 border-b border-border pb-2">
           {STEPS.map((s, i) => (
             <button
               key={s}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 step === s
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-accent text-black'
+                  : 'text-ink-secondary hover:bg-raised hover:text-ink-primary'
               }`}
               onClick={() => setStep(s)}
             >
@@ -408,7 +408,7 @@ export default function Builder({ availableComponents }: Props) {
                 </Field>
               </div>
 
-              <h2 className="text-lg font-semibold pt-4 border-t border-gray-200">Direcao de Arte</h2>
+              <h2 className="text-lg font-semibold pt-4 border-t border-border">Direcao de Arte</h2>
               <div className="grid grid-cols-2 gap-3">
                 <ColorSwatch
                   label="Cor Primaria"
@@ -513,7 +513,7 @@ export default function Builder({ availableComponents }: Props) {
             </div>
 
             {filteredComponents.length === 0 ? (
-              <div className="text-gray-600 py-8 text-center">Nenhum componente encontrado.</div>
+              <div className="text-ink-secondary py-8 text-center">Nenhum componente encontrado.</div>
             ) : (
               <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
                 {filteredComponents.map(c => {
@@ -522,16 +522,16 @@ export default function Builder({ availableComponents }: Props) {
                   return (
                     <div
                       key={c.id}
-                      className={`${cardInteractive} ${sel ? 'ring-2 ring-blue-500' : ''} p-4`}
+                      className={`${cardInteractive} ${sel ? 'ring-2 ring-accent' : ''} p-4`}
                       onClick={() => toggleComponent(c)}
                     >
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-semibold text-sm">{c.name}</span>
-                        {pos !== null && <span className={`${badgeBase} bg-blue-100 text-blue-700`}>{pos}</span>}
+                        {pos !== null && <span className={`${badgeBase} bg-accent/10 text-accent`}>{pos}</span>}
                       </div>
-                      <div className="text-xs text-gray-600 line-clamp-2">{c.description}</div>
+                      <div className="text-xs text-ink-secondary line-clamp-2">{c.description}</div>
                       <div className="mt-2">
-                        <span className={`${badgeBase} bg-gray-100 text-gray-600`}>{c.category}</span>
+                        <span className={`${badgeBase} bg-raised text-ink-secondary`}>{c.category}</span>
                       </div>
                     </div>
                   )
@@ -564,16 +564,16 @@ export default function Builder({ availableComponents }: Props) {
               <div className="p-5">
                 <h2 className="text-lg font-semibold mb-4">Componentes ({selected.length})</h2>
                 {selected.length === 0 ? (
-                  <div className="text-gray-600 py-4 text-center">Nenhum componente selecionado.</div>
+                  <div className="text-ink-secondary py-4 text-center">Nenhum componente selecionado.</div>
                 ) : (
                   <div className="space-y-4">
                     {selected.map((sc, index) => (
-                      <div key={sc.meta.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
+                      <div key={sc.meta.id} className="border-b border-border last:border-0 pb-4 last:pb-0">
                         <div className="flex items-center gap-3">
-                          <span className="w-6 h-6 rounded bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold">{sc.position}</span>
+                          <span className="w-6 h-6 rounded bg-accent/10 text-accent flex items-center justify-center text-sm font-bold">{sc.position}</span>
                           <div className="flex-1">
                             <strong className="block">{sc.meta.name}</strong>
-                            <div className="text-sm text-gray-600">{sc.meta.description}</div>
+                            <div className="text-sm text-ink-secondary">{sc.meta.description}</div>
                           </div>
                           <div className="flex gap-1">
                             <button
@@ -601,9 +601,9 @@ export default function Builder({ availableComponents }: Props) {
 
                         {/* Copy editing */}
                         {sc.meta.copy && Object.keys(sc.meta.copy).length > 0 && (
-                          <div className="mt-3 pt-3 border-t border-gray-100 pl-9">
+                          <div className="mt-3 pt-3 border-t border-border pl-9">
                             <button
-                              className="text-blue-600 text-sm font-medium hover:underline"
+                              className="text-accent text-sm font-medium hover:underline"
                               onClick={() => toggleCopyExpand(sc.meta.id)}
                             >
                               {expandedCopy[sc.meta.id] ? '▼' : '▶'} Editar textos ({Object.keys(sc.meta.copy).length} campos)
@@ -613,7 +613,7 @@ export default function Builder({ availableComponents }: Props) {
                                 {Object.entries(copyEdits[sc.meta.id] || sc.meta.copy).map(
                                   ([key, value]) => (
                                     <div key={key}>
-                                      <label className="block text-xs font-medium text-gray-400 mb-1">{key}</label>
+                                      <label className="block text-xs font-medium text-ink-muted mb-1">{key}</label>
                                       <textarea
                                         className={`${inputBase} min-h-[60px] resize-y`}
                                         value={value}
@@ -636,10 +636,10 @@ export default function Builder({ availableComponents }: Props) {
 
             {/* Actions */}
             {error && (
-              <div className="p-4 border border-red-300 rounded-lg text-red-600 text-sm">{error}</div>
+              <div className="p-4 border border-fail rounded-lg text-fail text-sm">{error}</div>
             )}
 
-            <div className="flex gap-3 pt-4 border-t border-gray-200">
+            <div className="flex gap-3 pt-4 border-t border-border">
               <button className={btnOutline} onClick={downloadManifest}>
                 Baixar Manifesto (.md)
               </button>
@@ -659,9 +659,9 @@ export default function Builder({ availableComponents }: Props) {
       <div className="flex flex-col gap-4">
         <div className={cardBase}>
           <div className="p-4">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Cliente</div>
+            <div className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3">Cliente</div>
             <div className="font-medium">{project.clientName || '(nao definido)'}</div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-ink-secondary">
               {project.projectType} - {project.niche || '-'}
             </div>
           </div>
@@ -669,14 +669,14 @@ export default function Builder({ availableComponents }: Props) {
 
         <div className={cardBase}>
           <div className="p-4">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Estrutura da Pagina</div>
+            <div className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3">Estrutura da Pagina</div>
             {selected.length === 0 ? (
-              <div className="text-sm text-gray-600">Nenhum componente adicionado</div>
+              <div className="text-sm text-ink-secondary">Nenhum componente adicionado</div>
             ) : (
               <div className="space-y-1">
                 {selected.map(sc => (
                   <div key={sc.meta.id} className="flex items-center gap-2 text-sm">
-                    <span className={`${badgeBase} bg-blue-100 text-blue-700`}>{sc.position}</span>
+                    <span className={`${badgeBase} bg-accent/10 text-accent`}>{sc.position}</span>
                     <span>{sc.meta.name}</span>
                   </div>
                 ))}
@@ -687,19 +687,19 @@ export default function Builder({ availableComponents }: Props) {
 
         <div className={cardBase}>
           <div className="p-4">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Cores</div>
+            <div className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3">Cores</div>
             <div className="flex gap-2 flex-wrap">
-              <div className="w-8 h-8 rounded-lg border border-gray-200" style={{ background: art.colorPrimary }} title="Primaria" />
-              <div className="w-8 h-8 rounded-lg border border-gray-200" style={{ background: art.colorSecondary }} title="Secundaria" />
-              <div className="w-8 h-8 rounded-lg border border-gray-200" style={{ background: art.colorBackground }} title="Fundo" />
-              <div className="w-8 h-8 rounded-lg border border-gray-200" style={{ background: art.colorText }} title="Texto" />
+              <div className="w-8 h-8 rounded-lg border border-border" style={{ background: art.colorPrimary }} title="Primaria" />
+              <div className="w-8 h-8 rounded-lg border border-border" style={{ background: art.colorSecondary }} title="Secundaria" />
+              <div className="w-8 h-8 rounded-lg border border-border" style={{ background: art.colorBackground }} title="Fundo" />
+              <div className="w-8 h-8 rounded-lg border border-border" style={{ background: art.colorText }} title="Texto" />
             </div>
           </div>
         </div>
 
         <div className={cardBase}>
           <div className="p-4">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Tipografia</div>
+            <div className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-3">Tipografia</div>
             <Pair label="Titulos" value={art.fontHeading} />
             <Pair label="Corpo" value={art.fontBody} />
           </div>

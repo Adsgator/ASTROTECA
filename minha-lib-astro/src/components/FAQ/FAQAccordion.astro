@@ -14,21 +14,21 @@ interface Props {
 const { sectionTitle = "Perguntas Frequentes", items } = Astro.props
 ---
 
-<section class="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-4xl mx-auto">
+<section class="py-24 px-6 max-w-[800px] mx-auto">
   {sectionTitle && (
-    <h2 class="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-12">
+    <h2 class="font-[var(--font-heading,serif)] text-[clamp(1.75rem,4vw,2.5rem)] text-[var(--color-heading,#111)] text-center mb-12">
       {sectionTitle}
     </h2>
   )}
-  
+
   <div class="space-y-4">
     {items.map((item, index) => (
-      <details class="group bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <summary class="flex justify-between items-center p-6 cursor-pointer list-none hover:bg-gray-50 transition-colors">
-          <span class="font-semibold text-gray-900 text-lg">{item.question}</span>
-          <span class="text-2xl text-gray-400 group-open:rotate-45 transition-transform">+</span>
+      <details class="group bg-[var(--color-surface,#fff)] rounded-[var(--radius-lg,12px)] border border-[var(--color-border,#eee)] overflow-hidden">
+        <summary class="flex justify-between items-center p-6 cursor-pointer list-none hover:bg-[var(--color-bg-secondary,#f8f8f8)] transition-colors duration-200">
+          <span class="font-semibold text-[var(--color-heading,#111)] text-lg">{item.question}</span>
+          <span class="text-2xl text-[var(--color-text-muted,#555)] group-open:rotate-45 transition-transform duration-200">+</span>
         </summary>
-        <div class="px-6 pb-6 text-gray-600 leading-relaxed">
+        <div class="px-6 pb-6 text-[var(--color-text,#333)] leading-relaxed">
           {item.answer}
         </div>
       </details>

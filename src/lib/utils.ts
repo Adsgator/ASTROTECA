@@ -1,5 +1,13 @@
 // src/lib/utils.ts
 
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+/** Utilitário padrão para combinar classes Tailwind de forma segura */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
 export function slugify(str: string): string {
   return str
     .toLowerCase()

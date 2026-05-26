@@ -22,42 +22,38 @@ const navItems = [
   <title>{title}</title>
   <link rel="stylesheet" href="/styles/app.css" />
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans antialiased">
-  <div class="flex min-h-screen">
+<body>
+  <div class="app-shell">
     {/* Sidebar */}
-    <aside class="sticky top-0 h-screen w-56 flex flex-col border-r border-gray-200 bg-white shadow-sm">
+    <aside class="app-sidebar" style="background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; width: var(--sidebar-w); position: sticky; top: 0;">
       {/* Header */}
-      <div class="border-b border-gray-200 px-5 pb-5 pt-5">
-        <span class="text-xl font-bold text-blue-600 tracking-tight">Astroteca</span>
+      <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+        <span style="font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--accent); letter-spacing: -0.02em;">Astroteca</span>
       </div>
 
       {/* Navigation */}
-      <nav class="flex-1 space-y-1 px-3 py-4">
-        {navItems.map((item) => (
-          <a
-            href={item.href}
-            class:list={[
-              'block rounded-lg px-4 py-2 text-sm font-medium transition-colors',
-              currentPath === item.href
-                ? 'bg-blue-50 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
-            ]}
-          >
-            {item.label}
-          </a>
-        ))}
+      <nav style="flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px;">
+        {navItems.map((item) => {
+          const isActive = currentPath === item.href
+          return (
+            <a
+              href={item.href}
+              class={isActive ? 'sidebar-link active' : 'sidebar-link'}
+            >
+              {item.label}
+            </a>
+          )
+        })}
       </nav>
 
       {/* Footer */}
-      <div class="border-t border-gray-200 px-5 py-4 text-center">
-        <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-          v2.0.0
-        </span>
+      <div style="padding: 16px; border-top: 1px solid var(--border); text-align: center;">
+        <span class="badge badge-default">v2.0.0</span>
       </div>
     </aside>
 
     {/* Main Content */}
-    <main class="flex-1 overflow-y-auto p-8">
+    <main class="app-main" style="padding: 24px; overflow-x: hidden;">
       <slot />
     </main>
   </div>

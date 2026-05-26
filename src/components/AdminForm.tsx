@@ -14,13 +14,13 @@ const EMPTY_PROP: PropDraft = {
   previewValue: '',
 }
 
-/* --- Tailwind classes --- */
-const inputBase = 'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500'
+/* --- Tailwind classes (dark theme) --- */
+const inputBase = 'w-full rounded-lg border border-border bg-raised px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent'
 const btnBase = 'px-4 py-2 rounded-lg text-sm font-medium transition-colors'
-const btnPrimary = `${btnBase} bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50`
-const btnOutline = `${btnBase} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50`
-const btnDanger = `${btnBase} bg-red-600 text-white hover:bg-red-700 px-2 py-1`
-const cardBase = 'rounded-xl border border-gray-200 bg-white p-5'
+const btnPrimary = `${btnBase} bg-accent text-black hover:bg-accent-hover disabled:opacity-50`
+const btnOutline = `${btnBase} border border-border bg-transparent text-ink-primary hover:bg-raised`
+const btnDanger = `${btnBase} bg-fail/10 text-fail border border-fail/20 hover:bg-fail/20 px-2 py-1`
+const cardBase = 'rounded-xl border border-border bg-surface p-5'
 const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium'
 
 export default function AdminForm() {
@@ -172,7 +172,7 @@ export default function AdminForm() {
   function Field({ label, children }: { label: string; children: React.ReactNode }) {
     return (
       <div className="space-y-1.5">
-        <label className="block text-xs font-medium text-gray-600">{label}</label>
+        <label className="block text-xs font-medium text-ink-secondary uppercase tracking-wider">{label}</label>
         {children}
       </div>
     )
@@ -183,7 +183,7 @@ export default function AdminForm() {
       <h1 className="text-2xl font-bold">Adicionar Componente</h1>
 
       {feedback && (
-        <div className={`${badgeBase} ${feedback.type === 'ok' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} px-3 py-2`}>
+        <div className={`${badgeBase} ${feedback.type === 'ok' ? 'bg-ok/10 text-ok border border-ok/20' : 'bg-fail/10 text-fail border border-fail/20'} px-3 py-2`}>
           {feedback.message}
         </div>
       )}
@@ -236,8 +236,8 @@ export default function AdminForm() {
 
         {name && (
           <div className="mt-3 text-sm">
-            <span className="text-gray-400">ID gerado: </span>
-            <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">{generateId(name)}</code>
+            <span className="text-ink-muted">ID gerado: </span>
+            <code className="bg-raised px-1.5 py-0.5 rounded text-xs">{generateId(name)}</code>
           </div>
         )}
       </div>
@@ -251,11 +251,11 @@ export default function AdminForm() {
         </div>
 
         {props.length === 0 && (
-          <div className="text-gray-600 py-4 text-center">Nenhuma prop adicionada ainda.</div>
+          <div className="text-ink-secondary py-4 text-center">Nenhuma prop adicionada ainda.</div>
         )}
 
         {props.map((prop, i) => (
-          <div key={i} className="grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-gray-100 last:border-0">
+          <div key={i} className="grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-border last:border-0">
             <Field label="Nome">
               <input className={inputBase} value={prop.name} onChange={e => updateProp(i, 'name', e.target.value)} placeholder="titulo" />
             </Field>
@@ -296,10 +296,10 @@ export default function AdminForm() {
       {name && props.length > 0 && (
         <div className={cardBase}>
           <h2 className="text-lg font-semibold mb-2">Preview Gerado</h2>
-          <pre className="bg-gray-100 p-3 rounded-lg text-xs font-mono overflow-x-auto mb-4">{generatePreviewCode()}</pre>
+          <pre className="bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto mb-4">{generatePreviewCode()}</pre>
 
           <h2 className="text-lg font-semibold mb-2">index.ts Gerado</h2>
-          <pre className="bg-gray-100 p-3 rounded-lg text-xs font-mono overflow-x-auto">{generateIndexCode()}</pre>
+          <pre className="bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto">{generateIndexCode()}</pre>
         </div>
       )}
 

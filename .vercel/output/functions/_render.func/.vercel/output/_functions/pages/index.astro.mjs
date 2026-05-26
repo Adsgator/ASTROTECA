@@ -1,9 +1,9 @@
 import { Q as createComponent, $ as renderComponent, a6 as renderTemplate, O as createAstro } from '../chunks/astro/server_BdknY_pA.mjs';
 import 'kleur/colors';
-import { $ as $$AppLayout } from '../chunks/AppLayout_CV10e5-C.mjs';
+import { $ as $$AppLayout } from '../chunks/AppLayout_CEliHCVs.mjs';
 import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
 import { useState, useEffect, useMemo } from 'react';
-import { f as fetchRegistry } from '../chunks/github_B0bVnyLs.mjs';
+import { f as fetchRegistry } from '../chunks/github_oIhC-tBw.mjs';
 export { renderers } from '../renderers.mjs';
 
 function ComponentBrowser({ initialComponents, registryUrl, initialError }) {
@@ -161,18 +161,18 @@ function ComponentBrowser({ initialComponents, registryUrl, initialError }) {
     setTimeout(() => setAddedId(null), 2e3);
   }
   const btnBase = "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors";
-  const btnPrimary = `${btnBase} bg-blue-600 text-white hover:bg-blue-700`;
-  const btnGhost = `${btnBase} bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900`;
-  const cardBase = "rounded-xl border border-gray-200 bg-white overflow-hidden cursor-pointer transition-all hover:border-blue-300 hover:shadow-sm";
+  const btnPrimary = `${btnBase} bg-accent text-black hover:bg-accent-hover`;
+  const btnGhost = `${btnBase} bg-transparent text-ink-secondary hover:bg-raised hover:text-ink-primary`;
+  const cardBase = "rounded-xl border border-border bg-surface overflow-hidden cursor-pointer transition-all hover:border-accent/30 hover:shadow-lg";
   const badgeBase = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium";
-  return /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-6 h-[calc(100vh-4rem)] bg-gray-50", children: [
+  return /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-6 h-[calc(100vh-4rem)] bg-bg", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4 overflow-hidden p-4", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-3", children: [
         /* @__PURE__ */ jsx(
           "input",
           {
             type: "text",
-            className: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
+            className: "w-full rounded-lg border border-border bg-raised px-4 py-2 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent",
             placeholder: "Buscar componentes...",
             value: search,
             onChange: (e) => setSearch(e.target.value)
@@ -198,22 +198,22 @@ function ComponentBrowser({ initialComponents, registryUrl, initialError }) {
           ))
         ] })
       ] }),
-      loading && /* @__PURE__ */ jsx("div", { className: "flex flex-1 items-center justify-center text-gray-500", children: "Carregando componentes..." }),
-      error && /* @__PURE__ */ jsx("div", { className: "flex flex-1 items-center justify-center text-red-600", children: error }),
-      !loading && !error && filtered.length === 0 && /* @__PURE__ */ jsx("div", { className: "flex flex-1 items-center justify-center text-gray-500", children: "Nenhum componente encontrado." }),
+      loading && /* @__PURE__ */ jsx("div", { className: "flex flex-1 items-center justify-center text-ink-secondary", children: "Carregando componentes..." }),
+      error && /* @__PURE__ */ jsx("div", { className: "flex flex-1 items-center justify-center text-fail", children: error }),
+      !loading && !error && filtered.length === 0 && /* @__PURE__ */ jsx("div", { className: "flex flex-1 items-center justify-center text-ink-secondary", children: "Nenhum componente encontrado." }),
       /* @__PURE__ */ jsx("div", { className: "grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 overflow-y-auto pr-2", children: filtered.map((c) => /* @__PURE__ */ jsxs(
         "div",
         {
-          className: `${cardBase} ${selectedId === c.id ? "ring-2 ring-blue-500" : ""}`,
+          className: `${cardBase} ${selectedId === c.id ? "ring-2 ring-accent" : ""}`,
           onClick: () => setSelectedId(c.id),
           children: [
-            /* @__PURE__ */ jsx("div", { className: "h-28 bg-gray-100 flex items-center justify-center text-gray-400 text-xs", children: c.id }),
+            /* @__PURE__ */ jsx("div", { className: "h-28 bg-raised flex items-center justify-center text-ink-muted text-xs", children: c.id }),
             /* @__PURE__ */ jsxs("div", { className: "p-3", children: [
-              /* @__PURE__ */ jsx("div", { className: "mb-1 font-semibold text-sm text-gray-900", children: c.name }),
-              /* @__PURE__ */ jsx("div", { className: "mb-2 text-xs text-gray-500 line-clamp-2", children: c.description }),
+              /* @__PURE__ */ jsx("div", { className: "mb-1 font-semibold text-sm text-ink-primary", children: c.name }),
+              /* @__PURE__ */ jsx("div", { className: "mb-2 text-xs text-ink-secondary line-clamp-2", children: c.description }),
               /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-1", children: [
-                /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-blue-100 text-blue-700`, children: c.category }),
-                c.tags.slice(0, 2).map((t) => /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-gray-100 text-gray-600`, children: t }, t))
+                /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-accent/10 text-accent`, children: c.category }),
+                c.tags.slice(0, 2).map((t) => /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-raised text-ink-secondary`, children: t }, t))
               ] })
             ] })
           ]
@@ -221,8 +221,8 @@ function ComponentBrowser({ initialComponents, registryUrl, initialError }) {
         c.id
       )) })
     ] }),
-    /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-4 overflow-y-auto p-4 bg-white", children: !selected ? /* @__PURE__ */ jsx("div", { className: "flex h-full items-center justify-center text-gray-500", children: "Selecione um componente para ver detalhes." }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-      /* @__PURE__ */ jsx("div", { className: "rounded-xl border border-gray-200 bg-white overflow-hidden min-h-[300px]", children: selected.previewUrl ? /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-4 overflow-y-auto p-4 bg-surface", children: !selected ? /* @__PURE__ */ jsx("div", { className: "flex h-full items-center justify-center text-ink-secondary", children: "Selecione um componente para ver detalhes." }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx("div", { className: "rounded-xl border border-border bg-surface overflow-hidden min-h-[300px]", children: selected.previewUrl ? /* @__PURE__ */ jsx(
         "iframe",
         {
           src: selected.previewUrl,
@@ -230,12 +230,12 @@ function ComponentBrowser({ initialComponents, registryUrl, initialError }) {
           className: "w-full h-[300px] border-0",
           loading: "lazy"
         }
-      ) : /* @__PURE__ */ jsx("div", { className: "flex h-[300px] items-center justify-center text-gray-500 p-8", children: "Sem preview disponivel" }) }),
-      /* @__PURE__ */ jsxs("div", { className: "rounded-xl border border-gray-200 bg-white p-5 space-y-4", children: [
+      ) : /* @__PURE__ */ jsx("div", { className: "flex h-[300px] items-center justify-center text-ink-secondary p-8", children: "Sem preview disponivel" }) }),
+      /* @__PURE__ */ jsxs("div", { className: "rounded-xl border border-border bg-surface p-5 space-y-4", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex items-start justify-between gap-3", children: [
           /* @__PURE__ */ jsxs("div", { children: [
-            /* @__PURE__ */ jsx("h2", { className: "text-xl font-bold mb-1 text-gray-900", children: selected.name }),
-            /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-600", children: selected.description })
+            /* @__PURE__ */ jsx("h2", { className: "text-xl font-bold mb-1 text-ink-primary", children: selected.name }),
+            /* @__PURE__ */ jsx("p", { className: "text-sm text-ink-secondary", children: selected.description })
           ] }),
           /* @__PURE__ */ jsx(
             "button",
@@ -247,40 +247,40 @@ function ComponentBrowser({ initialComponents, registryUrl, initialError }) {
           )
         ] }),
         /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-2", children: [
-          /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-blue-100 text-blue-700`, children: selected.category }),
-          selected.tags.map((t) => /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-gray-100 text-gray-600`, children: t }, t))
+          /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-accent/10 text-accent`, children: selected.category }),
+          selected.tags.map((t) => /* @__PURE__ */ jsx("span", { className: `${badgeBase} bg-raised text-ink-secondary`, children: t }, t))
         ] }),
         /* @__PURE__ */ jsxs("div", { children: [
-          /* @__PURE__ */ jsx("p", { className: "text-xs font-medium text-gray-400 uppercase mb-1", children: "Melhor para" }),
-          /* @__PURE__ */ jsx("p", { className: "text-sm text-gray-700", children: selected.bestFor.join(", ") })
+          /* @__PURE__ */ jsx("p", { className: "text-xs font-medium text-ink-muted uppercase mb-1", children: "Melhor para" }),
+          /* @__PURE__ */ jsx("p", { className: "text-sm text-ink-secondary", children: selected.bestFor.join(", ") })
         ] }),
         selected.props.length > 0 && /* @__PURE__ */ jsxs(Fragment, { children: [
-          /* @__PURE__ */ jsx("p", { className: "text-xs font-medium text-gray-400 uppercase", children: "Props" }),
+          /* @__PURE__ */ jsx("p", { className: "text-xs font-medium text-ink-muted uppercase", children: "Props" }),
           /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs("table", { className: "w-full text-sm", children: [
-            /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-200", children: [
-              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase", children: "Nome" }),
-              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase", children: "Tipo" }),
-              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase", children: "Obrig." }),
-              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase", children: "Descricao" })
+            /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { className: "border-b border-border", children: [
+              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase", children: "Nome" }),
+              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase", children: "Tipo" }),
+              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase", children: "Obrig." }),
+              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase", children: "Descricao" })
             ] }) }),
-            /* @__PURE__ */ jsx("tbody", { children: selected.props.map((p) => /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-100 last:border-0", children: [
-              /* @__PURE__ */ jsx("td", { className: "py-2 px-3", children: /* @__PURE__ */ jsx("code", { className: "text-xs bg-gray-100 px-1.5 py-0.5 rounded", children: p.name }) }),
-              /* @__PURE__ */ jsx("td", { className: "py-2 px-3", children: /* @__PURE__ */ jsx("code", { className: "text-xs bg-gray-100 px-1.5 py-0.5 rounded", children: p.type }) }),
+            /* @__PURE__ */ jsx("tbody", { children: selected.props.map((p) => /* @__PURE__ */ jsxs("tr", { className: "border-b border-border last:border-0", children: [
+              /* @__PURE__ */ jsx("td", { className: "py-2 px-3", children: /* @__PURE__ */ jsx("code", { className: "text-xs bg-raised px-1.5 py-0.5 rounded", children: p.name }) }),
+              /* @__PURE__ */ jsx("td", { className: "py-2 px-3", children: /* @__PURE__ */ jsx("code", { className: "text-xs bg-raised px-1.5 py-0.5 rounded", children: p.type }) }),
               /* @__PURE__ */ jsx("td", { className: "py-2 px-3", children: p.required ? "Sim" : "Nao" }),
-              /* @__PURE__ */ jsx("td", { className: "py-2 px-3 text-gray-600", children: p.description })
+              /* @__PURE__ */ jsx("td", { className: "py-2 px-3 text-ink-secondary", children: p.description })
             ] }, p.name)) })
           ] }) })
         ] }),
         selected.copy && Object.keys(selected.copy).length > 0 && /* @__PURE__ */ jsxs(Fragment, { children: [
-          /* @__PURE__ */ jsx("p", { className: "text-xs font-medium text-gray-400 uppercase", children: "Copy editavel" }),
+          /* @__PURE__ */ jsx("p", { className: "text-xs font-medium text-ink-muted uppercase", children: "Copy editavel" }),
           /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs("table", { className: "w-full text-sm", children: [
-            /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-200", children: [
-              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase", children: "Chave" }),
-              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-gray-500 uppercase", children: "Valor padrao" })
+            /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { className: "border-b border-border", children: [
+              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase", children: "Chave" }),
+              /* @__PURE__ */ jsx("th", { className: "text-left py-2 px-3 text-xs font-medium text-ink-muted uppercase", children: "Valor padrao" })
             ] }) }),
-            /* @__PURE__ */ jsx("tbody", { children: Object.entries(selected.copy).map(([k, v]) => /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-100 last:border-0", children: [
-              /* @__PURE__ */ jsx("td", { className: "py-2 px-3", children: /* @__PURE__ */ jsx("code", { className: "text-xs bg-gray-100 px-1.5 py-0.5 rounded", children: k }) }),
-              /* @__PURE__ */ jsx("td", { className: "py-2 px-3 text-gray-600", children: v })
+            /* @__PURE__ */ jsx("tbody", { children: Object.entries(selected.copy).map(([k, v]) => /* @__PURE__ */ jsxs("tr", { className: "border-b border-border last:border-0", children: [
+              /* @__PURE__ */ jsx("td", { className: "py-2 px-3", children: /* @__PURE__ */ jsx("code", { className: "text-xs bg-raised px-1.5 py-0.5 rounded", children: k }) }),
+              /* @__PURE__ */ jsx("td", { className: "py-2 px-3 text-ink-secondary", children: v })
             ] }, k)) })
           ] }) })
         ] })

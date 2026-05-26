@@ -1,4 +1,4 @@
-import { c as createProjectFromTemplate } from '../../chunks/github_B0bVnyLs.mjs';
+import { c as createProjectFromTemplate } from '../../chunks/github_oIhC-tBw.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const POST = async ({ request }) => {

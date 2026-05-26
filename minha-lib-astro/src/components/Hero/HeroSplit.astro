@@ -18,30 +18,30 @@ const {
 } = Astro.props
 ---
 
-<section class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto">
-  <div class="space-y-6">
-    <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+<section class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center py-24 px-6 max-w-[1200px] mx-auto">
+  <div>
+    <h1 class="font-[var(--font-heading,serif)] text-[clamp(2rem,5vw,3.5rem)] text-[var(--color-heading,#111)] leading-[1.1] mb-4">
       {headline}
     </h1>
     {subheadline && (
-      <p class="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-lg">
+      <p class="text-lg text-[var(--color-text-muted,#555)] mb-8 leading-relaxed">
         {subheadline}
       </p>
     )}
     <a
       href={ctaHref}
-      class="inline-flex items-center px-8 py-3.5 bg-primary text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
+      class="inline-block bg-[var(--color-primary,#333)] text-[var(--color-on-primary,#fff)] px-8 py-3.5 rounded-[var(--radius,6px)] font-semibold no-underline transition-opacity duration-200 hover:opacity-[0.88]"
     >
       {ctaLabel}
     </a>
   </div>
 
   {imageSrc && (
-    <div class="relative">
+    <div>
       <img
         src={imageSrc}
         alt=""
-        class="w-full h-auto rounded-2xl object-cover shadow-xl"
+        class="w-full h-auto rounded-[var(--radius-lg,12px)] object-cover"
         loading="eager"
       />
     </div>

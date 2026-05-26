@@ -1,4 +1,4 @@
-import { f as fetchRegistry, p as publishComponent } from '../../chunks/github_B0bVnyLs.mjs';
+import { f as fetchRegistry, p as publishComponent } from '../../chunks/github_oIhC-tBw.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const POST = async ({ request }) => {

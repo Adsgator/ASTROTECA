@@ -3,6 +3,22 @@ export default {
   content: [
     './src/**/*.{astro,html,js,jsx,ts,tsx}',
     './src/components/**/*.{tsx,jsx}',
+    './src/layouts/**/*.{astro}',
+    './src/pages/**/*.{astro}',
+    './public/styles/**/*.css',
+  ],
+  safelist: [
+    'col-span-1',
+    'col-span-2',
+    'grid-cols-1',
+    'grid-cols-2',
+    'grid-cols-3',
+    'grid',
+    'gap-3',
+    'gap-4',
+    'gap-6',
+    'min-w-0',
+    'overflow-x-hidden',
   ],
   theme: {
     extend: {

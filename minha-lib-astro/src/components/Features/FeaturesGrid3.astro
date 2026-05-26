@@ -15,19 +15,19 @@ interface Props {
 const { sectionTitle, items } = Astro.props
 ---
 
-<section class="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl mx-auto">
+<section class="py-24 px-6 max-w-[1200px] mx-auto">
   {sectionTitle && (
-    <h2 class="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-12">
+    <h2 class="font-[var(--font-heading,serif)] text-[clamp(1.75rem,4vw,2.5rem)] text-[var(--color-heading,#111)] text-center mb-12">
       {sectionTitle}
     </h2>
   )}
-  
+
   <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
     {items.map((item) => (
       <div class="text-center p-6">
         <div class="text-4xl mb-4">{item.icon}</div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-3">{item.title}</h3>
-        <p class="text-gray-600 leading-relaxed">{item.description}</p>
+        <h3 class="text-xl font-semibold text-[var(--color-heading,#111)] mb-3">{item.title}</h3>
+        <p class="text-[var(--color-text-muted,#555)] leading-relaxed">{item.description}</p>
       </div>
     ))}
   </div>

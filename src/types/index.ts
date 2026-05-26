@@ -18,7 +18,7 @@ export type ComponentCategory =
 
 export interface PropDefinition {
   name: string
-  type: 'string' | 'boolean' | 'number' | 'string[]' | 'Record<string, string>'
+  type: 'string' | 'boolean' | 'number' | 'string[]' | 'Record<string, string>' | 'array'
   required: boolean
   description?: string
   default?: string
@@ -31,12 +31,15 @@ export interface ComponentMeta {
   category: ComponentCategory
   description: string
   previewUrl?: string
+  previewPath?: string
   screenshotUrl?: string
   codeUrl?: string
+  componentFile?: string
   props: PropDefinition[]
   tags: string[]
   bestFor: string[]
   copy?: Record<string, string>
+  order?: number
   createdAt: string
   updatedAt: string
 }
@@ -79,7 +82,6 @@ export interface AppSettings {
   baseProjectRepo: string
   previewBaseUrl: string
   registryUrl: string
-  yourName: string
   studioName: string
   manifestTemplate: string
   defaultFontHeading: string
