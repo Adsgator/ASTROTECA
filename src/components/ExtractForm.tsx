@@ -22,6 +22,7 @@ type Phase = 'idle' | 'analyzing' | 'ready' | 'extracting' | 'done' | 'error'
 
 export default function ExtractForm() {
   const [filePath, setFilePath] = useState('')
+  const [dragging, setDragging] = useState(false)
   const [phase, setPhase] = useState<Phase>('idle')
   const [error, setError] = useState('')
 
@@ -119,6 +120,38 @@ export default function ExtractForm() {
       {/* ── Passo 1: Caminho ── */}
       <div className={`${ui.cardBase} p-5`}>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-ink-muted mb-3">1. Arquivo</h2>
+
+        {/* Zona de drag & drop */}
+        <div
+          className={`relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors p-6 mb-3 cursor-default ${
+            dragging
+              ? 'border-accent bg-accent/10 text-accent'
+              : 'border-white/10 bg-raised/30 text-ink-muted hover:border-white/20'
+          }`}
+          onDragOver={e => { e.preventDefault(); setDragging(true) }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={e => {
+            e.preventDefault()
+            setDragging(false)
+            const file = e.dataTransfer.files[0]
+            if (file) {
+              // Em alguns browsers file.path está disponível no Electron/local
+              // No browser normal só temos o nome — usamos como fallback
+              const path = (file as any).path || file.name
+              setFilePath(path)
+              if (phase !== 'idle') reset()
+            }
+          }}
+        >
+          <svg className="w-8 h-8 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p className="text-sm">{dragging ? 'Solte aqui' : 'Arraste o arquivo .astro aqui'}</p>
+          <p className="text-xs opacity-50">ou cole o caminho abaixo</p>
+        </div>
+
         <div className="flex gap-2">
           <input
             className={ui.inputBase}

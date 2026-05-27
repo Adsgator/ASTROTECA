@@ -62,7 +62,7 @@ const icons: Record<string, string> = {
       <nav class="flex-1 p-3 flex flex-col gap-0.5">
         <div class="section-title mt-2 mb-2">Menu</div>
         {navItems.map((item) => {
-          const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))
+          const isActive = currentPath === item.href || (item.href !== '/' && item.href !== '/admin' && currentPath.startsWith(item.href))
           return (
             <a
               href={item.href}
