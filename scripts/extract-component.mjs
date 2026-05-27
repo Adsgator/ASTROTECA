@@ -3,15 +3,12 @@
 // Extrai um componente Astro de um projeto existente e o registra na biblioteca
 //
 // Uso:
+//   npm run extract
 //   node scripts/extract-component.mjs caminho/para/Componente.astro
-//   node scripts/extract-component.mjs ../meu-projeto/src/components/Hero.astro
 
-import { createInterface } from 'node:readline'
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { resolve, join, basename } from 'node:path'
-
-const rl = createInterface({ input: process.stdin, output: process.stdout })
-const ask = (q) => new Promise(r => rl.question(q, r))
+import { intro, outro, text, select, isCancel, cancel, note, spinner } from '@clack/prompts'
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs'
+import { resolve, join, basename, dirname } from 'node:path'
 
 const c = {
   cyan:   s => `\x1b[36m${s}\x1b[0m`,
@@ -19,6 +16,26 @@ const c = {
   yellow: s => `\x1b[33m${s}\x1b[0m`,
   bold:   s => `\x1b[1m${s}\x1b[0m`,
   dim:    s => `\x1b[2m${s}\x1b[0m`,
+}
+
+// Sugere arquivos .astro enquanto o usuário digita o caminho
+function suggestAstroFiles(input) {
+  if (!input) return []
+  try {
+    const normalized = input.replace(/\\/g, '/')
+    const dir = normalized.endsWith('/') ? normalized : dirname(normalized)
+    const prefix = normalized.endsWith('/') ? '' : basename(normalized)
+    const resolvedDir = resolve(dir)
+    if (!existsSync(resolvedDir)) return []
+    return readdirSync(resolvedDir, { withFileTypes: true })
+      .filter(e => e.name.toLowerCase().startsWith(prefix.toLowerCase()))
+      .filter(e => e.isDirectory() || e.name.endsWith('.astro'))
+      .slice(0, 8)
+      .map(e => ({
+        value: join(resolvedDir, e.name).replace(/\\/g, '/') + (e.isDirectory() ? '/' : ''),
+        label: e.isDirectory() ? `📁 ${e.name}/` : `📄 ${e.name}`,
+      }))
+  } catch { return [] }
 }
 
 const toPascal = s => s.replace(/(^\w|-\w|_\w)/g, m => m.replace(/[-_]/, '').toUpperCase())
@@ -151,21 +168,27 @@ async function main() {
   const filePath = process.argv[2]
 
   console.log()
-  console.log(c.bold(c.cyan('  ⚡ Astroteca — Extrair Componente')))
-  console.log()
+  intro(c.bold(c.cyan('  ⚡ Astroteca — Extrair Componente')))
 
   // ── Pede o caminho se não foi passado como argumento ─────────────────────
   let resolvedPath = filePath ? resolve(filePath) : null
 
   if (!resolvedPath) {
-    const pathInput = (await ask(c.cyan('  Caminho do arquivo .astro: '))).trim()
-    resolvedPath = resolve(pathInput)
+    const pathInput = await text({
+      message: 'Caminho do arquivo .astro:',
+      placeholder: 'C:/PROJETOS/meu-projeto/src/components/Hero.astro',
+      validate(v) {
+        if (!v) return 'Informe o caminho do arquivo.'
+        if (!v.trim().endsWith('.astro')) return 'O arquivo deve ter extensão .astro'
+      },
+    })
+    if (isCancel(pathInput)) { cancel('Cancelado.'); process.exit(0) }
+    resolvedPath = resolve(pathInput.trim())
   }
 
   if (!existsSync(resolvedPath)) {
-    console.log(c.yellow(`\n  Arquivo não encontrado: ${resolvedPath}`))
-    rl.close()
-    return
+    cancel(`Arquivo não encontrado: ${resolvedPath}`)
+    process.exit(1)
   }
 
   const rawCode = readFileSync(resolvedPath, 'utf8')
@@ -175,39 +198,45 @@ async function main() {
   const name = `${baseName}${uid}`
   const id = toKebab(name)
 
-  console.log(c.green(`\n  ✓ Arquivo lido: ${basename(resolvedPath)}`))
+  note(
+    `Arquivo: ${basename(resolvedPath)}\nProps detectadas: ${detectProps(rawCode).map(p => p.name).join(', ') || 'nenhuma'}`,
+    'Arquivo lido'
+  )
 
   // ── Detecta props automaticamente ────────────────────────────────────────
   const detectedProps = detectProps(rawCode)
-  if (detectedProps.length > 0) {
-    console.log(c.green(`  ✓ Props detectadas: ${detectedProps.map(p => p.name).join(', ')}`))
-  } else {
-    console.log(c.yellow('  ⚠️  Nenhuma prop detectada automaticamente.'))
-  }
 
   // ── Categoria ────────────────────────────────────────────────────────────
-  console.log()
-  console.log(c.cyan('  Categoria:'))
-  CATEGORIES.forEach((cat, i) => console.log(`    ${c.dim(String(i + 1) + '.')} ${cat}`))
-  const catInput = (await ask(c.cyan('\n  Número ou nome: '))).trim()
-  const catNum   = parseInt(catInput, 10)
-  const category = !isNaN(catNum) && catNum >= 1 && catNum <= CATEGORIES.length
-    ? CATEGORIES[catNum - 1]
-    : CATEGORIES.find(cat => cat.toLowerCase() === catInput.toLowerCase()) || 'Other'
+  const catChoice = await select({
+    message: 'Categoria:',
+    options: CATEGORIES.map(cat => ({ value: cat, label: cat })),
+  })
+  if (isCancel(catChoice)) { cancel('Cancelado.'); process.exit(0) }
+  const category = catChoice
 
   // ── Descrição ─────────────────────────────────────────────────────────────
-  console.log()
-  const description = (await ask(c.cyan('  Descrição: '))).trim() || `Componente ${name}`
+  const descInput = await text({
+    message: 'Descrição:',
+    placeholder: `Componente ${name}`,
+  })
+  if (isCancel(descInput)) { cancel('Cancelado.'); process.exit(0) }
+  const description = descInput.trim() || `Componente ${name}`
 
   // ── Tags ──────────────────────────────────────────────────────────────────
-  const tagsRaw = (await ask(c.cyan('  Tags ') + c.dim('(separadas por vírgula): '))).trim()
-  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : []
+  const tagsInput = await text({
+    message: 'Tags (separadas por vírgula):',
+    placeholder: 'hero, cta, botao',
+  })
+  if (isCancel(tagsInput)) { cancel('Cancelado.'); process.exit(0) }
+  const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(Boolean) : []
 
   // ── Best for ──────────────────────────────────────────────────────────────
-  const bestForRaw = (await ask(c.cyan('  Ideal para ') + c.dim('(separado por vírgula): '))).trim()
-  const bestFor = bestForRaw ? bestForRaw.split(',').map(t => t.trim()).filter(Boolean) : []
-
-  rl.close()
+  const bestForInput = await text({
+    message: 'Ideal para (separado por vírgula):',
+    placeholder: 'landing page, servicos',
+  })
+  if (isCancel(bestForInput)) { cancel('Cancelado.'); process.exit(0) }
+  const bestFor = bestForInput ? bestForInput.split(',').map(t => t.trim()).filter(Boolean) : []
 
   // ── Caminhos de destino ────────────────────────────────────────────────────
   const ROOT       = resolve(process.cwd())
@@ -223,17 +252,15 @@ async function main() {
   }
 
   // ── Cria os arquivos ───────────────────────────────────────────────────────
-  console.log()
-  console.log(c.bold('  Extraindo componente...\n'))
+  const s = spinner()
+  s.start('Extraindo componente...')
 
   // 1. Componente adaptado e sanitizado
   const adaptedCode = sanitizeCode(rawCode)
   writeFileSync(COMP_FILE, adaptedCode)
-  console.log(c.green('  ✓') + ` minha-lib-astro/src/components/${category}/${name}.astro`)
 
   // 2. Preview
   writeFileSync(PREV_FILE, generatePreviewCode(name, category, detectedProps))
-  console.log(c.green('  ✓') + ` minha-lib-astro/src/components/${category}/${name}.preview.astro`)
 
   // 3. index.ts da categoria
   let indexContent = existsSync(INDEX_FILE) ? readFileSync(INDEX_FILE, 'utf8') : ''
@@ -242,7 +269,6 @@ async function main() {
     indexContent = indexContent.trimEnd() + (indexContent ? '\n' : '') + exportLine + '\n'
     writeFileSync(INDEX_FILE, indexContent)
   }
-  console.log(c.green('  ✓') + ` minha-lib-astro/src/components/${category}/index.ts`)
 
   // 4. src/index.ts principal
   let libIndex = existsSync(LIB_INDEX) ? readFileSync(LIB_INDEX, 'utf8') : ''
@@ -251,7 +277,6 @@ async function main() {
     libIndex = libIndex.trimEnd() + (libIndex ? '\n' : '') + libLine + '\n'
     writeFileSync(LIB_INDEX, libIndex)
   }
-  console.log(c.green('  ✓') + ` minha-lib-astro/src/index.ts`)
 
   // 5. registry.json
   let registry = []
@@ -274,20 +299,22 @@ async function main() {
     updatedAt: new Date().toISOString(),
   })
   writeFileSync(REGISTRY, JSON.stringify(registry, null, 2) + '\n')
-  console.log(c.green('  ✓') + ` minha-lib-astro/registry.json`)
 
-  console.log()
-  console.log(c.bold(c.green('  ✅ Componente extraído com sucesso!')))
-  console.log()
-  console.log(c.bold('  Próximos passos:\n'))
-  console.log(c.yellow('  1.') + ` Revise o componente (especialmente se tinha cores hardcoded):`)
-  console.log(c.dim(`     minha-lib-astro/src/components/${category}/${name}.astro\n`))
-  console.log(c.yellow('  2.') + ` Ajuste as props de exemplo no preview:`)
-  console.log(c.dim(`     minha-lib-astro/src/components/${category}/${name}.preview.astro\n`))
-  console.log(c.yellow('  3.') + ` Gere os previews:`)
-  console.log(c.dim(`     node scripts/generate-previews.mjs\n`))
-  console.log(c.yellow('  4.') + ` Suba para o GitHub:`)
-  console.log(c.dim(`     cd minha-lib-astro && git add . && git commit -m "feat: extract ${name}" && git push\n`))
+  s.stop('Arquivos criados!')
+
+  note(
+    `minha-lib-astro/src/components/${category}/${name}.astro\n` +
+    `minha-lib-astro/src/components/${category}/${name}.preview.astro\n` +
+    `minha-lib-astro/registry.json`,
+    'Arquivos gerados'
+  )
+
+  outro(c.bold(c.green(`✅ "${name}" extraído com sucesso!`)) + '\n\n' +
+    `  Próximos passos:\n` +
+    `  ${c.yellow('1.')} Revise e ajuste o preview em minha-lib-astro/src/components/${category}/${name}.preview.astro\n` +
+    `  ${c.yellow('2.')} Gere os previews:  npm run previews\n` +
+    `  ${c.yellow('3.')} Suba pro GitHub:   git add . && git commit -m "feat: ${name}" && git push`
+  )
 }
 
 main().catch(e => { console.error('  Erro:', e.message); process.exit(1) })

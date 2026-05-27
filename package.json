@@ -12,11 +12,13 @@
     "start": "node dist/server/entry.mjs",
     "new": "node scripts/add-component.mjs",
     "extract": "node scripts/extract-component.mjs",
+    "remove": "node scripts/remove-component.mjs",
     "previews": "node scripts/generate-previews.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",
     "@astrojs/vercel": "^9.0.5",
+    "@clack/prompts": "^1.4.0",
     "astro": "^5.18.2",
     "clsx": "^2.1.1",
     "react": "^18.2.0",
