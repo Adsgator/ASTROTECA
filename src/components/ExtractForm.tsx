@@ -135,11 +135,16 @@ export default function ExtractForm() {
             setDragging(false)
             const file = e.dataTransfer.files[0]
             if (file) {
-              // Em alguns browsers file.path está disponível no Electron/local
-              // No browser normal só temos o nome — usamos como fallback
-              const path = (file as any).path || file.name
-              setFilePath(path)
-              if (phase !== 'idle') reset()
+              // file.path só existe em Electron — no browser só temos o nome
+              // Tenta pegar o path completo via item.getAsString (não suportado)
+              // Fallback: sugerir o nome e deixar o usuário completar o caminho
+              const fullPath = (file as any).path
+              if (fullPath) {
+                setFilePath(fullPath)
+                if (phase !== 'idle') reset()
+              } else {
+                setError(`Cole o caminho completo do arquivo "${file.name}" no campo abaixo. Dica: no Explorer, segure Shift + clique direito no arquivo → "Copiar como caminho".`)
+              }
             }
           }}
         >

@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro'
 import {
-  existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync,
+  existsSync, readFileSync, writeFileSync, mkdirSync,
 } from 'node:fs'
 import { resolve, join, basename, dirname } from 'node:path'
-import { execSync } from 'node:child_process'
+import { toBase64 } from '../../lib/utils'
 
 const ROOT = resolve(process.cwd())
 
@@ -176,7 +176,8 @@ export const POST: APIRoute = async ({ request }) => {
       .filter(p => p.type === 'string')
       .map(p => `  ${p.name}="Exemplo de ${p.name}"`)
       .join('\n')
-    writeFileSync(PREV_FILE, `---\nimport ${name} from './${name}.astro'\n---\n\n<${name}\n${propsStr}\n/>`)
+    const previewCode = `---\nimport ${name} from './${name}.astro'\n---\n\n<${name}\n${propsStr}\n/>`
+    writeFileSync(PREV_FILE, previewCode)
 
     // index.ts da categoria
     let idx = existsSync(INDEX_FILE) ? readFileSync(INDEX_FILE, 'utf8') : ''
@@ -188,11 +189,11 @@ export const POST: APIRoute = async ({ request }) => {
     const libLine = `export * from './components/${category}/index'`
     if (!libIdx.includes(libLine)) writeFileSync(LIB_INDEX, libIdx.trimEnd() + (libIdx ? '\n' : '') + libLine + '\n')
 
-    // registry.json
+    // registry.json local
     let registry: any[] = []
     try { registry = JSON.parse(readFileSync(REGISTRY, 'utf8')) } catch {}
     registry = registry.filter((r: any) => r.id !== id)
-    registry.push({
+    const newEntry = {
       id, name, category, description,
       previewPath: `/preview/${id}`,
       screenshot: '',
@@ -202,38 +203,64 @@ export const POST: APIRoute = async ({ request }) => {
       order: registry.length + 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    })
+    }
+    registry.push(newEntry)
     writeFileSync(REGISTRY, JSON.stringify(registry, null, 2) + '\n')
 
-    // Gera preview page
+    // Gera preview page no Astroteca
     const PREVIEW_DIR = join(ROOT, 'src', 'pages', 'preview')
     if (!existsSync(PREVIEW_DIR)) mkdirSync(PREVIEW_DIR, { recursive: true })
-    const previewPageContent = `---
-import ${name} from '../../../minha-lib-astro/src/components/${category}/${name}.astro'
-import PreviewLayout from '../../layouts/PreviewLayout.astro'
----
+    writeFileSync(join(PREVIEW_DIR, `${id}.astro`), `---\nimport ${name} from '../../../minha-lib-astro/src/components/${category}/${name}.astro'\nimport PreviewLayout from '../../layouts/PreviewLayout.astro'\n---\n\n<PreviewLayout>\n  <${name}\n${propsStr}\n  />\n</PreviewLayout>\n`)
 
-<PreviewLayout>
-  <${name}\n${propsStr}\n  />
-</PreviewLayout>
-`
-    writeFileSync(join(PREVIEW_DIR, `${id}.astro`), previewPageContent)
+    // ── Publica no repo da lib via GitHub API ────────────────────────────────
+    const token  = import.meta.env.GITHUB_TOKEN
+    const owner  = import.meta.env.GITHUB_OWNER
+    const repo   = import.meta.env.COMPONENTS_REPO
 
-    // Git commit + push
-    try {
-      execSync(
-        `git add -A && git commit -m "feat: extract ${name} via /admin/extract" && git push`,
-        { cwd: ROOT, stdio: 'pipe' }
-      )
-    } catch (gitErr) {
-      // push falhou mas extração foi ok — avisar sem lançar erro
-      return json({
-        success: true,
-        name, id, category,
-        children: rewrites.map(r => ({ childName: r.childName, childCategory: r.childCategory })),
-        gitWarning: 'Extração feita, mas git push falhou. Rode manualmente: git add -A && git commit -m "feat: extract" && git push',
-      })
+    if (!token || !owner || !repo) {
+      return json({ error: 'GitHub não configurado (.env: GITHUB_TOKEN, GITHUB_OWNER, COMPONENTS_REPO)' }, 500)
     }
+
+    const ghHeaders = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    }
+
+    async function ghUpsert(path: string, content: string, message: string) {
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`
+      let sha: string | undefined
+      try {
+        const existing = await fetch(url, { headers: ghHeaders })
+        if (existing.ok) sha = (await existing.json()).sha
+      } catch {}
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: ghHeaders,
+        body: JSON.stringify({ message, content: toBase64(content), ...(sha ? { sha } : {}) }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.message || `Erro ao publicar ${path}`)
+      }
+    }
+
+    // Componente principal
+    await ghUpsert(`src/components/${category}/${name}.astro`, code, `feat: extract ${name}`)
+    await ghUpsert(`src/components/${category}/${name}.preview.astro`, previewCode, `feat: extract ${name} preview`)
+
+    // Index da categoria
+    await ghUpsert(`src/components/${category}/index.ts`, readFileSync(INDEX_FILE, 'utf8'), `chore: update ${category}/index.ts`)
+
+    // Filhos
+    for (const rw of rewrites) {
+      const childFile = join(ROOT, 'minha-lib-astro', 'src', 'components', rw.childCategory, `${rw.childName}.astro`)
+      await ghUpsert(`src/components/${rw.childCategory}/${rw.childName}.astro`, readFileSync(childFile, 'utf8'), `feat: extract child ${rw.childName}`)
+    }
+
+    // Registry
+    await ghUpsert('registry.json', JSON.stringify(registry, null, 2) + '\n', `chore: registry — add ${name}`)
 
     return json({
       success: true,
