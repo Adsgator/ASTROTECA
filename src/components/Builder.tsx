@@ -500,60 +500,52 @@ export default function Builder({ availableComponents }: Props) {
           </div>
         )}
 
-        {/* --- Step 2: Componentes --- */}
+        {/* --- Step 2: Componentes — preview da página montada --- */}
         {step === 'Componentes' && (
-          <div className="space-y-4 animate-scale-in">
-            <div className="flex gap-3">
-              <input
-                className={`${ui.inputBase} max-w-xs`}
-                placeholder="Buscar componentes..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-              <div className="flex gap-2 flex-wrap">
-                <button
-                  className={!filterCategory ? ui.btnPrimary : ui.btnGhost}
-                  onClick={() => setFilterCategory(null)}
-                >
-                  Todos
-                </button>
-                {categories.map(cat => (
-                  <button
-                    key={cat}
-                    className={filterCategory === cat ? ui.btnPrimary : ui.btnGhost}
-                    onClick={() => setFilterCategory(cat)}
-                  >
-                    {cat}
-                  </button>
-                ))}
+          <div className="space-y-3 animate-scale-in">
+            {selected.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 rounded-xl border border-dashed border-white/[0.08] text-ink-muted gap-3">
+                <svg className="w-10 h-10 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                <p className="text-sm">Nenhum componente adicionado ainda.</p>
+                <p className="text-xs text-ink-muted/60">Vá até a Biblioteca e adicione componentes ao Builder.</p>
               </div>
-            </div>
-
-            {filteredComponents.length === 0 ? (
-              <div className="text-ink-secondary py-8 text-center">Nenhum componente encontrado.</div>
             ) : (
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
-                {filteredComponents.map(c => {
-                  const sel = isSelected(c.id)
-                  const pos = getPosition(c.id)
-                  return (
-                    <div
-                      key={c.id}
-                      className={`${ui.cardInteractive} ${sel ? 'ring-2 ring-accent' : ''} p-4`}
-                      onClick={() => toggleComponent(c)}
-                    >
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="font-semibold text-sm">{c.name}</span>
-                        {pos !== null && <span className={`${ui.badgeBase} bg-accent/10 text-accent`}>{pos}</span>}
+              <>
+                <p className="text-xs text-ink-muted pb-1">
+                  {selected.length} componente{selected.length !== 1 ? 's' : ''} — reordene na aba Revisar
+                </p>
+                {selected.map((sc) => (
+                  <div key={sc.meta.id} className="rounded-xl border border-white/[0.06] bg-surface/40 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.05]">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-5 h-5 rounded bg-accent/10 text-accent flex items-center justify-center text-xs font-bold">{sc.position}</span>
+                        <span className="text-sm font-semibold text-ink-primary">{sc.meta.name}</span>
+                        <span className="text-[10px] text-ink-muted bg-raised px-2 py-0.5 rounded-full">{sc.meta.category}</span>
                       </div>
-                      <div className="text-xs text-ink-secondary line-clamp-2">{c.description}</div>
-                      <div className="mt-2">
-                        <span className={`${ui.badgeBase} bg-raised text-ink-secondary`}>{c.category}</span>
-                      </div>
+                      <button
+                        className="text-ink-muted hover:text-fail transition-colors"
+                        title="Remover"
+                        onClick={() => toggleComponent(sc.meta)}
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                      </button>
                     </div>
-                  )
-                })}
-              </div>
+                    {sc.meta.previewUrl ? (
+                      <iframe
+                        src={sc.meta.previewUrl}
+                        title={sc.meta.name}
+                        className="w-full border-0"
+                        style={{ height: '320px' }}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-24 text-ink-muted text-sm">
+                        Preview não disponível
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </>
             )}
           </div>
         )}
