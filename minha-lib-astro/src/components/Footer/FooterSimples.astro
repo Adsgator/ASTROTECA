@@ -20,32 +20,32 @@ interface Props {
   bottomLinks?: Link[]
 }
 
-const { 
-  brandName, 
-  tagline, 
-  links = [], 
-  socialLinks = [], 
-  bottomLinks = [] 
+const {
+  brandName,
+  tagline,
+  links = [],
+  socialLinks = [],
+  bottomLinks = []
 } = Astro.props
 ---
 
-<footer class="bg-[var(--color-bg-dark,#1a1a1a)] text-[var(--color-on-dark,#fff)] py-12 px-6">
-  <div class="max-w-[1200px] mx-auto">
+<footer class="bg-dark text-white py-12 px-6">
+  <div class="max-w-content mx-auto">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
       {/* Brand */}
       <div>
         <h3 class="text-xl font-bold mb-2">{brandName}</h3>
-        {tagline && <p class="text-[var(--color-text-muted-on-dark,#aaa)] text-sm">{tagline}</p>}
+        {tagline && <p class="text-white/60 text-sm">{tagline}</p>}
       </div>
 
       {/* Links */}
       {links.length > 0 && (
         <div>
-          <h4 class="text-sm font-semibold uppercase tracking-wide text-[var(--color-text-muted-on-dark,#aaa)] mb-4">Links</h4>
+          <h4 class="text-sm font-semibold uppercase tracking-wide text-white/60 mb-4">Links</h4>
           <ul class="space-y-2">
             {links.map((link) => (
               <li>
-                <a href={link.href} class="text-[var(--color-on-dark,#fff)]/80 hover:text-[var(--color-on-dark,#fff)] transition-colors duration-200 no-underline">
+                <a href={link.href} class="text-white/80 hover:text-white transition-colors duration-200 no-underline">
                   {link.label}
                 </a>
               </li>
@@ -57,7 +57,7 @@ const {
       {/* Social */}
       {socialLinks.length > 0 && (
         <div>
-          <h4 class="text-sm font-semibold uppercase tracking-wide text-[var(--color-text-muted-on-dark,#aaa)] mb-4">Redes Sociais</h4>
+          <h4 class="text-sm font-semibold uppercase tracking-wide text-white/60 mb-4">Redes Sociais</h4>
           <div class="flex gap-4">
             {socialLinks.map((social) => (
               <a
@@ -76,14 +76,14 @@ const {
     </div>
 
     {/* Bottom */}
-    <div class="border-t border-[var(--color-border-on-dark,#333)] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-      <p class="text-[var(--color-text-muted-on-dark,#aaa)] text-sm">
+    <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-white/60 text-sm">
         © {new Date().getFullYear()} {brandName}. Todos os direitos reservados.
       </p>
       {bottomLinks.length > 0 && (
         <div class="flex gap-6">
           {bottomLinks.map((link) => (
-            <a href={link.href} class="text-[var(--color-text-muted-on-dark,#aaa)] text-sm hover:text-[var(--color-on-dark,#fff)] transition-colors duration-200 no-underline">
+            <a href={link.href} class="text-white/60 text-sm hover:text-white transition-colors duration-200 no-underline">
               {link.label}
             </a>
           ))}

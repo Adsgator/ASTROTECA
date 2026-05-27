@@ -17,18 +17,15 @@ const {
 ---
 
 <section class="flex flex-col items-center justify-center text-center py-24 px-6 max-w-[900px] mx-auto">
-  <h1 class="font-[var(--font-heading,serif)] text-[clamp(2rem,5vw,3.5rem)] text-[var(--color-heading,#111)] leading-[1.1] mb-6">
+  <h1 class="font-serif text-[clamp(2rem,5vw,3.5rem)] text-text-main leading-[1.1] mb-6">
     {headline}
   </h1>
   {subheadline && (
-    <p class="text-lg sm:text-xl text-[var(--color-text-muted,#555)] mb-8 leading-relaxed max-w-[600px]">
+    <p class="text-lg sm:text-xl text-text-soft mb-8 leading-relaxed max-w-[600px]">
       {subheadline}
     </p>
   )}
-  <a
-    href={ctaHref}
-    class="inline-block bg-[var(--color-primary,#333)] text-[var(--color-on-primary,#fff)] px-8 py-3.5 rounded-[var(--radius,6px)] font-semibold no-underline transition-opacity duration-200 hover:opacity-[0.88]"
-  >
+  <a href={ctaHref} class="btn-primary">
     {ctaLabel}
   </a>
 </section>

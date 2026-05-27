@@ -9,6 +9,8 @@
 import { intro, outro, text, select, multiselect, isCancel, cancel, note, spinner } from '@clack/prompts'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs'
 import { resolve, join, basename, dirname } from 'node:path'
+import { createRequire } from 'node:module'
+import { pathToFileURL } from 'node:url'
 
 const c = {
   cyan:   s => `\x1b[36m${s}\x1b[0m`,
@@ -113,12 +115,31 @@ function detectProps(code) {
 
 // Sanitiza dados sensíveis do cliente extraídos junto com o componente
 function sanitizeCode(code) {
-  // Remove imports de assets locais (@/assets, ../assets, ./assets, ../../assets etc)
-  code = code.replace(/^import\s+\w+\s+from\s+['"](?:\.{1,2}\/)*(?:@\/)?assets\/[^'"]+['"];?\s*$/gm, '')
+  // Remove imports de assets locais e coleta os nomes das variáveis removidas
+  const removedAssetVars = []
+  code = code.replace(/^import\s+(\w+)\s+from\s+['"](?:\.{1,2}\/)*(?:@\/)?assets\/[^'"]+['"];?\s*$/gm, (_, varName) => {
+    removedAssetVars.push(varName)
+    return ''
+  })
+
+  // Remove referências às variáveis de asset removidas em props de objeto (ex: image: leticiaImg,)
+  for (const v of removedAssetVars) {
+    code = code.replace(new RegExp(`(\\w+):\\s*${v}\\s*,`, 'g'), '')
+    // Remove também uso direto como atributo JSX (ex: src={leticiaImg})
+    code = code.replace(new RegExp(`\\w+=\\{${v}\\}`, 'g'), '')
+  }
 
   // Remove uso do componente <Image> que dependia de assets locais (src={variavel})
   // substitui por um img placeholder
   code = code.replace(/<Image\s[^/]*src=\{[^}]+\}[^/]*\/>/gs, '<img src="/preview-assets/placeholder-hero.svg" alt="imagem" />')
+
+  // Converte imports com path absoluto apontando para dentro da própria lib
+  // ex: import X from 'C:/PROJETOS/.../minha-lib-astro/src/components/Foo/Bar.astro'
+  //  → import X from '../Foo/Bar.astro'  (relativo à pasta do componente destino)
+  code = code.replace(
+    /^(import\s+\w+\s+from\s+['"]).*?minha-lib-astro\/src\/components\/([^'"]+)(['"])/gm,
+    (_, prefix, rest, suffix) => `${prefix}../${rest}${suffix}`
+  )
 
   // Substitui URLs de WhatsApp por placeholder
   code = code.replace(/https:\/\/wa\.me\/[^\s'"]+/g, 'https://wa.me/5500000000000')
@@ -189,42 +210,113 @@ function copyChildComponents(children, ROOT) {
   return rewrites
 }
 
-function generatePreviewCode(name, category, props) {
+// ── Detecção de tokens extras ─────────────────────────────────────────────────
+
+// Mapeia cada seção de token para os prefixos de classe Tailwind que a usam
+const TOKEN_CLASS_PATTERNS = {
+  colors:       key => [`text-${key}`, `bg-${key}`, `border-${key}`, `ring-${key}`,
+                         `from-${key}`, `to-${key}`, `via-${key}`, `fill-${key}`,
+                         `stroke-${key}`, `decoration-${key}`, `placeholder-${key}`,
+                         `caret-${key}`, `outline-${key}`, `shadow-${key}`],
+  fontFamily:   key => [`font-${key}`],
+  fontSize:     key => [`text-${key}`],
+  spacing:      key => [`p-${key}`, `py-${key}`, `px-${key}`, `pt-${key}`, `pb-${key}`,
+                         `pl-${key}`, `pr-${key}`, `m-${key}`, `my-${key}`, `mx-${key}`,
+                         `mt-${key}`, `mb-${key}`, `ml-${key}`, `mr-${key}`,
+                         `gap-${key}`, `w-${key}`, `h-${key}`, `inset-${key}`],
+  maxWidth:     key => [`max-w-${key}`],
+  borderRadius: key => [`rounded-${key}`],
+  boxShadow:    key => [`shadow-${key}`],
+}
+
+// Gera todos os nomes de classe candidatos para um token (inclui sub-chaves de objetos nested)
+function tokenCandidateClasses(section, key, value) {
+  const patterns = TOKEN_CLASS_PATTERNS[section]
+  if (!patterns) return []
+  const candidates = []
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    // Objeto nested: gera para DEFAULT e para cada sub-chave
+    if ('DEFAULT' in value) candidates.push(...patterns(key))
+    for (const subKey of Object.keys(value)) {
+      if (subKey !== 'DEFAULT') candidates.push(...patterns(`${key}-${subKey}`))
+    }
+  } else {
+    candidates.push(...patterns(key))
+  }
+  return candidates
+}
+
+// Sobe a árvore de diretórios procurando tailwind.config.js do projeto de origem
+function findProjectTailwindConfig(startDir) {
+  let dir = startDir
+  for (let i = 0; i < 8; i++) {
+    const candidate = join(dir, 'tailwind.config.js')
+    if (existsSync(candidate)) return candidate
+    const parent = dirname(dir)
+    if (parent === dir) break
+    dir = parent
+  }
+  return null
+}
+
+// Detecta tokens usados no componente que não existem na base Astroteca
+async function detectExtraTokens(code, sourceDir, ROOT) {
+  const projectConfigPath = findProjectTailwindConfig(sourceDir)
+  if (!projectConfigPath) return {}
+
+  let projectConfig, baseModule
+  try {
+    const req = createRequire(import.meta.url)
+    projectConfig = req(projectConfigPath)
+  } catch { return {} }
+
+  try {
+    baseModule = await import(pathToFileURL(join(ROOT, 'tailwind-tokens.js')).href)
+  } catch { return {} }
+
+  const projectExtend = projectConfig?.theme?.extend ?? {}
+  const baseTokens    = baseModule.tokens ?? {}
+  const SECTIONS      = ['colors', 'fontFamily', 'fontSize', 'spacing', 'maxWidth', 'borderRadius', 'boxShadow']
+  const extra         = {}
+
+  for (const section of SECTIONS) {
+    const projectSection = projectExtend[section]
+    if (!projectSection) continue
+    const baseSection = baseTokens[section] ?? {}
+
+    for (const [key, value] of Object.entries(projectSection)) {
+      // Já existe na base → não precisa carregar
+      if (key in baseSection) continue
+
+      // Verifica se alguma classe candidata é usada no código do componente
+      const candidates = tokenCandidateClasses(section, key, value)
+      const isUsed = candidates.some(cls =>
+        new RegExp(`(?:^|[\\s"'\\[{])${cls.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:[\\s"'\\]:/}]|$)`).test(code)
+      )
+
+      if (isUsed) {
+        if (!extra[section]) extra[section] = {}
+        extra[section][key] = value
+      }
+    }
+  }
+
+  return extra
+}
+
+function generatePreviewCode(name, _category, props) {
   const propsStr = props
     .filter(p => p.type === 'string')
-    .map(p => `    ${p.name}="${EXAMPLES[p.name] || `Exemplo de ${p.name}`}"`)
+    .map(p => `  ${p.name}="${EXAMPLES[p.name] || `Exemplo de ${p.name}`}"`)
     .join('\n')
 
   return `---
-// minha-lib-astro/src/components/${category}/${name}.preview.astro
 import ${name} from './${name}.astro'
 ---
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --color-primary: #7c3aed; --color-on-primary: #ffffff;
-      --color-bg: #ffffff; --color-heading: #111827;
-      --color-text: #374151; --color-text-muted: #6b7280;
-      --font-heading: 'Playfair Display', serif; --font-body: 'Inter', sans-serif;
-      --radius: 8px; --radius-lg: 16px;
-      --container-max: 1200px; --container-padding: 1.5rem;
-    }
-    body { font-family: var(--font-body); background: var(--color-bg); }
-  </style>
-</head>
-<body>
-  <${name}
+<${name}
 ${propsStr}
-  />
-</body>
-</html>
+/>
 `
 }
 
@@ -342,6 +434,15 @@ async function main() {
       .map(c => ({ ...c, category: inferCategory(c.importName) }))
   }
 
+  // ── Detecta tokens extras do projeto de origem ────────────────────────────
+  const extraTokens = await detectExtraTokens(rawCode, sourceDir, ROOT)
+  if (Object.keys(extraTokens).length > 0) {
+    const tokenSummary = Object.entries(extraTokens)
+      .map(([section, keys]) => `• ${section}: ${Object.keys(keys).join(', ')}`)
+      .join('\n')
+    note(tokenSummary, 'Tokens extras detectados (serão salvos no registry)')
+  }
+
   // ── Cria os arquivos ───────────────────────────────────────────────────────
   const s = spinner()
   s.start('Extraindo componente...')
@@ -416,6 +517,7 @@ async function main() {
     order: registry.length + 1,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    ...(Object.keys(extraTokens).length > 0 ? { tokens: extraTokens } : {}),
   })
   writeFileSync(REGISTRY, JSON.stringify(registry, null, 2) + '\n')
 

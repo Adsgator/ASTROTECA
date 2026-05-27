@@ -16,19 +16,19 @@ const { sectionTitle = "Perguntas Frequentes", items } = Astro.props
 
 <section class="py-24 px-6 max-w-[800px] mx-auto">
   {sectionTitle && (
-    <h2 class="font-[var(--font-heading,serif)] text-[clamp(1.75rem,4vw,2.5rem)] text-[var(--color-heading,#111)] text-center mb-12">
+    <h2 class="font-serif text-[clamp(1.75rem,4vw,2.5rem)] text-text-main text-center mb-12">
       {sectionTitle}
     </h2>
   )}
 
   <div class="space-y-4">
-    {items.map((item, index) => (
-      <details class="group bg-[var(--color-surface,#fff)] rounded-[var(--radius-lg,12px)] border border-[var(--color-border,#eee)] overflow-hidden">
-        <summary class="flex justify-between items-center p-6 cursor-pointer list-none hover:bg-[var(--color-bg-secondary,#f8f8f8)] transition-colors duration-200">
-          <span class="font-semibold text-[var(--color-heading,#111)] text-lg">{item.question}</span>
-          <span class="text-2xl text-[var(--color-text-muted,#555)] group-open:rotate-45 transition-transform duration-200">+</span>
+    {items.map((item) => (
+      <details class="group bg-surface rounded-2xl border border-border overflow-hidden">
+        <summary class="flex justify-between items-center p-6 cursor-pointer list-none hover:bg-surface-alt transition-colors duration-200">
+          <span class="font-semibold text-text-main text-lg">{item.question}</span>
+          <span class="text-2xl text-text-soft group-open:rotate-45 transition-transform duration-200">+</span>
         </summary>
-        <div class="px-6 pb-6 text-[var(--color-text,#333)] leading-relaxed">
+        <div class="px-6 pb-6 text-text-main leading-relaxed">
           {item.answer}
         </div>
       </details>

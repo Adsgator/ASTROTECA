@@ -1,4 +1,5 @@
 // Export all components
+export * from './components/Header/index'
 export * from './components/Hero/index'
 export * from './components/Features/index'
 export * from './components/Testimonials/index'

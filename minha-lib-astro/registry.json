@@ -1,5 +1,27 @@
 [
   {
+    "id": "header-simples",
+    "name": "Header Simples",
+    "category": "Header",
+    "description": "Navbar responsiva com logo, links de navegação e CTA. Menu hamburguer no mobile.",
+    "previewPath": "/preview/header-simples",
+    "screenshot": "",
+    "componentFile": "Header/HeaderSimples.astro",
+    "tags": ["header", "navbar", "menu", "navegacao"],
+    "bestFor": ["toda landing page"],
+    "props": [
+      { "name": "brandName", "type": "string", "required": true },
+      { "name": "brandHref", "type": "string", "required": false, "default": "/" },
+      { "name": "links", "type": "array", "required": false, "description": "Array de {label, href}" },
+      { "name": "ctaLabel", "type": "string", "required": false },
+      { "name": "ctaHref", "type": "string", "required": false, "default": "#contato" },
+      { "name": "transparent", "type": "boolean", "required": false }
+    ],
+    "order": -1,
+    "createdAt": "2026-05-27T00:00:00.000Z",
+    "updatedAt": "2026-05-27T00:00:00.000Z"
+  },
+  {
     "id": "hero-simples",
     "name": "Hero Simples",
     "category": "Hero",

@@ -19,39 +19,39 @@ interface Props {
 const { sectionTitle = "Escolha seu plano", plans } = Astro.props
 ---
 
-<section class="py-24 px-6 max-w-[1200px] mx-auto">
+<section class="py-24 px-6 max-w-content mx-auto">
   {sectionTitle && (
-    <h2 class="font-[var(--font-heading,serif)] text-[clamp(1.75rem,4vw,2.5rem)] text-[var(--color-heading,#111)] text-center mb-4">
+    <h2 class="font-serif text-[clamp(1.75rem,4vw,2.5rem)] text-text-main text-center mb-4">
       {sectionTitle}
     </h2>
   )}
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
     {plans.map((plan) => (
-      <div class={`rounded-[var(--radius-lg,12px)] p-8 ${plan.highlighted ? 'bg-[var(--color-primary,#333)] text-[var(--color-on-primary,#fff)] shadow-[0_8px_30px_rgba(0,0,0,0.15)] scale-105' : 'bg-[var(--color-surface,#fff)] border border-[var(--color-border,#eee)]'}`}>
-        <h3 class={`text-xl font-semibold mb-2 ${plan.highlighted ? 'text-[var(--color-on-primary,#fff)]' : 'text-[var(--color-heading,#111)]'}`}>
+      <div class={`rounded-2xl p-8 ${plan.highlighted ? 'bg-primary text-white shadow-primary-md scale-105' : 'bg-surface border border-border'}`}>
+        <h3 class={`text-xl font-semibold mb-2 ${plan.highlighted ? 'text-white' : 'text-text-main'}`}>
           {plan.name}
         </h3>
         <div class="mb-6">
-          <span class={`text-4xl font-bold ${plan.highlighted ? 'text-[var(--color-on-primary,#fff)]' : 'text-[var(--color-heading,#111)]'}`}>{plan.price}</span>
+          <span class={`text-4xl font-bold ${plan.highlighted ? 'text-white' : 'text-text-main'}`}>{plan.price}</span>
           {plan.period && (
-            <span class={`text-sm ${plan.highlighted ? 'text-[var(--color-on-primary,#fff)]/80' : 'text-[var(--color-text-muted,#555)]'}`}>/{plan.period}</span>
+            <span class={`text-sm ${plan.highlighted ? 'text-white/80' : 'text-text-soft'}`}>/{plan.period}</span>
           )}
         </div>
         <ul class="space-y-3 mb-8">
           {plan.features.map((feature) => (
-            <li class={`flex items-center gap-2 ${plan.highlighted ? 'text-[var(--color-on-primary,#fff)]/90' : 'text-[var(--color-text,#333)]'}`}>
-              <span class={plan.highlighted ? 'text-[var(--color-on-primary,#fff)]' : 'text-[var(--color-primary,#333)]'}>✓</span>
+            <li class={`flex items-center gap-2 ${plan.highlighted ? 'text-white/90' : 'text-text-main'}`}>
+              <span class={plan.highlighted ? 'text-white' : 'text-primary'}>✓</span>
               {feature}
             </li>
           ))}
         </ul>
         <a
           href={plan.ctaHref}
-          class={`block w-full text-center py-3 rounded-[var(--radius,6px)] font-semibold no-underline transition-opacity duration-200 hover:opacity-[0.88] ${
+          class={`block w-full text-center py-3 rounded-lg font-semibold no-underline transition-opacity duration-200 hover:opacity-[0.88] ${
             plan.highlighted
-              ? 'bg-[var(--color-surface,#fff)] text-[var(--color-primary,#333)]'
-              : 'bg-[var(--color-primary,#333)] text-[var(--color-on-primary,#fff)]'
+              ? 'bg-surface text-primary'
+              : 'bg-primary text-white'
           }`}
         >
           {plan.ctaLabel}

@@ -1,6 +1,5 @@
 ---
 // minha-lib-astro/src/components/Hero/HeroSimples.astro
-// Componente de exemplo para testar o sistema de preview
 
 interface Props {
   headline: string
@@ -19,88 +18,24 @@ const {
 } = Astro.props
 ---
 
-<section class="hero-simples">
-  <div class="hero-simples__container">
+<section class="py-[clamp(5rem,12vw,10rem)] px-6 bg-background text-center">
+  <div class="max-w-[720px] mx-auto">
 
     {badge && (
-      <span class="hero-simples__badge">{badge}</span>
+      <span class="label-tag mb-6 inline-flex">{badge}</span>
     )}
 
-    <h1 class="hero-simples__headline" set:html={headline} />
+    <h1 class="font-serif text-[clamp(2.25rem,5vw,4rem)] font-bold text-text-main leading-[1.1] tracking-[-0.02em] mb-5 [&_em]:not-italic [&_em]:text-primary" set:html={headline} />
 
     {subheadline && (
-      <p class="hero-simples__sub">{subheadline}</p>
+      <p class="font-sans text-[clamp(1rem,1.5vw,1.2rem)] text-text-soft leading-[1.65] mb-8">
+        {subheadline}
+      </p>
     )}
 
-    <a href={ctaHref} class="hero-simples__cta">
+    <a href={ctaHref} class="btn-primary">
       {ctaLabel}
     </a>
 
   </div>
 </section>
-
-<style>
-  .hero-simples {
-    padding: clamp(5rem, 12vw, 10rem) var(--container-padding, 1.5rem);
-    background-color: var(--color-bg);
-    text-align: center;
-  }
-
-  .hero-simples__container {
-    max-width: 720px;
-    margin: 0 auto;
-  }
-
-  .hero-simples__badge {
-    display: inline-block;
-    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-    color: var(--color-primary);
-    border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
-    padding: 0.375rem 0.875rem;
-    border-radius: 100px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-  }
-
-  .hero-simples__headline {
-    font-family: var(--font-heading);
-    font-size: clamp(2.25rem, 5vw, 4rem);
-    font-weight: 700;
-    color: var(--color-heading);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    margin-bottom: 1.25rem;
-  }
-
-  .hero-simples__headline em {
-    font-style: normal;
-    color: var(--color-primary);
-  }
-
-  .hero-simples__sub {
-    font-family: var(--font-body);
-    font-size: clamp(1rem, 1.5vw, 1.2rem);
-    color: var(--color-text-muted);
-    line-height: 1.65;
-    margin-bottom: 2rem;
-  }
-
-  .hero-simples__cta {
-    display: inline-flex;
-    padding: 0.875rem 2rem;
-    background: var(--color-primary);
-    color: var(--color-on-primary);
-    border-radius: var(--radius);
-    font-weight: 600;
-    font-size: 1rem;
-    text-decoration: none;
-    transition: opacity 0.2s, transform 0.2s;
-    box-shadow: 0 4px 20px color-mix(in srgb, var(--color-primary) 35%, transparent);
-  }
-
-  .hero-simples__cta:hover {
-    opacity: 0.88;
-    transform: translateY(-2px);
-  }
-</style>

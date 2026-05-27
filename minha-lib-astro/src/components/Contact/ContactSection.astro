@@ -18,7 +18,7 @@ interface Props {
   formAction?: string
 }
 
-const { 
+const {
   sectionTitle = "Entre em Contato",
   subtitle = "Preencha o formulario ou use um dos canais abaixo",
   email,
@@ -36,10 +36,10 @@ const contactInfo: ContactInfo[] = [
 ].filter(Boolean) as ContactInfo[]
 ---
 
-<section class="py-24 px-6 max-w-[1200px] mx-auto bg-[var(--color-bg-secondary,#f8f8f8)]">
+<section class="py-24 px-6 max-w-content mx-auto bg-surface-alt">
   <div class="text-center mb-12">
-    <h2 class="font-[var(--font-heading,serif)] text-[clamp(1.75rem,4vw,2.5rem)] text-[var(--color-heading,#111)] mb-4">{sectionTitle}</h2>
-    {subtitle && <p class="text-lg text-[var(--color-text-muted,#555)] max-w-[600px] mx-auto">{subtitle}</p>}
+    <h2 class="font-serif text-[clamp(1.75rem,4vw,2.5rem)] text-text-main mb-4">{sectionTitle}</h2>
+    {subtitle && <p class="text-lg text-text-soft max-w-[600px] mx-auto">{subtitle}</p>}
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -49,13 +49,13 @@ const contactInfo: ContactInfo[] = [
         <div class="flex items-start gap-4">
           <span class="text-2xl">{info.icon}</span>
           <div>
-            <div class="font-medium text-[var(--color-heading,#111)]">{info.label}</div>
+            <div class="font-medium text-text-main">{info.label}</div>
             {info.href ? (
-              <a href={info.href} class="text-[var(--color-text-muted,#555)] hover:text-[var(--color-primary,#333)] transition-colors duration-200 no-underline">
+              <a href={info.href} class="text-text-soft hover:text-primary transition-colors duration-200 no-underline">
                 {info.value}
               </a>
             ) : (
-              <div class="text-[var(--color-text-muted,#555)]">{info.value}</div>
+              <div class="text-text-soft">{info.value}</div>
             )}
           </div>
         </div>
@@ -63,26 +63,26 @@ const contactInfo: ContactInfo[] = [
     </div>
 
     {/* Form */}
-    <form action={formAction} method="POST" class="bg-[var(--color-surface,#fff)] rounded-[var(--radius-lg,12px)] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.08)] space-y-4">
+    <form action={formAction} method="POST" class="bg-surface rounded-2xl p-8 shadow-card space-y-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-[var(--color-text,#333)] mb-1">Nome</label>
-          <input type="text" name="name" required class="w-full rounded-[var(--radius,6px)] border border-[var(--color-border,#eee)] px-4 py-2 bg-[var(--color-surface,#fff)] text-[var(--color-text,#333)] focus:border-[var(--color-primary,#333)] focus:outline-none transition-colors duration-200" />
+          <label class="block text-sm font-medium text-text-main mb-1">Nome</label>
+          <input type="text" name="name" required class="w-full rounded-lg border border-border px-4 py-2 bg-surface text-text-main focus:border-primary focus:outline-none transition-colors duration-200" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-[var(--color-text,#333)] mb-1">Email</label>
-          <input type="email" name="email" required class="w-full rounded-[var(--radius,6px)] border border-[var(--color-border,#eee)] px-4 py-2 bg-[var(--color-surface,#fff)] text-[var(--color-text,#333)] focus:border-[var(--color-primary,#333)] focus:outline-none transition-colors duration-200" />
+          <label class="block text-sm font-medium text-text-main mb-1">Email</label>
+          <input type="email" name="email" required class="w-full rounded-lg border border-border px-4 py-2 bg-surface text-text-main focus:border-primary focus:outline-none transition-colors duration-200" />
         </div>
       </div>
       <div>
-        <label class="block text-sm font-medium text-[var(--color-text,#333)] mb-1">Assunto</label>
-        <input type="text" name="subject" class="w-full rounded-[var(--radius,6px)] border border-[var(--color-border,#eee)] px-4 py-2 bg-[var(--color-surface,#fff)] text-[var(--color-text,#333)] focus:border-[var(--color-primary,#333)] focus:outline-none transition-colors duration-200" />
+        <label class="block text-sm font-medium text-text-main mb-1">Assunto</label>
+        <input type="text" name="subject" class="w-full rounded-lg border border-border px-4 py-2 bg-surface text-text-main focus:border-primary focus:outline-none transition-colors duration-200" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-[var(--color-text,#333)] mb-1">Mensagem</label>
-        <textarea name="message" rows={4} required class="w-full rounded-[var(--radius,6px)] border border-[var(--color-border,#eee)] px-4 py-2 bg-[var(--color-surface,#fff)] text-[var(--color-text,#333)] focus:border-[var(--color-primary,#333)] focus:outline-none resize-y transition-colors duration-200"></textarea>
+        <label class="block text-sm font-medium text-text-main mb-1">Mensagem</label>
+        <textarea name="message" rows={4} required class="w-full rounded-lg border border-border px-4 py-2 bg-surface text-text-main focus:border-primary focus:outline-none resize-y transition-colors duration-200"></textarea>
       </div>
-      <button type="submit" class="w-full py-3 bg-[var(--color-primary,#333)] text-[var(--color-on-primary,#fff)] font-semibold rounded-[var(--radius,6px)] transition-opacity duration-200 hover:opacity-[0.88]">
+      <button type="submit" class="btn-primary w-full justify-center">
         Enviar mensagem
       </button>
     </form>

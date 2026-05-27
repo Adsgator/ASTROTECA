@@ -1,0 +1,127 @@
+---
+// minha-lib-astro/src/components/Header/HeaderSimples.astro
+// Navbar simples: logo + links de navegação + CTA
+// Mobile: menu hamburguer com toggle
+
+interface NavLink {
+  label: string
+  href: string
+}
+
+interface Props {
+  brandName: string
+  brandHref?: string
+  links?: NavLink[]
+  ctaLabel?: string
+  ctaHref?: string
+  /** Se true, fundo transparente (para usar sobre hero com imagem) */
+  transparent?: boolean
+}
+
+const {
+  brandName,
+  brandHref = '/',
+  links = [],
+  ctaLabel,
+  ctaHref = '#contato',
+  transparent = false,
+} = Astro.props
+
+const navId = `nav-menu-${Math.random().toString(36).slice(2, 7)}`
+---
+
+<header class={`w-full z-50 ${transparent ? 'absolute top-0 left-0' : 'bg-background border-b border-border'}`}>
+  <div class="max-w-wide mx-auto px-6 h-16 flex items-center justify-between gap-8">
+
+    {/* Brand */}
+    <a href={brandHref} class="font-serif text-xl font-semibold text-text-main shrink-0 no-underline">
+      {brandName}
+    </a>
+
+    {/* Links — desktop */}
+    {links.length > 0 && (
+      <nav class="hidden md:flex items-center gap-6" aria-label="Navegação principal">
+        {links.map(link => (
+          <a
+            href={link.href}
+            class="font-sans text-body-sm text-text-soft hover:text-text-main transition-colors duration-250 ease-smooth no-underline"
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
+    )}
+
+    {/* CTA + Hamburguer */}
+    <div class="flex items-center gap-3">
+      {ctaLabel && (
+        <a href={ctaHref} class="hidden md:inline-flex btn-primary">
+          {ctaLabel}
+        </a>
+      )}
+
+      {/* Botão hamburguer — mobile */}
+      {links.length > 0 && (
+        <button
+          type="button"
+          class="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-1.5 rounded-lg hover:bg-surface transition-colors duration-200"
+          aria-label="Abrir menu"
+          aria-expanded="false"
+          aria-controls={navId}
+          data-header-toggle
+        >
+          <span class="block w-5 h-px bg-text-main transition-all duration-250 ease-smooth" data-bar="1"></span>
+          <span class="block w-5 h-px bg-text-main transition-all duration-250 ease-smooth" data-bar="2"></span>
+          <span class="block w-5 h-px bg-text-main transition-all duration-250 ease-smooth" data-bar="3"></span>
+        </button>
+      )}
+    </div>
+  </div>
+
+  {/* Menu mobile */}
+  {links.length > 0 && (
+    <nav
+      id={navId}
+      class="hidden md:hidden border-t border-border bg-background px-6 py-4 space-y-3"
+      aria-label="Menu mobile"
+      data-header-menu
+    >
+      {links.map(link => (
+        <a
+          href={link.href}
+          class="block font-sans text-body-sm text-text-soft hover:text-text-main transition-colors duration-200 no-underline py-1"
+        >
+          {link.label}
+        </a>
+      ))}
+      {ctaLabel && (
+        <a href={ctaHref} class="btn-primary mt-2 w-full justify-center">
+          {ctaLabel}
+        </a>
+      )}
+    </nav>
+  )}
+</header>
+
+<script>
+  const toggle = document.querySelector('[data-header-toggle]') as HTMLButtonElement | null
+  const menu   = document.querySelector('[data-header-menu]') as HTMLElement | null
+
+  if (toggle && menu) {
+    toggle.addEventListener('click', () => {
+      const isOpen = toggle.getAttribute('aria-expanded') === 'true'
+      toggle.setAttribute('aria-expanded', String(!isOpen))
+      menu.classList.toggle('hidden', isOpen)
+
+      // Anima as barras do hamburguer → X
+      const [b1, , b3] = toggle.querySelectorAll('[data-bar]') as NodeListOf<HTMLElement>
+      if (!isOpen) {
+        b1.style.transform = 'translateY(6px) rotate(45deg)'
+        b3.style.transform = 'translateY(-6px) rotate(-45deg)'
+      } else {
+        b1.style.transform = ''
+        b3.style.transform = ''
+      }
+    })
+  }
+</script>

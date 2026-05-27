@@ -32,10 +32,10 @@ const sizes = small
   : 'text-base px-7 py-4';
 
 const variants = {
-  primary:   'bg-primary text-white hover:bg-primary-dark hover:shadow-[0_8px_24px_rgba(67,111,62,0.3)] focus-visible:outline-primary shadow-[0_4px_16px_rgba(67,111,62,0.2)] transition-all duration-300',
-  secondary: 'bg-secondary text-white hover:bg-[#c99e3e] hover:shadow-[0_8px_24px_rgba(213,151,64,0.3)] focus-visible:outline-secondary shadow-[0_4px_16px_rgba(213,151,64,0.15)] transition-all duration-300',
+  primary:          'bg-primary text-white hover:bg-primary-dark shadow-primary-sm hover:shadow-primary-md focus-visible:outline-primary transition-all duration-300 hover:-translate-y-0.5',
+  secondary:        'bg-secondary text-white hover:bg-[#c99e3e] shadow-secondary-sm hover:shadow-secondary-md focus-visible:outline-secondary transition-all duration-300 hover:-translate-y-0.5',
   'secondary-gold': 'btn-secondary-gold',
-  ghost:     'border-2 border-primary text-primary hover:bg-primary hover:text-white focus-visible:outline-primary shadow-none hover:shadow-[0_4px_16px_rgba(67,111,62,0.2)] transition-all duration-300',
+  ghost:            'border-2 border-primary text-primary hover:bg-primary hover:text-white focus-visible:outline-primary hover:shadow-primary-sm transition-all duration-300 hover:-translate-y-0.5',
 };
 
 const width = fullWidth ? 'w-full' : '';
@@ -57,38 +57,3 @@ const width = fullWidth ? 'w-full' : '';
   )}
   {label}
 </a>
-
-<style>
-  .btn-secondary-gold {
-    background-image: linear-gradient(135deg, #d59740 0%, #f9f395 50%, #c4872f 100%);
-    box-shadow: 0 4px 15px rgba(213, 151, 64, 0.25);
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease-out;
-  }
-
-  .btn-secondary-gold:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(213, 151, 64, 0.35);
-  }
-
-  .btn-secondary-gold::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    pointer-events: none;
-  }
-
-  .btn-secondary-gold:hover::after {
-    opacity: 1;
-    animation: shimmer 1.5s infinite;
-  }
-
-  @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-</style>
