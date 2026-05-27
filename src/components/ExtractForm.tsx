@@ -164,7 +164,7 @@ export default function ExtractForm() {
             className={ui.inputBase}
             placeholder="C:/PROJETOS/meu-projeto/src/components/Footer.astro"
             value={filePath}
-            onChange={e => { setFilePath(e.target.value); if (phase !== 'idle') reset() }}
+            onChange={e => { setFilePath(e.target.value.replace(/^["']|["']$/g, '')); if (phase !== 'idle') reset() }}
             disabled={phase === 'analyzing' || phase === 'extracting'}
           />
           <button

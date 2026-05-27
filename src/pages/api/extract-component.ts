@@ -89,7 +89,9 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const { filePath, phase } = body
-    const resolvedPath = resolve(filePath)
+    // "Copiar como caminho" no Windows adiciona aspas — remove
+    const cleanPath = filePath.trim().replace(/^["']|["']$/g, '')
+    const resolvedPath = resolve(cleanPath)
 
     if (!existsSync(resolvedPath)) {
       return json({ error: `Arquivo não encontrado: ${resolvedPath}` }, 400)
