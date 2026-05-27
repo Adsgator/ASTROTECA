@@ -1,0 +1,49 @@
+---
+// Botão flutuante de WhatsApp.
+// Aparece assim que o usuário rola para fora da seção hero (observa #hero-section).
+// Se não houver seção hero, remova o IntersectionObserver e torne o botão sempre visível.
+
+// TODO: substitua pelo número e mensagem real do cliente.
+// Formato: https://wa.me/55DDNÚMERO?text=MENSAGEM_ENCODED
+const WA_LINK = 'https://wa.me/5511999999999?text=Ol%C3%A1!%20Vi%20seu%20site%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es.';
+---
+
+<a
+  id="btn-whatsapp-float"
+  href={WA_LINK}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Falar pelo WhatsApp"
+  data-tracking="click-whatsapp-flutuante"
+  data-section="floating"
+  class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-wa rounded-full flex items-center justify-center shadow-float hover:scale-110 transition-all duration-200 opacity-0 pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wa"
+>
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.075.528 4.025 1.456 5.732L0 24l6.458-1.427C8.137 23.497 10.025 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.86 0-3.629-.476-5.182-1.314l-.371-.218-3.831.847.86-3.726-.24-.386A9.927 9.927 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+  </svg>
+</a>
+
+<script is:inline>
+  (function () {
+    var btn = document.getElementById('btn-whatsapp-float');
+    // Observa a seção hero: o botão só aparece após sair da tela.
+    // O Hero da biblioteca Astroteca deve ter id="hero-section".
+    var hero = document.getElementById('hero-section');
+    if (!btn || !hero) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          btn.classList.add('opacity-0', 'pointer-events-none');
+          btn.classList.remove('opacity-100');
+        } else {
+          btn.classList.remove('opacity-0', 'pointer-events-none');
+          btn.classList.add('opacity-100');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    observer.observe(hero);
+  })();
+</script>

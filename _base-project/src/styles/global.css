@@ -1,0 +1,291 @@
+/* ─────────────────────────────────────────────────────────────
+   GLOBAL CSS BASE — Padrão Adsgator
+   Fontes: substitua os @import pelas fontes do cliente.
+───────────────────────────────────────────────────────────── */
+
+/* Fontes — substitua por projeto */
+@import '@fontsource/dm-sans/300.css';
+@import '@fontsource/dm-sans/400.css';
+@import '@fontsource/dm-sans/500.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── BASE ────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-text-main font-sans font-light;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-primary-dark;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary rounded-sm;
+  }
+
+  img, video {
+    max-width: 100%;
+    display: block;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-normal;
+  }
+
+  /* Remove animações para quem prefere */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ── COMPONENTS ──────────────────────────────────────────── */
+@layer components {
+
+  /* ── Layout ── */
+  .container-content {
+    @apply w-[90%] max-w-content mx-auto;
+  }
+  .container-wide {
+    @apply w-[90%] max-w-wide mx-auto;
+  }
+  .section-py {
+    @apply py-[clamp(5rem,10vw,8rem)];
+  }
+  .section-py-sm {
+    @apply py-[clamp(3rem,6vw,5rem)];
+  }
+  .section-py-lg {
+    @apply py-[clamp(7rem,14vw,12rem)];
+  }
+
+  /* ── Tipografia ── */
+  .label-tag {
+    @apply text-label font-medium uppercase tracking-[0.16em] text-secondary;
+  }
+  .label-tag-dark {
+    @apply text-label font-medium uppercase tracking-[0.16em] text-secondary/80;
+  }
+
+  /* ── Transitions globais ── */
+  button, a {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  /* ── Imagens com hover premium ── */
+  .img-hover {
+    @apply overflow-hidden;
+  }
+  .img-hover img {
+    @apply transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)];
+  }
+  .img-hover:hover img {
+    @apply scale-[1.04];
+  }
+
+  /* ── Cards com hover premium ── */
+  .card-hover {
+    @apply transition-all duration-350 ease-smooth;
+  }
+  .card-hover:hover {
+    @apply -translate-y-1 shadow-card-hover;
+  }
+
+  /* ── Underline animado para links de texto ── */
+  .link-underline {
+    @apply relative inline-block;
+  }
+  .link-underline::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-px bg-current transition-all duration-300 ease-snappy;
+  }
+  .link-underline:hover::after {
+    @apply w-full;
+  }
+
+  /* ── Botão primário ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-primary text-white font-sans font-medium
+           px-7 py-3.5 rounded
+           shadow-primary-sm
+           transition-all duration-300 ease-smooth
+           hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-primary-md
+           active:translate-y-0 active:scale-[0.98]
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+  }
+
+  /* ── Botão ghost ── */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           bg-transparent text-primary font-sans font-medium
+           px-7 py-3.5 rounded
+           border border-primary/30
+           transition-all duration-300 ease-smooth
+           hover:border-primary hover:bg-primary/5 hover:-translate-y-0.5
+           active:translate-y-0 active:scale-[0.98];
+  }
+
+  /* ── Botão CTA secundário (dourado com shimmer) ── */
+  .btn-secondary-gold {
+    @apply relative overflow-hidden inline-flex items-center justify-center gap-2
+           text-text-main font-sans font-medium
+           px-7 py-3.5 rounded;
+    background-image: theme('backgroundImage.secondary-gradient');
+    box-shadow: theme('boxShadow.secondary-sm');
+  }
+  .btn-secondary-gold:hover {
+    @apply -translate-y-0.5 scale-[1.02];
+    box-shadow: theme('boxShadow.secondary-md');
+  }
+  .btn-secondary-gold:active {
+    @apply translate-y-0 scale-[0.98];
+  }
+  .btn-secondary-gold::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none;
+    background-image: theme('backgroundImage.secondary-shimmer');
+  }
+  .btn-secondary-gold:hover::after {
+    @apply opacity-100;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* ── Versão mobile do botão dourado ── */
+  .btn-secondary-gold-mobile {
+    @apply relative overflow-hidden inline-flex items-center justify-center gap-2
+           text-text-main font-sans font-medium
+           px-6 py-3 rounded w-full;
+    background-image: theme('backgroundImage.secondary-gradient');
+    box-shadow: theme('boxShadow.secondary-sm');
+  }
+  .btn-secondary-gold-mobile:hover {
+    @apply -translate-y-0.5;
+    box-shadow: theme('boxShadow.secondary-md');
+  }
+  .btn-secondary-gold-mobile::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none;
+    background-image: theme('backgroundImage.secondary-shimmer');
+  }
+  .btn-secondary-gold-mobile:hover::after {
+    @apply opacity-100;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* ── Divisor decorativo ── */
+  .divider-ornament {
+    @apply flex items-center gap-4 my-8;
+  }
+  .divider-ornament::before,
+  .divider-ornament::after {
+    content: '';
+    @apply flex-1 h-px bg-border;
+  }
+
+  /* ── Badge / pill ── */
+  .badge {
+    @apply inline-flex items-center gap-1.5
+           text-label font-medium uppercase tracking-[0.12em]
+           px-3.5 py-1.5 rounded-full
+           bg-primary/10 text-primary
+           border border-primary/20;
+  }
+  .badge-secondary {
+    @apply inline-flex items-center gap-1.5
+           text-label font-medium uppercase tracking-[0.12em]
+           px-3.5 py-1.5 rounded-full
+           bg-secondary/10 text-secondary
+           border border-secondary/20;
+  }
+
+  /* ── Blockquote premium ── */
+  .blockquote-premium {
+    @apply relative pl-6 border-l-2 border-secondary
+           text-body-lg font-serif italic text-text-soft
+           my-8;
+  }
+  .blockquote-premium::before {
+    content: '"';
+    @apply absolute -top-2 -left-1 text-4xl text-secondary/40 font-serif leading-none;
+  }
+
+  /* ── Número de destaque (estatísticas) ── */
+  .stat-number {
+    @apply font-serif text-display-lg text-primary leading-none;
+  }
+  .stat-label {
+    @apply text-body-sm text-text-muted mt-1;
+  }
+}
+
+/* ── KEYFRAMES ───────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── LENIS ───────────────────────────────────────────────── */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ── ANIMAÇÕES DE ENTRADA (GSAP) ─────────────────────────── */
+[data-animate] {
+  opacity: 0;
+  transform: translateY(30px);
+}
+[data-animate-left] {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+[data-animate-right] {
+  opacity: 0;
+  transform: translateX(30px);
+}
+[data-animate-scale] {
+  opacity: 0;
+  transform: scale(0.95);
+}
+[data-animate-item] {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-animate],
+  [data-animate-left],
+  [data-animate-right],
+  [data-animate-scale],
+  [data-animate-item] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

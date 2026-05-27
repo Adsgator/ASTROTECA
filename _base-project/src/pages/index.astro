@@ -1,12 +1,50 @@
 ---
-import Layout from '../layouts/Layout.astro'
+// Página inicial do projeto.
+// Importe aqui os componentes de seção da biblioteca Astroteca e do projeto.
+//
+// Estrutura esperada:
+//   Layout (infraestrutura: GTM, SEO, WhatsApp, CookieBanner, ScrollAnimations)
+//     Header     ← componente da biblioteca Astroteca
+//     seções...  ← componentes do projeto / biblioteca
+//     Footer     ← componente da biblioteca Astroteca
+//
+// TODO: importe Header, Footer e as seções da biblioteca Astroteca conforme o projeto.
+
+import Layout from '../layouts/Layout.astro';
+
+// TODO: descomente e ajuste conforme os componentes disponíveis
+// import Header from '../components/global/Header.astro';
+// import Hero from '../components/sections/Hero.astro';
+// import Footer from '../components/global/Footer.astro';
 ---
 
-<Layout title="Novo Projeto">
-  <main>
-    <!-- Componentes serao adicionados aqui via Claude Code -->
-    <section style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-      <h1>Projeto pronto para desenvolvimento</h1>
-    </section>
+<Layout>
+  {/* TODO: adicione Header vindo da biblioteca Astroteca */}
+  {/* <Header /> */}
+
+  <main id="main" tabindex="-1">
+    {/* TODO: adicione as seções da página aqui */}
+    {/* <Hero /> */}
   </main>
+
+  {/* TODO: adicione Footer vindo da biblioteca Astroteca */}
+  {/* <Footer /> */}
 </Layout>
+
+<script is:inline>
+  // Rastreamento de cliques WhatsApp via dataLayer (GTM)
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-tracking]");
+    if (!el) return;
+    var action = el.getAttribute("data-tracking");
+    var section = el.getAttribute("data-section");
+    if (action && action.includes("whatsapp")) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "contato_wpp",
+        click_action: action,
+        click_section: section || "unknown",
+      });
+    }
+  });
+</script>

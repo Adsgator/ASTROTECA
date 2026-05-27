@@ -125,12 +125,69 @@ export async function publishComponent(
 
 // ─── Criar Projeto ─────────────────────────────────────────────────────────────
 
+/** Busca o conteúdo de um arquivo do repo de componentes via GitHub API */
+async function fetchComponentFile(
+  token: string,
+  owner: string,
+  repo: string,
+  filePath: string
+): Promise<string | null> {
+  const res = await fetch(apiUrl(`/repos/${owner}/${repo}/contents/${filePath}`), {
+    headers: headers(token),
+  })
+  if (!res.ok) return null
+  const data = await res.json()
+  if (!data.content) return null
+  return atob(data.content.replace(/\n/g, ''))
+}
+
+/** Commita um arquivo no repositório destino, criando ou atualizando */
+async function commitFile(
+  token: string,
+  owner: string,
+  repo: string,
+  path: string,
+  content: string,
+  message: string
+): Promise<void> {
+  await fetch(apiUrl(`/repos/${owner}/${repo}/contents/${path}`), {
+    method: 'PUT',
+    headers: headers(token),
+    body: JSON.stringify({ message, content: toBase64(content) }),
+  })
+}
+
+/** Gera o index.astro com imports e uso dos componentes na ordem selecionada */
+function generateIndexAstro(
+  clientName: string,
+  componentNames: string[]
+): string {
+  const imports = componentNames
+    .map(name => `import ${name} from '../components/${name}/${name}.astro'`)
+    .join('\n')
+
+  const usages = componentNames.map(name => `  <${name} />`).join('\n')
+
+  return `---
+import Layout from '../layouts/Layout.astro'
+${imports}
+---
+
+<Layout title="${clientName}">
+  <main>
+${usages}
+  </main>
+</Layout>
+`
+}
+
 export async function createProjectFromTemplate(
   settings: AppSettings,
   clientName: string,
-  manifestContent: string
+  manifestContent: string,
+  selectedComponents?: import('../types').ComponentMeta[]
 ): Promise<CreateProjectResult> {
-  const { githubToken, githubOwner, baseProjectRepo } = settings
+  const { githubToken, githubOwner, baseProjectRepo, componentsRepo } = settings
   const repoName = slugify(clientName)
 
   try {
@@ -160,18 +217,39 @@ export async function createProjectFromTemplate(
     // 2. Aguarda o GitHub terminar de inicializar o repo
     await wait(3500)
 
-    // 3. Commita o MANIFESTO.md no novo repo
-    await fetch(
-      apiUrl(`/repos/${githubOwner}/${repoName}/contents/MANIFESTO.md`),
-      {
-        method: 'PUT',
-        headers: headers(githubToken),
-        body: JSON.stringify({
-          message: 'init: manifesto do projeto',
-          content: toBase64(manifestContent),
-        }),
-      }
+    // 3. Commita o MANIFESTO.md
+    await commitFile(
+      githubToken, githubOwner, repoName,
+      'MANIFESTO.md', manifestContent,
+      'init: manifesto do projeto'
     )
+
+    // 4. Copia os componentes selecionados + gera index.astro
+    if (selectedComponents && selectedComponents.length > 0 && componentsRepo) {
+      const copiedNames: string[] = []
+
+      for (const meta of selectedComponents) {
+        const srcPath = `src/components/${meta.name}/${meta.name}.astro`
+        const content = await fetchComponentFile(githubToken, githubOwner, componentsRepo, srcPath)
+        if (content) {
+          await commitFile(
+            githubToken, githubOwner, repoName,
+            srcPath, content,
+            `feat: add component ${meta.name}`
+          )
+          copiedNames.push(meta.name)
+        }
+      }
+
+      if (copiedNames.length > 0) {
+        const indexAstro = generateIndexAstro(clientName, copiedNames)
+        await commitFile(
+          githubToken, githubOwner, repoName,
+          'src/pages/index.astro', indexAstro,
+          'init: index.astro com componentes selecionados'
+        )
+      }
+    }
 
     return {
       repoUrl: repo.html_url,

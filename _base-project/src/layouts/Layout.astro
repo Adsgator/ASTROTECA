@@ -1,20 +1,180 @@
 ---
+// Layout principal — wrapper de todas as páginas do projeto.
+//
+// Header e Footer NÃO estão aqui. Eles vêm da biblioteca Astroteca e devem
+// ser importados e compostos na página (index.astro) ou via slots nomeados.
+// A página monta: <Layout> → <Header /> + <slot /> + <Footer /> no próprio .astro.
+//
+// Componentes globais incluídos aqui:
+//   - GTM (head + body noscript)
+//   - Google Consent Mode v2 (antes do GTM)
+//   - Google Fonts (via preload assíncrono + noscript fallback)
+//   - WhatsAppFloat
+//   - CookieBanner (client:idle)
+//   - ScrollAnimations (client:load)
+
+import GTM from '../components/global/GTM.astro';
+import WhatsAppFloat from '../components/global/WhatsAppFloat.astro';
+import CookieBanner from '../components/islands/CookieBanner.tsx';
+import ScrollAnimations from '../components/islands/ScrollAnimations.tsx';
+import '../styles/global.css';
+
 interface Props {
-  title: string
+  title?: string;
+  description?: string;
+  keywords?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  canonical?: string;
+  noindex?: boolean;
+  schema?: object;
 }
 
-const { title } = Astro.props
+const {
+  // TODO: substitua os defaults pelos dados reais do cliente
+  title = 'Nome do Cliente | Cidade',
+  description = 'Descrição padrão do cliente para SEO. Substitua aqui.',
+  keywords = 'palavra-chave 1, palavra-chave 2, palavra-chave 3',
+  ogTitle = 'Nome do Cliente | Cidade',
+  ogDescription = 'Descrição curta para Open Graph. Substitua aqui.',
+  canonical = 'https://seudominio.com.br', // TODO: domínio real do cliente
+  noindex = false,
+  schema,
+} = Astro.props;
+
+// TODO: substitua pelo ID real do GTM do cliente
+const GTM_ID = 'GTM-XXXXXXX';
+
+// TODO: substitua pelo schema.org correto para o tipo de negócio do cliente
+// Exemplos de @type: "LocalBusiness", "MedicalBusiness", "Nutritionist", "LegalService", etc.
+const defaultSchema = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness", // TODO: ajuste para o tipo de negócio
+  "name": "Nome do Cliente", // TODO: nome completo / razão social
+  "description": "Descrição do negócio para schema.org.", // TODO
+  "url": "https://seudominio.com.br", // TODO
+  "telephone": "+55-11-99999-9999", // TODO
+  "email": "contato@seudominio.com.br", // TODO
+  "openingHours": ["Mo-Fr 09:00-18:00"], // TODO: horários reais
+  "sameAs": [
+    // TODO: redes sociais reais do cliente
+    // "https://www.instagram.com/cliente",
+  ]
+};
+
+const finalSchema = schema || defaultSchema;
 ---
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+
+  <!-- GTM Head — imediatamente após charset -->
+  <GTM id={GTM_ID} />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/styles/theme.css" />
+
+  <!-- TODO: substitua pela cor primária do cliente (theme-color para mobile) -->
+  <meta name="theme-color" content="#000000" />
+
+  <!-- SEO -->
   <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="keywords" content={keywords} />
+  {noindex && <meta name="robots" content="noindex, follow" />}
+  <link rel="canonical" href={canonical} />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={ogTitle} />
+  <meta property="og:description" content={ogDescription} />
+  <meta property="og:url" content={canonical} />
+  <!-- TODO: adicione a imagem OG real do cliente em /public/og-image.webp -->
+  <meta property="og:image" content="https://seudominio.com.br/og-image.webp" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={ogTitle} />
+  <meta name="twitter:description" content={ogDescription} />
+  <!-- TODO: mesmo og-image acima -->
+  <meta name="twitter:image" content="https://seudominio.com.br/og-image.webp" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Google Fonts — fonte serifada do projeto
+       TODO: substitua a URL e o nome da família pela fonte escolhida para o cliente.
+       A fonte sans é carregada via @fontsource no global.css. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="preload"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap"
+    as="style"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap"
+      rel="stylesheet"
+    />
+  </noscript>
+
+  <!-- PWA Manifest — opcional; adicione /public/manifest.json se necessário -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json" set:html={JSON.stringify(finalSchema)} />
+
+  <!-- Google Consent Mode v2 — deve vir antes do GTM -->
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      'ad_storage': 'denied',
+      'analytics_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied',
+      'wait_for_update': 500
+    });
+  </script>
+
 </head>
 <body>
+  <!-- GTM Body noscript — imediatamente após abertura do body -->
+  <noscript>
+    <iframe
+      src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+      height="0"
+      width="0"
+      style="display:none;visibility:hidden"
+    ></iframe>
+  </noscript>
+
+  <!--
+    Header e Footer vêm da biblioteca Astroteca.
+    Importe-os na página e passe via slot, ou use diretamente no index.astro:
+
+      <Layout>
+        <Header />
+        <main>...</main>
+        <Footer />
+      </Layout>
+
+    O <slot /> abaixo recebe tudo isso junto.
+  -->
   <slot />
+
+  <WhatsAppFloat />
+
+  <CookieBanner
+    client:idle
+    gtmId={GTM_ID}
+  />
+
+  <ScrollAnimations client:load />
+
 </body>
 </html>

@@ -55,12 +55,22 @@ export interface SelectedComponent {
 }
 
 export interface ArtDirection {
+  // Cores principais (tokens do tailwind.config.js)
   colorPrimary: string
+  colorPrimaryDark: string
   colorSecondary: string
   colorBackground: string
+  colorSurface: string
+  colorSurfaceAlt: string
+  colorDark: string
   colorText: string
+  colorTextSoft: string
+  colorTextMuted: string
+  colorBorder: string
+  // Tipografia
   fontHeading: string
   fontBody: string
+  // Direção artística
   mood: string
   references: string
   notes: string
@@ -71,8 +81,21 @@ export interface ProjectConfig {
   projectType: string
   niche: string
   pageGoal: string
-  googleAnalyticsId: string
   siteUrl: string
+  // Técnico
+  gtmId: string
+  whatsapp: string
+  whatsappMessage: string
+  email: string
+  address: string
+  hours: string
+  instagram: string
+  facebook: string
+  schemaType: string
+  // SEO
+  seoTitle: string
+  seoDescription: string
+  seoKeywords: string
 }
 
 // ─── Configurações ──────────────────────────────────────────────────────────

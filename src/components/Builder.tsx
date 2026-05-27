@@ -71,16 +71,34 @@ const EMPTY_PROJECT: ProjectConfig = {
   niche: '',
   pageGoal: '',
   siteUrl: '',
-  googleAnalyticsId: '',
+  gtmId: '',
+  whatsapp: '',
+  whatsappMessage: 'Olá! Vim pelo site e gostaria de mais informações.',
+  email: '',
+  address: '',
+  hours: 'Mo-Fr 09:00-18:00',
+  instagram: '',
+  facebook: '',
+  schemaType: 'LocalBusiness',
+  seoTitle: '',
+  seoDescription: '',
+  seoKeywords: '',
 }
 
 const EMPTY_ART: ArtDirection = {
   colorPrimary: '#6366f1',
+  colorPrimaryDark: '#4f46e5',
   colorSecondary: '#f59e0b',
   colorBackground: '#ffffff',
+  colorSurface: '#f8f8f8',
+  colorSurfaceAlt: '#f0f0f0',
+  colorDark: '#111111',
   colorText: '#111111',
-  fontHeading: 'Inter',
-  fontBody: 'Inter',
+  colorTextSoft: '#535353',
+  colorTextMuted: '#8a8a8a',
+  colorBorder: '#e5e5e5',
+  fontHeading: 'Cormorant Garamond',
+  fontBody: 'DM Sans',
   mood: '',
   references: '',
   notes: '',
@@ -272,6 +290,7 @@ export default function Builder({ availableComponents }: Props) {
           settings,
           clientName: project.clientName,
           manifest,
+          components: getSelectedWithCopy().map(sc => sc.meta),
         }),
       })
 
@@ -415,14 +434,128 @@ export default function Builder({ availableComponents }: Props) {
                     placeholder="https://..."
                   />
                 </Field>
-                <Field label="Google Analytics ID">
+                <Field label="GTM ID">
                   <input
                     className={ui.inputBase}
-                    value={project.googleAnalyticsId}
-                    onChange={e => updateProject('googleAnalyticsId', e.target.value)}
-                    placeholder="G-XXXXXXXXXX"
+                    value={project.gtmId}
+                    onChange={e => updateProject('gtmId', e.target.value)}
+                    placeholder="GTM-XXXXXXX"
                   />
                 </Field>
+                <Field label="WhatsApp (com DDI)">
+                  <input
+                    className={ui.inputBase}
+                    value={project.whatsapp}
+                    onChange={e => updateProject('whatsapp', e.target.value)}
+                    placeholder="5511999999999"
+                  />
+                </Field>
+                <Field label="Email">
+                  <input
+                    className={ui.inputBase}
+                    value={project.email}
+                    onChange={e => updateProject('email', e.target.value)}
+                    placeholder="contato@cliente.com.br"
+                  />
+                </Field>
+                <div className="col-span-2">
+                  <Field label="Mensagem padrao WhatsApp">
+                    <input
+                      className={ui.inputBase}
+                      value={project.whatsappMessage}
+                      onChange={e => updateProject('whatsappMessage', e.target.value)}
+                      placeholder="Olá! Vim pelo site..."
+                    />
+                  </Field>
+                </div>
+                <div className="col-span-2">
+                  <Field label="Endereco">
+                    <input
+                      className={ui.inputBase}
+                      value={project.address}
+                      onChange={e => updateProject('address', e.target.value)}
+                      placeholder="Rua..., Cidade - Estado"
+                    />
+                  </Field>
+                </div>
+                <Field label="Horarios de atendimento">
+                  <input
+                    className={ui.inputBase}
+                    value={project.hours}
+                    onChange={e => updateProject('hours', e.target.value)}
+                    placeholder="Mo-Fr 09:00-18:00"
+                  />
+                </Field>
+                <Field label="Schema @type">
+                  <select
+                    className={ui.inputBase}
+                    value={project.schemaType}
+                    onChange={e => updateProject('schemaType', e.target.value)}
+                  >
+                    <option value="LocalBusiness">LocalBusiness</option>
+                    <option value="MedicalBusiness">MedicalBusiness</option>
+                    <option value="Dentist">Dentist</option>
+                    <option value="Physician">Physician</option>
+                    <option value="Nutritionist">Nutritionist</option>
+                    <option value="LegalService">LegalService</option>
+                    <option value="AccountingService">AccountingService</option>
+                    <option value="HomeAndConstructionBusiness">Construção / Reforma</option>
+                    <option value="BeautySalon">BeautySalon</option>
+                    <option value="FoodEstablishment">Alimentação</option>
+                    <option value="ProfessionalService">ProfessionalService</option>
+                  </select>
+                </Field>
+                <Field label="Instagram">
+                  <input
+                    className={ui.inputBase}
+                    value={project.instagram}
+                    onChange={e => updateProject('instagram', e.target.value)}
+                    placeholder="https://instagram.com/cliente"
+                  />
+                </Field>
+                <Field label="Facebook">
+                  <input
+                    className={ui.inputBase}
+                    value={project.facebook}
+                    onChange={e => updateProject('facebook', e.target.value)}
+                    placeholder="https://facebook.com/cliente"
+                  />
+                </Field>
+              </div>
+
+              <h2 className="text-lg font-semibold pt-4 border-t border-border">SEO</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <Field label="Titulo SEO">
+                    <input
+                      className={ui.inputBase}
+                      value={project.seoTitle}
+                      onChange={e => updateProject('seoTitle', e.target.value)}
+                      placeholder="Nome do Cliente | Cidade"
+                    />
+                  </Field>
+                </div>
+                <div className="col-span-2">
+                  <Field label="Descricao SEO">
+                    <textarea
+                      className={`${ui.inputBase} min-h-[60px] resize-y`}
+                      value={project.seoDescription}
+                      onChange={e => updateProject('seoDescription', e.target.value)}
+                      placeholder="Descricao para os mecanismos de busca..."
+                      rows={2}
+                    />
+                  </Field>
+                </div>
+                <div className="col-span-2">
+                  <Field label="Palavras-chave SEO">
+                    <input
+                      className={ui.inputBase}
+                      value={project.seoKeywords}
+                      onChange={e => updateProject('seoKeywords', e.target.value)}
+                      placeholder="palavra 1, palavra 2, palavra 3"
+                    />
+                  </Field>
+                </div>
               </div>
 
               <h2 className="text-lg font-semibold pt-4 border-t border-border">Direcao de Arte</h2>
@@ -431,6 +564,11 @@ export default function Builder({ availableComponents }: Props) {
                   label="Cor Primaria"
                   value={art.colorPrimary}
                   onChange={v => updateArt('colorPrimary', v)}
+                />
+                <ColorSwatch
+                  label="Primaria Escura"
+                  value={art.colorPrimaryDark}
+                  onChange={v => updateArt('colorPrimaryDark', v)}
                 />
                 <ColorSwatch
                   label="Cor Secundaria"
@@ -443,9 +581,34 @@ export default function Builder({ availableComponents }: Props) {
                   onChange={v => updateArt('colorBackground', v)}
                 />
                 <ColorSwatch
+                  label="Surface"
+                  value={art.colorSurface}
+                  onChange={v => updateArt('colorSurface', v)}
+                />
+                <ColorSwatch
+                  label="Surface Alt"
+                  value={art.colorSurfaceAlt}
+                  onChange={v => updateArt('colorSurfaceAlt', v)}
+                />
+                <ColorSwatch
                   label="Cor do Texto"
                   value={art.colorText}
                   onChange={v => updateArt('colorText', v)}
+                />
+                <ColorSwatch
+                  label="Texto Suave"
+                  value={art.colorTextSoft}
+                  onChange={v => updateArt('colorTextSoft', v)}
+                />
+                <ColorSwatch
+                  label="Texto Muted"
+                  value={art.colorTextMuted}
+                  onChange={v => updateArt('colorTextMuted', v)}
+                />
+                <ColorSwatch
+                  label="Borda"
+                  value={art.colorBorder}
+                  onChange={v => updateArt('colorBorder', v)}
                 />
                 <Field label="Fonte dos titulos">
                   <input
@@ -563,7 +726,10 @@ export default function Builder({ availableComponents }: Props) {
                   <Pair label="Nicho" value={project.niche} />
                   <Pair label="Objetivo" value={project.pageGoal} />
                   <Pair label="URL" value={project.siteUrl} />
-                  <Pair label="GA ID" value={project.googleAnalyticsId} />
+                  <Pair label="GTM ID" value={project.gtmId} />
+                  <Pair label="WhatsApp" value={project.whatsapp} />
+                  <Pair label="Email" value={project.email} />
+                  <Pair label="Schema" value={project.schemaType} />
                 </div>
               </div>
             </div>

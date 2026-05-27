@@ -1,0 +1,133 @@
+---
+// Página 404 — standalone, sem Layout (sem GTM, sem Header/Footer completos).
+// Tem header e footer embutidos em estilo inline para ser completamente autossuficiente.
+//
+// TODO: substitua WA_LINK pelo número real do cliente (mesmo do WhatsAppFloat.astro).
+const WA_LINK = 'https://wa.me/5511999999999?text=Ol%C3%A1!%20Vi%20seu%20site%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es.';
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, follow" />
+
+  {/* TODO: substitua pelo nome real do cliente */}
+  <title>Página não encontrada | Nome do Cliente</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  {/* TODO: substitua pelas famílias de fonte do cliente */}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      /* TODO: substitua pelas cores do cliente (background e text) */
+      background: #f7f4f0;
+      color: #1d1d1c;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 24px;
+      text-align: center;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    .bg-number {
+      position: absolute;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(200px, 40vw, 360px);
+      font-weight: 300;
+      /* TODO: substitua pela cor primária do cliente com 6% de opacidade */
+      color: rgba(0, 0, 0, 0.06);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+    }
+    .content { position: relative; z-index: 1; max-width: 420px; }
+    .label {
+      font-size: 0.72rem; font-weight: 500; letter-spacing: 0.16em;
+      text-transform: uppercase;
+      /* TODO: cor primária do cliente */
+      color: #000000;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 400;
+      line-height: 1.2; margin-bottom: 14px;
+    }
+    p { font-size: 0.95rem; color: #535353; line-height: 1.7; margin-bottom: 32px; }
+    .btn-group { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
+      padding: 14px 28px; border-radius: 6px; text-decoration: none;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .btn:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+    .btn:hover { transform: translateY(-2px); }
+    /* TODO: cores reais do cliente */
+    .btn-primary { background: #000000; color: #fff; }
+    .btn-primary:hover { background: #333333; }
+    .btn-ghost { border: 1px solid #e5e5e5; color: #535353; background: #fff; }
+    .btn-ghost:hover { border-color: #000000; color: #000000; }
+    @media (prefers-reduced-motion: reduce) { .bg-number { animation: none; } }
+  </style>
+</head>
+<body>
+
+  <p class="bg-number" id="bg-404" aria-hidden="true">404</p>
+
+  <div class="content">
+    <p class="label">Oops</p>
+    {/* TODO: adapte o texto para o nicho do cliente */}
+    <h1>Essa página não foi encontrada</h1>
+    <p>A página que você buscou não existe mais ou foi movida. Mas estou aqui para ajudar.</p>
+    <div class="btn-group">
+      <a
+        href="/"
+        class="btn btn-primary"
+        id="btn-404-home"
+        data-tracking="click-404-home"
+      >
+        Voltar ao início
+      </a>
+      <a
+        href={WA_LINK}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-ghost"
+        id="btn-404-whatsapp"
+        data-tracking="click-404-whatsapp"
+      >
+        Falar no WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <script is:inline>
+    // Animação de flutuação do número 404 (desativada com prefers-reduced-motion)
+    (function () {
+      var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+      var el = document.getElementById('bg-404');
+      if (!el) return;
+      var start = null;
+      function animate(ts) {
+        if (!start) start = ts;
+        var elapsed = (ts - start) / 1000;
+        var y = Math.sin(elapsed * (Math.PI / 4)) * 10;
+        el.style.transform = 'translateY(' + y + 'px)';
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>
