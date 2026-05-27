@@ -6,7 +6,7 @@
 //   npm run extract
 //   node scripts/extract-component.mjs caminho/para/Componente.astro
 
-import { intro, outro, text, select, isCancel, cancel, note, spinner } from '@clack/prompts'
+import { intro, outro, text, select, multiselect, isCancel, cancel, note, spinner } from '@clack/prompts'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs'
 import { resolve, join, basename, dirname } from 'node:path'
 
@@ -48,6 +48,23 @@ const toKebab  = s => s
   .toLowerCase()
 
 const CATEGORIES = ['Hero', 'Features', 'Services', 'Testimonials', 'Process', 'Pricing', 'FAQ', 'CTA', 'Contact', 'Footer', 'Trust', 'Other']
+
+// Infere a categoria de um componente filho pelo nome
+function inferCategory(name) {
+  const n = name.toLowerCase()
+  if (/^hero/.test(n))         return 'Hero'
+  if (/^feature/.test(n))      return 'Features'
+  if (/^service/.test(n))      return 'Services'
+  if (/^testimonial/.test(n))  return 'Testimonials'
+  if (/^process|^step/.test(n)) return 'Process'
+  if (/^pric/.test(n))         return 'Pricing'
+  if (/^faq/.test(n))          return 'FAQ'
+  if (/^cta/.test(n))          return 'CTA'
+  if (/^contact/.test(n))      return 'Contact'
+  if (/^footer/.test(n))       return 'Footer'
+  if (/^trust|^badge|^award/.test(n)) return 'Trust'
+  return 'Other'
+}
 
 const EXAMPLES = {
   headline:     'Transforme sua presença digital',
@@ -140,23 +157,29 @@ function detectLocalComponentImports(code, sourceDir) {
   return found
 }
 
-// Copia componentes filhos para a lib e retorna o mapa de reescrita de imports
-function copyChildComponents(children, targetDir, category) {
+// Copia componentes filhos para a lib, cada um na sua própria pasta de categoria
+function copyChildComponents(children, ROOT) {
   const rewrites = []
   for (const child of children) {
     const childBaseName = toPascal(basename(child.absolutePath, '.astro'))
     const childUid = randomId()
     const childName = `${childBaseName}${childUid}`
-    const destPath = join(targetDir, `${childName}.astro`)
+    const childCategory = child.category
+    const childDir = join(ROOT, 'minha-lib-astro', 'src', 'components', childCategory)
+    if (!existsSync(childDir)) mkdirSync(childDir, { recursive: true })
+    const destPath = join(childDir, `${childName}.astro`)
     let childCode = readFileSync(child.absolutePath, 'utf8')
     childCode = sanitizeCode(childCode)
     writeFileSync(destPath, childCode)
+    // Caminho relativo do componente pai até o filho (pode estar em pasta diferente)
     rewrites.push({
       original: child.relativePath,
-      newImport: `./${childName}.astro`,
-      importName: child.importName,
+      // import relativo será calculado na hora da reescrita
       childName,
+      childCategory,
+      childDir,
       destPath,
+      importName: child.importName,
     })
   }
   return rewrites
@@ -288,25 +311,67 @@ async function main() {
     mkdirSync(LIB_DIR, { recursive: true })
   }
 
+  // ── Filhos: detecta, pergunta quais importar, define categorias ──────────
+  const sourceDir = dirname(resolvedPath)
+  const allChildImports = detectLocalComponentImports(rawCode, sourceDir)
+
+  let chosenChildren = []
+  if (allChildImports.length > 0) {
+    note(
+      allChildImports.map(c => `• ${c.importName}  →  ${basename(c.absolutePath)}`).join('\n'),
+      `${allChildImports.length} componente(s) filho(s) detectado(s)`
+    )
+
+    const chosen = await multiselect({
+      message: 'Quais filhos deseja importar para a biblioteca?',
+      options: allChildImports.map(c => ({
+        value: c.importName,
+        label: `${c.importName}`,
+        hint: `${basename(c.absolutePath)} → pasta: ${inferCategory(c.importName)}`,
+      })),
+      initialValues: allChildImports.map(c => c.importName),
+    })
+    if (isCancel(chosen)) { cancel('Cancelado.'); process.exit(0) }
+
+    chosenChildren = allChildImports
+      .filter(c => chosen.includes(c.importName))
+      .map(c => ({ ...c, category: inferCategory(c.importName) }))
+  }
+
   // ── Cria os arquivos ───────────────────────────────────────────────────────
   const s = spinner()
   s.start('Extraindo componente...')
 
-  // 1. Detecta e copia componentes filhos locais
-  const sourceDir = dirname(resolvedPath)
-  const childImports = detectLocalComponentImports(rawCode, sourceDir)
-  const childRewrites = childImports.length > 0
-    ? copyChildComponents(childImports, LIB_DIR, category)
+  // 1. Copia filhos escolhidos, cada um na sua pasta de categoria
+  const childRewrites = chosenChildren.length > 0
+    ? copyChildComponents(chosenChildren, ROOT)
     : []
 
-  // 2. Componente adaptado e sanitizado, com imports reescritos
+  // 2. Componente adaptado e sanitizado
   let adaptedCode = sanitizeCode(rawCode)
+
+  // Reescreve imports dos filhos escolhidos com o caminho relativo correto
   for (const rw of childRewrites) {
+    const relToParent = join(rw.childDir, `${rw.childName}.astro`)
+      .replace(LIB_DIR, '.')
+      .replace(/\\/g, '/')
     adaptedCode = adaptedCode.replace(
-      new RegExp(`from\\s+['"]${rw.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`),
-      `from '${rw.newImport}'`
+      new RegExp(`import\\s+${rw.importName}\\s+from\\s+['"]${rw.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`),
+      `import ${rw.importName} from '${relToParent}'`
     )
   }
+
+  // Remove (comenta) imports dos filhos NÃO escolhidos
+  const rejectedChildren = allChildImports.filter(
+    c => !chosenChildren.find(ch => ch.importName === c.importName)
+  )
+  for (const rj of rejectedChildren) {
+    adaptedCode = adaptedCode.replace(
+      new RegExp(`^import\\s+${rj.importName}\\s+from\\s+['"][^'"]+['"];?\\s*$`, 'gm'),
+      `// import ${rj.importName} removido (componente filho não importado)`
+    )
+  }
+
   writeFileSync(COMP_FILE, adaptedCode)
 
   // 2. Preview
@@ -352,7 +417,7 @@ async function main() {
 
   s.stop('Arquivos criados!')
 
-  const childLines = childRewrites.map(rw => `minha-lib-astro/src/components/${category}/${rw.childName}.astro (filho)`).join('\n')
+  const childLines = childRewrites.map(rw => `minha-lib-astro/src/components/${rw.childCategory}/${rw.childName}.astro  (filho)`).join('\n')
   note(
     `minha-lib-astro/src/components/${category}/${name}.astro\n` +
     (childLines ? childLines + '\n' : '') +
