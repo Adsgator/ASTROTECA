@@ -1,0 +1,26 @@
+---
+import '../styles/app.css'
+---
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-primary: #7c3aed; --color-on-primary: #ffffff;
+      --color-bg: #ffffff; --color-heading: #111827;
+      --color-text: #374151; --color-text-muted: #6b7280;
+      --font-heading: 'Playfair Display', serif; --font-body: 'Inter', sans-serif;
+      --radius: 8px; --radius-lg: 16px;
+      --container-max: 1200px; --container-padding: 1.5rem;
+    }
+    body { font-family: var(--font-body); background: var(--color-bg); }
+  </style>
+</head>
+<body>
+  <slot />
+</body>
+</html>

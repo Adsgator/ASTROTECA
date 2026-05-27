@@ -55,17 +55,20 @@ for (const category of categories) {
 
     const sourceContent = readFileSync(sourcePath, 'utf8')
 
-    // Ajusta o import para o caminho correto dentro do Astroteca
-    // e injeta Tailwind CDN no head para os componentes que usam classes Tailwind
-    const adjustedContent = sourceContent
-      .replace(
-        `import ${componentName} from './${componentName}.astro'`,
-        `import ${componentName} from '../../../minha-lib-astro/src/components/${category}/${componentName}.astro'`
-      )
-      .replace(
-        '</head>',
-        '  <script src="https://cdn.tailwindcss.com"></script>\n</head>'
-      )
+    // Extrai apenas o conteúdo dentro do <body> do .preview.astro
+    // e gera uma página limpa usando PreviewLayout (que já tem HTML/head/Tailwind)
+    const bodyMatch = sourceContent.match(/<body>([\s\S]*?)<\/body>/)
+    const bodyContent = bodyMatch ? bodyMatch[1].trim() : sourceContent
+
+    const adjustedContent = `---
+import ${componentName} from '../../../minha-lib-astro/src/components/${category}/${componentName}.astro'
+import PreviewLayout from '../../layouts/PreviewLayout.astro'
+---
+
+<PreviewLayout>
+  ${bodyContent}
+</PreviewLayout>
+`
 
     // Só reescreve se o conteúdo mudou (evita rebuilds desnecessários)
     const existingContent = existsSync(destPath) ? readFileSync(destPath, 'utf8') : ''
