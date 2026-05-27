@@ -1,0 +1,255 @@
+import type { APIRoute } from 'astro'
+import {
+  existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync,
+} from 'node:fs'
+import { resolve, join, basename, dirname } from 'node:path'
+import { execSync } from 'node:child_process'
+
+const ROOT = resolve(process.cwd())
+
+// ── helpers (espelho do script CLI) ──────────────────────────────────────────
+
+const toPascal = (s: string) =>
+  s.replace(/(^\w|-\w|_\w)/g, m => m.replace(/[-_]/, '').toUpperCase())
+
+const toKebab = (s: string) =>
+  s.replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+   .replace(/([a-z])([A-Z])/g, '$1-$2')
+   .replace(/([a-zA-Z])(\d)/g, '$1-$2')
+   .replace(/[\s_]+/g, '-')
+   .toLowerCase()
+
+const randomId = () => String(Math.floor(1000 + Math.random() * 9000))
+
+const UI_COMPONENTS = /^(button|btn|icon|badge|tag|chip|card|modal|dialog|tooltip|popover|dropdown|input|textarea|select|checkbox|radio|toggle|switch|form|label|avatar|spinner|loader|alert|toast|banner|divider|separator|breadcrumb|pagination|tab|accordion|collapse|drawer|sidebar|nav|navbar|menu|link|image|img|picture|video|embed)s?(\d+)?$/i
+
+function inferCategory(name: string): string {
+  const n = name.toLowerCase().replace(/\d+$/, '')
+  if (UI_COMPONENTS.test(n))        return 'UI'
+  if (/^hero/.test(n))              return 'Hero'
+  if (/^feature/.test(n))           return 'Features'
+  if (/^service/.test(n))           return 'Services'
+  if (/^testimonial/.test(n))       return 'Testimonials'
+  if (/^process|^step/.test(n))     return 'Process'
+  if (/^pric/.test(n))              return 'Pricing'
+  if (/^faq/.test(n))               return 'FAQ'
+  if (/^cta/.test(n))               return 'CTA'
+  if (/^contact/.test(n))           return 'Contact'
+  if (/^footer/.test(n))            return 'Footer'
+  if (/^trust|^award/.test(n))      return 'Trust'
+  return 'Other'
+}
+
+function sanitize(code: string): string {
+  code = code.replace(/^import\s+\w+\s+from\s+['"](?:\.{1,2}\/)*(?:@\/)?assets\/[^'"]+['"];?\s*$/gm, '')
+  code = code.replace(/<Image\s[^/]*src=\{[^}]+\}[^/]*\/>/gs, '<img src="/preview-assets/placeholder-hero.svg" alt="imagem" />')
+  code = code.replace(/https:\/\/wa\.me\/[^\s'"]+/g, 'https://wa.me/5500000000000')
+  code = code.replace(/\(\d{2}\)\s?9?\d{4}[-\s]?\d{4}/g, '(00) 00000-0000')
+  code = code.replace(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/g, '00.000.000/0000-00')
+  code = code.replace(/href="https:\/\/(www\.)?(instagram|tiktok|facebook|youtube|linkedin)\.com\/[^"]+"/g, 'href="#"')
+  return code
+}
+
+function detectChildren(code: string, sourceDir: string) {
+  const re = /^import\s+(\w+)\s+from\s+['"](\.{1,2}\/[^'"]+\.astro)['"]/gm
+  const found: { importName: string; relativePath: string; absolutePath: string }[] = []
+  let m: RegExpExecArray | null
+  while ((m = re.exec(code)) !== null) {
+    const abs = resolve(sourceDir, m[2])
+    if (existsSync(abs)) found.push({ importName: m[1], relativePath: m[2], absolutePath: abs })
+  }
+  return found
+}
+
+function detectProps(code: string) {
+  const match = code.match(/interface\s+Props\s*\{([^}]+)\}/s)
+  if (!match) return []
+  const re = /(\w+)(\?)?:\s*(string|boolean|number|string\[\]|\w+)/g
+  const props: { name: string; type: string; required: boolean }[] = []
+  let m: RegExpExecArray | null
+  while ((m = re.exec(match[1])) !== null) {
+    const type = m[3].includes('[]') ? 'array' : m[3]
+    props.push({ name: m[1], type, required: !m[2] })
+  }
+  return props
+}
+
+// ── endpoint ─────────────────────────────────────────────────────────────────
+
+export const POST: APIRoute = async ({ request }) => {
+  try {
+    const body = await request.json() as {
+      filePath: string
+      category: string
+      description: string
+      tags: string[]
+      bestFor: string[]
+      chosenChildren: string[]   // importNames escolhidos
+      phase: 'analyze' | 'extract'
+    }
+
+    const { filePath, phase } = body
+    const resolvedPath = resolve(filePath)
+
+    if (!existsSync(resolvedPath)) {
+      return json({ error: `Arquivo não encontrado: ${resolvedPath}` }, 400)
+    }
+
+    const rawCode = readFileSync(resolvedPath, 'utf8')
+    const sourceDir = dirname(resolvedPath)
+    const children = detectChildren(rawCode, sourceDir)
+    const props = detectProps(rawCode)
+
+    // Fase 1: só analisar — retorna props e filhos detectados sem gravar nada
+    if (phase === 'analyze') {
+      return json({
+        fileName: basename(resolvedPath),
+        props,
+        children: children.map(c => ({
+          importName: c.importName,
+          fileName: basename(c.absolutePath),
+          suggestedCategory: inferCategory(c.importName),
+        })),
+      })
+    }
+
+    // Fase 2: extrair de verdade
+    const { category, description, tags, bestFor, chosenChildren } = body
+    const baseName = toPascal(basename(resolvedPath, '.astro'))
+    const uid = randomId()
+    const name = `${baseName}${uid}`
+    const id = toKebab(name)
+
+    const LIB_DIR   = join(ROOT, 'minha-lib-astro', 'src', 'components', category)
+    const COMP_FILE = join(LIB_DIR, `${name}.astro`)
+    const PREV_FILE = join(LIB_DIR, `${name}.preview.astro`)
+    const INDEX_FILE = join(LIB_DIR, 'index.ts')
+    const LIB_INDEX = join(ROOT, 'minha-lib-astro', 'src', 'index.ts')
+    const REGISTRY  = join(ROOT, 'minha-lib-astro', 'registry.json')
+
+    if (!existsSync(LIB_DIR)) mkdirSync(LIB_DIR, { recursive: true })
+
+    // Copia filhos escolhidos
+    const chosen = children.filter(c => chosenChildren.includes(c.importName))
+    const rewrites: { importName: string; original: string; newPath: string; childName: string; childCategory: string }[] = []
+
+    for (const child of chosen) {
+      const childBase = toPascal(basename(child.absolutePath, '.astro'))
+      const childName = `${childBase}${randomId()}`
+      const childCat  = inferCategory(child.importName)
+      const childDir  = join(ROOT, 'minha-lib-astro', 'src', 'components', childCat)
+      if (!existsSync(childDir)) mkdirSync(childDir, { recursive: true })
+      const destPath = join(childDir, `${childName}.astro`)
+      writeFileSync(destPath, sanitize(readFileSync(child.absolutePath, 'utf8')))
+      const relToParent = join(childDir, `${childName}.astro`)
+        .replace(LIB_DIR, '.')
+        .replace(/\\/g, '/')
+      rewrites.push({
+        importName: child.importName,
+        original: child.relativePath,
+        newPath: relToParent,
+        childName,
+        childCategory: childCat,
+      })
+    }
+
+    // Sanitiza e reescreve imports
+    let code = sanitize(rawCode)
+    for (const rw of rewrites) {
+      code = code.replace(
+        new RegExp(`import\\s+${rw.importName}\\s+from\\s+['"]${rw.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`),
+        `import ${rw.importName} from '${rw.newPath}'`
+      )
+    }
+    const rejected = children.filter(c => !chosenChildren.includes(c.importName))
+    for (const rj of rejected) {
+      code = code.replace(
+        new RegExp(`^import\\s+${rj.importName}\\s+from\\s+['"][^'"]+['"];?\\s*$`, 'gm'),
+        `// import ${rj.importName} removido`
+      )
+    }
+
+    writeFileSync(COMP_FILE, code)
+
+    // Preview
+    const propsStr = props
+      .filter(p => p.type === 'string')
+      .map(p => `  ${p.name}="Exemplo de ${p.name}"`)
+      .join('\n')
+    writeFileSync(PREV_FILE, `---\nimport ${name} from './${name}.astro'\n---\n\n<${name}\n${propsStr}\n/>`)
+
+    // index.ts da categoria
+    let idx = existsSync(INDEX_FILE) ? readFileSync(INDEX_FILE, 'utf8') : ''
+    const exportLine = `export { default as ${name} } from './${name}.astro'`
+    if (!idx.includes(exportLine)) writeFileSync(INDEX_FILE, idx.trimEnd() + (idx ? '\n' : '') + exportLine + '\n')
+
+    // src/index.ts principal
+    let libIdx = existsSync(LIB_INDEX) ? readFileSync(LIB_INDEX, 'utf8') : ''
+    const libLine = `export * from './components/${category}/index'`
+    if (!libIdx.includes(libLine)) writeFileSync(LIB_INDEX, libIdx.trimEnd() + (libIdx ? '\n' : '') + libLine + '\n')
+
+    // registry.json
+    let registry: any[] = []
+    try { registry = JSON.parse(readFileSync(REGISTRY, 'utf8')) } catch {}
+    registry = registry.filter((r: any) => r.id !== id)
+    registry.push({
+      id, name, category, description,
+      previewPath: `/preview/${id}`,
+      screenshot: '',
+      componentFile: `${category}/${name}.astro`,
+      tags, bestFor,
+      props: props.map(p => ({ name: p.name, type: p.type, required: p.required })),
+      order: registry.length + 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    writeFileSync(REGISTRY, JSON.stringify(registry, null, 2) + '\n')
+
+    // Gera preview page
+    const PREVIEW_DIR = join(ROOT, 'src', 'pages', 'preview')
+    if (!existsSync(PREVIEW_DIR)) mkdirSync(PREVIEW_DIR, { recursive: true })
+    const previewPageContent = `---
+import ${name} from '../../../minha-lib-astro/src/components/${category}/${name}.astro'
+import PreviewLayout from '../../layouts/PreviewLayout.astro'
+---
+
+<PreviewLayout>
+  <${name}\n${propsStr}\n  />
+</PreviewLayout>
+`
+    writeFileSync(join(PREVIEW_DIR, `${id}.astro`), previewPageContent)
+
+    // Git commit + push
+    try {
+      execSync(
+        `git add -A && git commit -m "feat: extract ${name} via /admin/extract" && git push`,
+        { cwd: ROOT, stdio: 'pipe' }
+      )
+    } catch (gitErr) {
+      // push falhou mas extração foi ok — avisar sem lançar erro
+      return json({
+        success: true,
+        name, id, category,
+        children: rewrites.map(r => ({ childName: r.childName, childCategory: r.childCategory })),
+        gitWarning: 'Extração feita, mas git push falhou. Rode manualmente: git add -A && git commit -m "feat: extract" && git push',
+      })
+    }
+
+    return json({
+      success: true,
+      name, id, category,
+      children: rewrites.map(r => ({ childName: r.childName, childCategory: r.childCategory })),
+    })
+
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Erro desconhecido'
+    return json({ error: msg }, 500)
+  }
+}
+
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}

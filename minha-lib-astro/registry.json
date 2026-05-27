@@ -7,14 +7,42 @@
     "previewPath": "/preview/hero-simples",
     "screenshot": "",
     "componentFile": "Hero/HeroSimples.astro",
-    "tags": ["hero", "centralizado", "simples"],
-    "bestFor": ["qualquer nicho"],
+    "tags": [
+      "hero",
+      "centralizado",
+      "simples"
+    ],
+    "bestFor": [
+      "qualquer nicho"
+    ],
     "props": [
-      { "name": "headline", "type": "string", "required": true },
-      { "name": "subheadline", "type": "string", "required": false },
-      { "name": "ctaLabel", "type": "string", "required": false, "default": "Saiba mais" },
-      { "name": "ctaHref", "type": "string", "required": false, "default": "#contato" },
-      { "name": "badge", "type": "string", "required": false }
+      {
+        "name": "headline",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "subheadline",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "ctaLabel",
+        "type": "string",
+        "required": false,
+        "default": "Saiba mais"
+      },
+      {
+        "name": "ctaHref",
+        "type": "string",
+        "required": false,
+        "default": "#contato"
+      },
+      {
+        "name": "badge",
+        "type": "string",
+        "required": false
+      }
     ],
     "order": 0,
     "createdAt": "2026-05-26T00:00:00.000Z",
@@ -28,15 +56,49 @@
     "previewPath": "/preview/hero-split",
     "screenshot": "",
     "componentFile": "Hero/HeroSplit.astro",
-    "tags": ["hero", "acima-da-dobra", "imagem", "split"],
-    "props": [
-      { "name": "headline", "type": "string", "required": true, "description": "Titulo principal" },
-      { "name": "subheadline", "type": "string", "required": false, "description": "Subtitulo ou descricao curta" },
-      { "name": "ctaLabel", "type": "string", "required": false, "default": "Saiba mais" },
-      { "name": "ctaHref", "type": "string", "required": false, "default": "#contato" },
-      { "name": "imageSrc", "type": "string", "required": false, "description": "Caminho para a imagem" }
+    "tags": [
+      "hero",
+      "acima-da-dobra",
+      "imagem",
+      "split"
     ],
-    "bestFor": ["servicos", "profissionais liberais", "consultorios"],
+    "props": [
+      {
+        "name": "headline",
+        "type": "string",
+        "required": true,
+        "description": "Titulo principal"
+      },
+      {
+        "name": "subheadline",
+        "type": "string",
+        "required": false,
+        "description": "Subtitulo ou descricao curta"
+      },
+      {
+        "name": "ctaLabel",
+        "type": "string",
+        "required": false,
+        "default": "Saiba mais"
+      },
+      {
+        "name": "ctaHref",
+        "type": "string",
+        "required": false,
+        "default": "#contato"
+      },
+      {
+        "name": "imageSrc",
+        "type": "string",
+        "required": false,
+        "description": "Caminho para a imagem"
+      }
+    ],
+    "bestFor": [
+      "servicos",
+      "profissionais liberais",
+      "consultorios"
+    ],
     "order": 1
   },
   {
@@ -47,14 +109,40 @@
     "previewPath": "/preview/hero-centered",
     "screenshot": "",
     "componentFile": "Hero/HeroCentered.astro",
-    "tags": ["hero", "acima-da-dobra", "centralizado", "produto"],
-    "props": [
-      { "name": "headline", "type": "string", "required": true },
-      { "name": "subheadline", "type": "string", "required": false },
-      { "name": "ctaLabel", "type": "string", "required": false, "default": "Comecar agora" },
-      { "name": "ctaHref", "type": "string", "required": false }
+    "tags": [
+      "hero",
+      "acima-da-dobra",
+      "centralizado",
+      "produto"
     ],
-    "bestFor": ["produtos digitais", "SaaS", "apps"],
+    "props": [
+      {
+        "name": "headline",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "subheadline",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "ctaLabel",
+        "type": "string",
+        "required": false,
+        "default": "Comecar agora"
+      },
+      {
+        "name": "ctaHref",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "bestFor": [
+      "produtos digitais",
+      "SaaS",
+      "apps"
+    ],
     "order": 2
   },
   {
@@ -65,12 +153,28 @@
     "previewPath": "/preview/features-grid-3",
     "screenshot": "",
     "componentFile": "Features/FeaturesGrid3.astro",
-    "tags": ["features", "diferenciais", "grid", "icones"],
-    "props": [
-      { "name": "sectionTitle", "type": "string", "required": false },
-      { "name": "items", "type": "array", "required": true, "description": "Array de {icon, title, description}" }
+    "tags": [
+      "features",
+      "diferenciais",
+      "grid",
+      "icones"
     ],
-    "bestFor": ["qualquer nicho"],
+    "props": [
+      {
+        "name": "sectionTitle",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "items",
+        "type": "array",
+        "required": true,
+        "description": "Array de {icon, title, description}"
+      }
+    ],
+    "bestFor": [
+      "qualquer nicho"
+    ],
     "order": 10
   },
   {
@@ -81,12 +185,28 @@
     "previewPath": "/preview/testimonials-cards",
     "screenshot": "",
     "componentFile": "Testimonials/TestimonialsCards.astro",
-    "tags": ["testimonials", "depoimentos", "social-proof", "cards"],
-    "props": [
-      { "name": "sectionTitle", "type": "string", "required": false },
-      { "name": "testimonials", "type": "array", "required": true, "description": "Array de {quote, author, role, avatar}" }
+    "tags": [
+      "testimonials",
+      "depoimentos",
+      "social-proof",
+      "cards"
     ],
-    "bestFor": ["qualquer nicho com prova social"],
+    "props": [
+      {
+        "name": "sectionTitle",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "testimonials",
+        "type": "array",
+        "required": true,
+        "description": "Array de {quote, author, role, avatar}"
+      }
+    ],
+    "bestFor": [
+      "qualquer nicho com prova social"
+    ],
     "order": 20
   },
   {
@@ -97,12 +217,30 @@
     "previewPath": "/preview/pricing-cards",
     "screenshot": "",
     "componentFile": "Pricing/PricingCards.astro",
-    "tags": ["pricing", "precos", "planos", "cards"],
-    "props": [
-      { "name": "sectionTitle", "type": "string", "required": false },
-      { "name": "plans", "type": "array", "required": true, "description": "Array de planos" }
+    "tags": [
+      "pricing",
+      "precos",
+      "planos",
+      "cards"
     ],
-    "bestFor": ["servicos com pacotes", "SaaS", "assinaturas"],
+    "props": [
+      {
+        "name": "sectionTitle",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "plans",
+        "type": "array",
+        "required": true,
+        "description": "Array de planos"
+      }
+    ],
+    "bestFor": [
+      "servicos com pacotes",
+      "SaaS",
+      "assinaturas"
+    ],
     "order": 30
   },
   {
@@ -113,14 +251,37 @@
     "previewPath": "/preview/cta-banner",
     "screenshot": "",
     "componentFile": "CTA/CTABanner.astro",
-    "tags": ["cta", "call-to-action", "banner", "final"],
-    "props": [
-      { "name": "headline", "type": "string", "required": true },
-      { "name": "subheadline", "type": "string", "required": false },
-      { "name": "ctaLabel", "type": "string", "required": true },
-      { "name": "ctaHref", "type": "string", "required": true }
+    "tags": [
+      "cta",
+      "call-to-action",
+      "banner",
+      "final"
     ],
-    "bestFor": ["toda landing page"],
+    "props": [
+      {
+        "name": "headline",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "subheadline",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "ctaLabel",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "ctaHref",
+        "type": "string",
+        "required": true
+      }
+    ],
+    "bestFor": [
+      "toda landing page"
+    ],
     "order": 40
   },
   {
@@ -131,12 +292,28 @@
     "previewPath": "/preview/faq-accordion",
     "screenshot": "",
     "componentFile": "FAQ/FAQAccordion.astro",
-    "tags": ["faq", "perguntas", "accordion", "objecoes"],
-    "props": [
-      { "name": "sectionTitle", "type": "string", "required": false },
-      { "name": "items", "type": "array", "required": true, "description": "Array de {question, answer}" }
+    "tags": [
+      "faq",
+      "perguntas",
+      "accordion",
+      "objecoes"
     ],
-    "bestFor": ["toda landing page"],
+    "props": [
+      {
+        "name": "sectionTitle",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "items",
+        "type": "array",
+        "required": true,
+        "description": "Array de {question, answer}"
+      }
+    ],
+    "bestFor": [
+      "toda landing page"
+    ],
     "order": 50
   },
   {
@@ -147,17 +324,52 @@
     "previewPath": "/preview/contact-section",
     "screenshot": "",
     "componentFile": "Contact/ContactSection.astro",
-    "tags": ["contact", "contato", "formulario", "localizacao"],
-    "props": [
-      { "name": "sectionTitle", "type": "string", "required": false },
-      { "name": "subtitle", "type": "string", "required": false },
-      { "name": "email", "type": "string", "required": false },
-      { "name": "phone", "type": "string", "required": false },
-      { "name": "whatsapp", "type": "string", "required": false },
-      { "name": "address", "type": "string", "required": false },
-      { "name": "formAction", "type": "string", "required": false }
+    "tags": [
+      "contact",
+      "contato",
+      "formulario",
+      "localizacao"
     ],
-    "bestFor": ["toda landing page"],
+    "props": [
+      {
+        "name": "sectionTitle",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "subtitle",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "whatsapp",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "address",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "formAction",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "bestFor": [
+      "toda landing page"
+    ],
     "order": 60
   },
   {
@@ -168,15 +380,65 @@
     "previewPath": "/preview/footer-simples",
     "screenshot": "",
     "componentFile": "Footer/FooterSimples.astro",
-    "tags": ["footer", "rodape", "links", "social"],
-    "props": [
-      { "name": "brandName", "type": "string", "required": true },
-      { "name": "tagline", "type": "string", "required": false },
-      { "name": "links", "type": "array", "required": false, "description": "Array de {label, href}" },
-      { "name": "socialLinks", "type": "array", "required": false, "description": "Array de {platform, href, icon}" },
-      { "name": "bottomLinks", "type": "array", "required": false, "description": "Array de {label, href}" }
+    "tags": [
+      "footer",
+      "rodape",
+      "links",
+      "social"
     ],
-    "bestFor": ["toda landing page"],
+    "props": [
+      {
+        "name": "brandName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "tagline",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "required": false,
+        "description": "Array de {label, href}"
+      },
+      {
+        "name": "socialLinks",
+        "type": "array",
+        "required": false,
+        "description": "Array de {platform, href, icon}"
+      },
+      {
+        "name": "bottomLinks",
+        "type": "array",
+        "required": false,
+        "description": "Array de {label, href}"
+      }
+    ],
+    "bestFor": [
+      "toda landing page"
+    ],
     "order": 70
+  },
+  {
+    "id": "footer",
+    "name": "Footer",
+    "category": "Footer",
+    "description": "Rodapé teste site real",
+    "previewPath": "/preview/footer",
+    "screenshot": "",
+    "componentFile": "Footer/Footer.astro",
+    "tags": [
+      "footer",
+      "rodape"
+    ],
+    "bestFor": [
+      "todos os projetos"
+    ],
+    "props": [],
+    "order": 11,
+    "createdAt": "2026-05-27T00:30:48.894Z",
+    "updatedAt": "2026-05-27T00:30:48.896Z"
   }
 ]
