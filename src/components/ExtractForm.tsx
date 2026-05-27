@@ -23,6 +23,7 @@ type Phase = 'idle' | 'analyzing' | 'ready' | 'extracting' | 'done' | 'error'
 export default function ExtractForm() {
   const [filePath, setFilePath] = useState('')
   const [dragging, setDragging] = useState(false)
+  const [dropHint, setDropHint] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [error, setError] = useState('')
 
@@ -141,9 +142,10 @@ export default function ExtractForm() {
               const fullPath = (file as any).path
               if (fullPath) {
                 setFilePath(fullPath)
+                setDropHint('')
                 if (phase !== 'idle') reset()
               } else {
-                setError(`Cole o caminho completo do arquivo "${file.name}" no campo abaixo. Dica: no Explorer, segure Shift + clique direito no arquivo → "Copiar como caminho".`)
+                setDropHint(`Arquivo detectado: "${file.name}". Complete o caminho no campo abaixo.`)
               }
             }
           }}
@@ -178,6 +180,13 @@ export default function ExtractForm() {
             ) : 'Analisar'}
           </button>
         </div>
+
+        {dropHint && (
+          <div className="mt-2 flex items-start gap-2 text-xs text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-3 py-2">
+            <svg className="w-3.5 h-3.5 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>{dropHint} <strong>Dica:</strong> Shift + botão direito no arquivo → "Copiar como caminho"</span>
+          </div>
+        )}
 
         {phase === 'ready' && (
           <div className="mt-3 flex items-center gap-2 text-ok text-sm">
