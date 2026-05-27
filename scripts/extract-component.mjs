@@ -125,6 +125,43 @@ function sanitizeCode(code) {
   return code
 }
 
+// Detecta imports locais de componentes .astro (exclui assets, pacotes npm e astro:*)
+function detectLocalComponentImports(code, sourceDir) {
+  const importRegex = /^import\s+(\w+)\s+from\s+['"](\.{1,2}\/[^'"]+\.astro)['"]/gm
+  const found = []
+  let match
+  while ((match = importRegex.exec(code)) !== null) {
+    const [fullMatch, importName, relativePath] = match
+    const absolutePath = resolve(sourceDir, relativePath)
+    if (existsSync(absolutePath)) {
+      found.push({ importName, relativePath, absolutePath })
+    }
+  }
+  return found
+}
+
+// Copia componentes filhos para a lib e retorna o mapa de reescrita de imports
+function copyChildComponents(children, targetDir, category) {
+  const rewrites = []
+  for (const child of children) {
+    const childBaseName = toPascal(basename(child.absolutePath, '.astro'))
+    const childUid = randomId()
+    const childName = `${childBaseName}${childUid}`
+    const destPath = join(targetDir, `${childName}.astro`)
+    let childCode = readFileSync(child.absolutePath, 'utf8')
+    childCode = sanitizeCode(childCode)
+    writeFileSync(destPath, childCode)
+    rewrites.push({
+      original: child.relativePath,
+      newImport: `./${childName}.astro`,
+      importName: child.importName,
+      childName,
+      destPath,
+    })
+  }
+  return rewrites
+}
+
 function generatePreviewCode(name, category, props) {
   const propsStr = props
     .filter(p => p.type === 'string')
@@ -255,8 +292,21 @@ async function main() {
   const s = spinner()
   s.start('Extraindo componente...')
 
-  // 1. Componente adaptado e sanitizado
-  const adaptedCode = sanitizeCode(rawCode)
+  // 1. Detecta e copia componentes filhos locais
+  const sourceDir = dirname(resolvedPath)
+  const childImports = detectLocalComponentImports(rawCode, sourceDir)
+  const childRewrites = childImports.length > 0
+    ? copyChildComponents(childImports, LIB_DIR, category)
+    : []
+
+  // 2. Componente adaptado e sanitizado, com imports reescritos
+  let adaptedCode = sanitizeCode(rawCode)
+  for (const rw of childRewrites) {
+    adaptedCode = adaptedCode.replace(
+      new RegExp(`from\\s+['"]${rw.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`),
+      `from '${rw.newImport}'`
+    )
+  }
   writeFileSync(COMP_FILE, adaptedCode)
 
   // 2. Preview
@@ -302,8 +352,10 @@ async function main() {
 
   s.stop('Arquivos criados!')
 
+  const childLines = childRewrites.map(rw => `minha-lib-astro/src/components/${category}/${rw.childName}.astro (filho)`).join('\n')
   note(
     `minha-lib-astro/src/components/${category}/${name}.astro\n` +
+    (childLines ? childLines + '\n' : '') +
     `minha-lib-astro/src/components/${category}/${name}.preview.astro\n` +
     `minha-lib-astro/registry.json`,
     'Arquivos gerados'
