@@ -14,11 +14,13 @@ export type ComponentCategory =
   | 'Gallery'
   | 'Contact'
   | 'Footer'
+  | 'About'
+  | 'Team'
   | 'Misc'
 
 export interface PropDefinition {
   name: string
-  type: 'string' | 'boolean' | 'number' | 'string[]' | 'Record<string, string>' | 'array'
+  type: 'string' | 'boolean' | 'number' | 'array' | 'Record<string, string>'
   required: boolean
   description?: string
   default?: string

@@ -91,6 +91,10 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
     }
   }, [initialComponents.length, initialError])
 
+  useEffect(() => {
+    setPreviewError(false)
+  }, [selectedId])
+
   function getFallbackRegistry(): ComponentMeta[] {
     const now = new Date().toISOString()
     return [
