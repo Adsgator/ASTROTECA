@@ -1,6 +1,7 @@
 {
   "name": "astro-library-browser",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "engines": {
     "node": ">=20.0.0"
@@ -13,7 +14,9 @@
     "new": "node scripts/add-component.mjs",
     "extract": "node scripts/extract-component.mjs",
     "remove": "node scripts/remove-component.mjs",
-    "previews": "node scripts/generate-previews.mjs"
+    "previews": "node scripts/generate-previews.mjs",
+    "preview:css": "npx tailwindcss -c tailwind.preview.config.js -i src/styles/preview.css -o public/preview-components.css --watch",
+    "build:preview-css": "npx tailwindcss -c tailwind.preview.config.js -i src/styles/preview.css -o public/preview-components.css --minify"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",

@@ -1,0 +1,184 @@
+/* preview.css — entry point para o build de preview dos componentes */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset base e tipografia para contexto de preview */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: #ffffff;
+  color: theme('colors.text-main');
+  font-family: theme('fontFamily.sans');
+  line-height: 1.6;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── Utilitários premium (espelho do global.css do _base-project) ─── */
+
+@layer utilities {
+  .container-content {
+    @apply max-w-content mx-auto px-6;
+  }
+
+  .container-wide {
+    @apply max-w-wide mx-auto px-6;
+  }
+
+  .section-py {
+    @apply py-section;
+  }
+
+  .section-py-sm {
+    @apply py-section-sm;
+  }
+
+  .section-py-lg {
+    @apply py-section-lg;
+  }
+
+  /* Labels / badges */
+  .label-tag {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+           text-label font-semibold tracking-widest uppercase
+           text-primary bg-primary/[8%] border border-primary/20;
+  }
+
+  .label-tag-dark {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+           text-label font-semibold tracking-widest uppercase
+           text-secondary bg-secondary/10 border border-secondary/20;
+  }
+
+  /* Imagens */
+  .img-hover {
+    @apply overflow-hidden;
+  }
+
+  .img-hover img {
+    @apply transition-transform duration-600 ease-smooth;
+  }
+
+  .img-hover:hover img {
+    @apply scale-105;
+  }
+
+  /* Cards */
+  .card-hover {
+    @apply transition-all duration-350 ease-smooth
+           hover:-translate-y-1 hover:shadow-card-hover;
+  }
+
+  /* Links com underline animado */
+  .link-underline {
+    @apply relative inline-block;
+  }
+
+  .link-underline::after {
+    content: '';
+    @apply absolute bottom-0 left-0 h-px w-0 bg-primary
+           transition-all duration-350 ease-smooth;
+  }
+
+  .link-underline:hover::after {
+    @apply w-full;
+  }
+
+  /* Botões */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           px-7 py-3.5 rounded-lg
+           bg-primary text-white font-semibold text-body-sm
+           shadow-primary-sm
+           transition-all duration-250 ease-smooth
+           hover:bg-primary-dark hover:shadow-primary-md hover:-translate-y-0.5
+           active:translate-y-0 active:shadow-primary-sm;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           px-7 py-3.5 rounded-lg
+           border-2 border-primary text-primary font-semibold text-body-sm
+           transition-all duration-250 ease-smooth
+           hover:bg-primary hover:text-white hover:-translate-y-0.5
+           active:translate-y-0;
+  }
+
+  .btn-secondary-gold {
+    @apply relative inline-flex items-center justify-center gap-2
+           px-7 py-3.5 rounded-lg overflow-hidden
+           bg-secondary-gradient text-dark font-bold text-body-sm
+           shadow-secondary-sm
+           transition-all duration-350 ease-smooth
+           hover:shadow-secondary-md hover:-translate-y-0.5
+           active:translate-y-0;
+  }
+
+  /* Divisor ornamental */
+  .divider-ornament {
+    @apply flex items-center gap-4 my-8;
+  }
+
+  .divider-ornament::before,
+  .divider-ornament::after {
+    content: '';
+    @apply flex-1 h-px bg-border;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+           text-label font-semibold tracking-wider uppercase
+           bg-surface border border-border text-text-soft;
+  }
+
+  .badge-secondary {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+           text-label font-semibold tracking-wider uppercase
+           bg-secondary/10 border border-secondary/25 text-secondary;
+  }
+
+  /* Quote */
+  .blockquote-premium {
+    @apply relative pl-6 border-l-4 border-secondary
+           text-body-lg italic text-text-soft;
+  }
+
+  /* Stat */
+  .stat-number {
+    @apply text-display-lg font-serif font-bold text-primary leading-none;
+  }
+
+  .stat-label {
+    @apply text-body-sm text-text-muted mt-1;
+  }
+}
+
+/* ── Animações GSAP (data-attributes, sem JS precisam ter estado inicial) ─── */
+[data-animate],
+[data-animate-left],
+[data-animate-right],
+[data-animate-scale],
+[data-animate-item] {
+  opacity: 1; /* Estado visível por padrão no preview sem JS */
+}

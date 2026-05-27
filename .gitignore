@@ -24,3 +24,6 @@ Thumbs.db
 # Build
 *.tsbuildinfo
 .vercel/
+
+# Preview CSS gerado — compilado automaticamente pelo Vite plugin
+public/preview-components.css
