@@ -440,5 +440,65 @@
     "order": 11,
     "createdAt": "2026-05-27T00:30:48.894Z",
     "updatedAt": "2026-05-27T00:30:48.896Z"
+  },
+  {
+    "id": "button-2555",
+    "name": "Button2555",
+    "category": "UI",
+    "description": "botão teste envia pelo sistema",
+    "previewPath": "/preview/button-2555",
+    "screenshot": "",
+    "componentFile": "UI/Button2555.astro",
+    "tags": [
+      "button"
+    ],
+    "bestFor": [
+      "para teste"
+    ],
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "href",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "trackingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "trackingAction",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "section",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "external",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "fullWidth",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "class",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "order": 12,
+    "createdAt": "2026-05-27T01:35:17.362Z",
+    "updatedAt": "2026-05-27T01:35:17.362Z"
   }
 ]
