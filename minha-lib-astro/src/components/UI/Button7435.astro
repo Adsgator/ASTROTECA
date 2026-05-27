@@ -1,0 +1,66 @@
+---
+export interface Props {
+  label: string;
+  href: string;
+  variant?: 'primary' | 'secondary' | 'ghost' | 'white' | 'outline-white';
+  size?: 'sm' | 'md' | 'lg';
+  trackingId?: string;
+  trackingAction?: string;
+  section?: string;
+  external?: boolean;
+  fullWidth?: boolean;
+  class?: string;
+}
+
+const {
+  label,
+  href,
+  variant = 'primary',
+  size = 'md',
+  trackingId,
+  trackingAction,
+  section,
+  external = false,
+  fullWidth = false,
+  class: extraClass = '',
+} = Astro.props;
+
+const base =
+  'inline-flex items-center justify-center font-sans font-medium rounded border transition-transform duration-150 hover:scale-[1.03] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary';
+
+const variants: Record<string, string> = {
+  primary:
+    'bg-primary text-white border-primary hover:bg-primary/90',
+  secondary:
+    'bg-secondary text-white border-secondary hover:bg-secondary/90',
+  ghost:
+    'bg-transparent text-text-main border-border hover:border-text-support hover:bg-surface',
+  white:
+    'bg-white text-primary border-transparent hover:bg-white/90',
+  'outline-white':
+    'bg-transparent text-white border-white/60 hover:border-white hover:bg-white/10',
+};
+
+const sizes: Record<string, string> = {
+  sm: 'px-4 py-2 text-sm gap-1.5',
+  md: 'px-6 py-3 text-sm gap-2',
+  lg: 'px-8 py-4 text-base gap-2',
+};
+
+const classes = [base, variants[variant], sizes[size], fullWidth ? 'w-full' : '', extraClass]
+  .filter(Boolean)
+  .join(' ');
+---
+
+<a
+  href={href}
+  class={classes}
+  id={trackingId}
+  data-tracking={trackingAction}
+  data-section={section}
+  {...external
+    ? { target: '_blank', rel: 'noopener noreferrer' }
+    : {}}
+>
+  {label}
+</a>

@@ -61,6 +61,84 @@ function detectChildren(code: string, sourceDir: string) {
   return found
 }
 
+function findTailwindConfig(startDir: string): string | null {
+  let dir = startDir
+  for (let i = 0; i < 6; i++) {
+    for (const name of ['tailwind.config.js', 'tailwind.config.ts', 'tailwind.config.mjs']) {
+      const p = join(dir, name)
+      if (existsSync(p)) return p
+    }
+    const parent = dirname(dir)
+    if (parent === dir) break
+    dir = parent
+  }
+  return null
+}
+
+function extractTailwindTokens(configPath: string): string {
+  try {
+    const raw = readFileSync(configPath, 'utf8')
+    const colorsMatch = raw.match(/colors\s*:\s*\{([^}]+)\}/s)
+    const fontFamilyMatch = raw.match(/fontFamily\s*:\s*\{([^}]+)\}/s)
+
+    const rootLines: string[] = []
+    const utilityLines: string[] = []
+
+    if (colorsMatch) {
+      const re = /['"]?([\w-]+)['"]?\s*:\s*['"]([^'"]+)['"]/g
+      let m: RegExpExecArray | null
+      while ((m = re.exec(colorsMatch[1])) !== null) {
+        const key = m[1]
+        const val = m[2]
+        rootLines.push(`  --color-${key}: ${val};`)
+        // Gera classes Tailwind reais para o preview
+        utilityLines.push(`.bg-${key} { background-color: ${val} !important; }`)
+        utilityLines.push(`.bg-${key}\\/10 { background-color: ${val}1a !important; }`)
+        utilityLines.push(`.bg-${key}\\/20 { background-color: ${val}33 !important; }`)
+        utilityLines.push(`.bg-${key}\\/90 { background-color: ${val}e6 !important; }`)
+        utilityLines.push(`.text-${key} { color: ${val} !important; }`)
+        utilityLines.push(`.border-${key} { border-color: ${val} !important; }`)
+        utilityLines.push(`.hover\\:bg-${key}:hover { background-color: ${val} !important; }`)
+        utilityLines.push(`.hover\\:bg-${key}\\/90:hover { background-color: ${val}e6 !important; }`)
+        utilityLines.push(`.outline-${key} { outline-color: ${val} !important; }`)
+      }
+    }
+
+    if (fontFamilyMatch) {
+      const re = /['"]?(\w+)['"]?\s*:\s*\[([^\]]+)\]/g
+      let m: RegExpExecArray | null
+      while ((m = re.exec(fontFamilyMatch[1])) !== null) {
+        const firstFont = m[2].match(/['"]([^'"]+)['"]/) ?.[1] ?? ''
+        if (firstFont) {
+          rootLines.push(`  --font-${m[1]}: '${firstFont}', sans-serif;`)
+          utilityLines.push(`.font-${m[1]} { font-family: '${firstFont}', sans-serif !important; }`)
+        }
+      }
+    }
+
+    if (rootLines.length === 0) return ''
+    return `:root {\n${rootLines.join('\n')}\n}\n${utilityLines.join('\n')}`
+  } catch {
+    return ''
+  }
+}
+
+function detectGoogleFonts(configPath: string): string[] {
+  try {
+    const raw = readFileSync(configPath, 'utf8')
+    const fonts: string[] = []
+    const re = /['"]([A-Z][a-zA-Z\s]+)['"]\s*,/g
+    let m: RegExpExecArray | null
+    while ((m = re.exec(raw)) !== null) {
+      const name = m[1].trim()
+      if (name.includes(' ') || name.match(/^[A-Z]/)) fonts.push(name)
+    }
+    return [...new Set(fonts)].slice(0, 4)
+  } catch {
+    return []
+  }
+}
+
 function detectProps(code: string) {
   const match = code.match(/interface\s+Props\s*\{([^}]+)\}/s)
   if (!match) return []
@@ -209,10 +287,31 @@ export const POST: APIRoute = async ({ request }) => {
     registry.push(newEntry)
     writeFileSync(REGISTRY, JSON.stringify(registry, null, 2) + '\n')
 
+    // Lê tokens do tailwind.config do projeto de origem
+    const twConfigPath = findTailwindConfig(sourceDir)
+    const cssTokens = twConfigPath ? extractTailwindTokens(twConfigPath) : ''
+    const googleFonts = twConfigPath ? detectGoogleFonts(twConfigPath) : []
+    const fontsUrl = googleFonts.length > 0
+      ? `https://fonts.googleapis.com/css2?${googleFonts.map(f => `family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700`).join('&')}&display=swap`
+      : ''
+
     // Gera preview page no Astroteca
     const PREVIEW_DIR = join(ROOT, 'src', 'pages', 'preview')
     if (!existsSync(PREVIEW_DIR)) mkdirSync(PREVIEW_DIR, { recursive: true })
-    writeFileSync(join(PREVIEW_DIR, `${id}.astro`), `---\nimport ${name} from '../../../minha-lib-astro/src/components/${category}/${name}.astro'\nimport PreviewLayout from '../../layouts/PreviewLayout.astro'\n---\n\n<PreviewLayout>\n  <${name}\n${propsStr}\n  />\n</PreviewLayout>\n`)
+    const previewPageContent = [
+      '---',
+      `import ${name} from '../../../minha-lib-astro/src/components/${category}/${name}.astro'`,
+      `import PreviewLayout from '../../layouts/PreviewLayout.astro'`,
+      '---',
+      '',
+      `<PreviewLayout fontsUrl="${fontsUrl}" cssTokens={\`${cssTokens}\`}>`,
+      `  <${name}`,
+      propsStr,
+      `  />`,
+      `</PreviewLayout>`,
+      '',
+    ].join('\n')
+    writeFileSync(join(PREVIEW_DIR, `${id}.astro`), previewPageContent)
 
     // ── Publica no repo da lib via GitHub API ────────────────────────────────
     const token  = import.meta.env.GITHUB_TOKEN

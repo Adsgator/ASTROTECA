@@ -420,5 +420,65 @@
       "toda landing page"
     ],
     "order": 70
+  },
+  {
+    "id": "button-7435",
+    "name": "Button7435",
+    "category": "UI",
+    "description": "botão de teste",
+    "previewPath": "/preview/button-7435",
+    "screenshot": "",
+    "componentFile": "UI/Button7435.astro",
+    "tags": [
+      "button"
+    ],
+    "bestFor": [
+      "todas as paginas isso é um teste"
+    ],
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "href",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "trackingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "trackingAction",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "section",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "external",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "fullWidth",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "class",
+        "type": "string",
+        "required": false
+      }
+    ],
+    "order": 11,
+    "createdAt": "2026-05-27T02:03:35.866Z",
+    "updatedAt": "2026-05-27T02:03:35.866Z"
   }
 ]
