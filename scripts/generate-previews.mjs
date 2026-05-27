@@ -56,10 +56,15 @@ for (const category of categories) {
     const sourceContent = readFileSync(sourcePath, 'utf8')
 
     // Ajusta o import para o caminho correto dentro do Astroteca
+    // e injeta Tailwind CDN no head para os componentes que usam classes Tailwind
     const adjustedContent = sourceContent
       .replace(
         `import ${componentName} from './${componentName}.astro'`,
         `import ${componentName} from '../../../minha-lib-astro/src/components/${category}/${componentName}.astro'`
+      )
+      .replace(
+        '</head>',
+        '  <script src="https://cdn.tailwindcss.com"></script>\n</head>'
       )
 
     // Só reescreve se o conteúdo mudou (evita rebuilds desnecessários)
