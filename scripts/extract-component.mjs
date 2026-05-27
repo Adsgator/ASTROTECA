@@ -47,22 +47,26 @@ const toKebab  = s => s
   .replace(/[\s_]+/g, '-')
   .toLowerCase()
 
-const CATEGORIES = ['Hero', 'Features', 'Services', 'Testimonials', 'Process', 'Pricing', 'FAQ', 'CTA', 'Contact', 'Footer', 'Trust', 'Other']
+const CATEGORIES = ['Hero', 'Features', 'Services', 'Testimonials', 'Process', 'Pricing', 'FAQ', 'CTA', 'Contact', 'Footer', 'Trust', 'UI', 'Other']
+
+// Componentes utilitários que sempre ganham a pasta UI (independente do contexto)
+const UI_COMPONENTS = /^(button|btn|icon|badge|tag|chip|card|modal|dialog|tooltip|popover|dropdown|input|textarea|select|checkbox|radio|toggle|switch|form|label|avatar|spinner|loader|alert|toast|banner|divider|separator|breadcrumb|pagination|tab|accordion|collapse|drawer|sidebar|nav|navbar|menu|link|image|img|picture|video|embed)s?(\d+)?$/i
 
 // Infere a categoria de um componente filho pelo nome
 function inferCategory(name) {
-  const n = name.toLowerCase()
-  if (/^hero/.test(n))         return 'Hero'
-  if (/^feature/.test(n))      return 'Features'
-  if (/^service/.test(n))      return 'Services'
-  if (/^testimonial/.test(n))  return 'Testimonials'
-  if (/^process|^step/.test(n)) return 'Process'
-  if (/^pric/.test(n))         return 'Pricing'
-  if (/^faq/.test(n))          return 'FAQ'
-  if (/^cta/.test(n))          return 'CTA'
-  if (/^contact/.test(n))      return 'Contact'
-  if (/^footer/.test(n))       return 'Footer'
-  if (/^trust|^badge|^award/.test(n)) return 'Trust'
+  const n = name.toLowerCase().replace(/\d+$/, '')
+  if (UI_COMPONENTS.test(n))        return 'UI'
+  if (/^hero/.test(n))              return 'Hero'
+  if (/^feature/.test(n))           return 'Features'
+  if (/^service/.test(n))           return 'Services'
+  if (/^testimonial/.test(n))       return 'Testimonials'
+  if (/^process|^step/.test(n))     return 'Process'
+  if (/^pric/.test(n))              return 'Pricing'
+  if (/^faq/.test(n))               return 'FAQ'
+  if (/^cta/.test(n))               return 'CTA'
+  if (/^contact/.test(n))           return 'Contact'
+  if (/^footer/.test(n))            return 'Footer'
+  if (/^trust|^award/.test(n))      return 'Trust'
   return 'Other'
 }
 
