@@ -420,5 +420,84 @@
       "toda landing page"
     ],
     "order": 70
+  },
+  {
+    "id": "button-3165",
+    "name": "Button3165",
+    "category": "UI",
+    "description": "Botão elegante com brilho deslizante horizontal",
+    "previewPath": "/preview/button-3165",
+    "screenshot": "",
+    "componentFile": "UI/Button3165.astro",
+    "tags": [
+      "button"
+    ],
+    "bestFor": [
+      "Landing pages de alto padrão"
+    ],
+    "props": [
+      {
+        "name": "label",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "href",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "trackingId",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "trackingAction",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "trackingSection",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "external",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "small",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "fullWidth",
+        "type": "boolean",
+        "required": false
+      }
+    ],
+    "order": 11,
+    "createdAt": "2026-05-27T02:42:22.263Z",
+    "updatedAt": "2026-05-27T02:42:22.263Z"
+  },
+  {
+    "id": "avaliacoes-google-4249",
+    "name": "AvaliacoesGoogle4249",
+    "category": "Testimonials",
+    "description": "teste de seção",
+    "previewPath": "/preview/avaliacoes-google-4249",
+    "screenshot": "",
+    "componentFile": "Testimonials/AvaliacoesGoogle4249.astro",
+    "tags": [
+      "review"
+    ],
+    "bestFor": [
+      "Avaliações"
+    ],
+    "props": [],
+    "order": 12,
+    "createdAt": "2026-05-27T02:45:23.304Z",
+    "updatedAt": "2026-05-27T02:45:23.304Z"
   }
 ]
