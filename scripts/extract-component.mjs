@@ -22,6 +22,7 @@ const c = {
 }
 
 const toPascal = s => s.replace(/(^\w|-\w|_\w)/g, m => m.replace(/[-_]/, '').toUpperCase())
+const randomId = () => String(Math.floor(1000 + Math.random() * 9000))
 const toKebab  = s => s
   .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
   .replace(/([a-z])([A-Z])/g, '$1-$2')
@@ -72,10 +73,29 @@ function detectProps(code) {
   return props
 }
 
-// Adapta o código do componente para usar CSS variables
-function adaptCode(code) {
-  const hasTailwindColors = /\b(bg|text|border)-(red|blue|green|purple|indigo|violet|pink|orange|yellow|gray|slate|zinc|neutral|stone|amber|lime|emerald|teal|cyan|sky|fuchsia|rose)-\d+/g.test(code)
+// Sanitiza dados sensíveis do cliente extraídos junto com o componente
+function sanitizeCode(code) {
+  // Remove imports de assets locais (@/assets, ../assets, ./assets, ../../assets etc)
+  code = code.replace(/^import\s+\w+\s+from\s+['"](?:\.{1,2}\/)*(?:@\/)?assets\/[^'"]+['"];?\s*$/gm, '')
 
+  // Remove uso do componente <Image> que dependia de assets locais (src={variavel})
+  // substitui por um img placeholder
+  code = code.replace(/<Image\s[^/]*src=\{[^}]+\}[^/]*\/>/gs, '<img src="/preview-assets/placeholder-hero.svg" alt="imagem" />')
+
+  // Substitui URLs de WhatsApp por placeholder
+  code = code.replace(/https:\/\/wa\.me\/[^\s'"]+/g, 'https://wa.me/5500000000000')
+
+  // Substitui números de telefone (formatos BR: (xx) x...)
+  code = code.replace(/\(\d{2}\)\s?9?\d{4}[-\s]?\d{4}/g, '(00) 00000-0000')
+
+  // Substitui CNPJ
+  code = code.replace(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/g, '00.000.000/0000-00')
+
+  // Substitui URLs absolutas de redes sociais por # (instagram, tiktok, facebook, youtube, linkedin)
+  code = code.replace(/href="https:\/\/(www\.)?(instagram|tiktok|facebook|youtube|linkedin)\.com\/[^"]+"/g, 'href="#"')
+
+  // Avisa sobre cores hardcoded
+  const hasTailwindColors = /\b(bg|text|border)-(red|blue|green|purple|indigo|violet|pink|orange|yellow|gray|slate|zinc|neutral|stone|amber|lime|emerald|teal|cyan|sky|fuchsia|rose)-\d+/g.test(code)
   if (hasTailwindColors) {
     code = code.replace('---', `---
 // ⚠️  ATENÇÃO: Este componente foi extraído de outro projeto.
@@ -150,7 +170,9 @@ async function main() {
 
   const rawCode = readFileSync(resolvedPath, 'utf8')
   const fileName = basename(resolvedPath, '.astro')
-  const name = toPascal(fileName)
+  const baseName = toPascal(fileName)
+  const uid = randomId()
+  const name = `${baseName}${uid}`
   const id = toKebab(name)
 
   console.log(c.green(`\n  ✓ Arquivo lido: ${basename(resolvedPath)}`))
@@ -204,8 +226,8 @@ async function main() {
   console.log()
   console.log(c.bold('  Extraindo componente...\n'))
 
-  // 1. Componente adaptado
-  const adaptedCode = adaptCode(rawCode)
+  // 1. Componente adaptado e sanitizado
+  const adaptedCode = sanitizeCode(rawCode)
   writeFileSync(COMP_FILE, adaptedCode)
   console.log(c.green('  ✓') + ` minha-lib-astro/src/components/${category}/${name}.astro`)
 
