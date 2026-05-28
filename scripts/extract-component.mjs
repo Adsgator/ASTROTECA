@@ -11,6 +11,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 
 import { resolve, join, basename, dirname } from 'node:path'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
+import { execSync } from 'node:child_process'
 
 const c = {
   cyan:   s => `\x1b[36m${s}\x1b[0m`,
@@ -532,12 +533,23 @@ async function main() {
     'Arquivos gerados'
   )
 
-  outro(c.bold(c.green(`✅ "${name}" extraído com sucesso!`)) + '\n\n' +
-    `  Próximos passos:\n` +
-    `  ${c.yellow('1.')} Revise e ajuste o preview em minha-lib-astro/src/components/${category}/${name}.preview.astro\n` +
-    `  ${c.yellow('2.')} Gere os previews:  npm run previews\n` +
-    `  ${c.yellow('3.')} Suba pro GitHub:   git add . && git commit -m "feat: ${name}" && git push`
-  )
+  // ── Gera páginas de preview e commita o ASTROTECA ────────────────────────
+  const s2 = spinner()
+  s2.start('Gerando previews e publicando...')
+  try {
+    execSync('node scripts/generate-previews.mjs', { cwd: ROOT, stdio: 'pipe' })
+    execSync(`git add src/pages/preview/ && git commit -m "feat: preview ${id}" && git push`, {
+      cwd: ROOT,
+      stdio: 'pipe',
+      shell: true,
+    })
+    s2.stop('Preview publicado!')
+  } catch (e) {
+    s2.stop(c.yellow('⚠ Não foi possível publicar o preview automaticamente.'))
+    note(e.message?.slice(0, 200) ?? '', 'Erro')
+  }
+
+  outro(c.bold(c.green(`✅ "${name}" extraído e publicado!`)))
 }
 
 main().catch(e => { console.error('  Erro:', e.message); process.exit(1) })
