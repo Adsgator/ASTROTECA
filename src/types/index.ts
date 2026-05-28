@@ -4,6 +4,7 @@
 
 export type ComponentCategory =
   | 'Hero'
+  | 'Header'
   | 'Navigation'
   | 'Features'
   | 'Pricing'
@@ -135,6 +136,8 @@ export interface CreateProjectResult {
   vscodeUrl: string
   success: boolean
   error?: string
+  /** IDs dos componentes efetivamente copiados — usado para registrar analytics no endpoint */
+  usedComponentIds?: string[]
 }
 
 // ─── Admin ─────────────────────────────────────────────────────────────────

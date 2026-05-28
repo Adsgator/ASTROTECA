@@ -377,7 +377,7 @@ export const POST: APIRoute = async ({ request }) => {
       // Commita preview page + referência do submodule no Astroteca
       execSync(
         `git add minha-lib-astro src/pages/preview/ && git diff --cached --quiet || git commit -m "feat: extract ${id} + update submodule ref" && git push`,
-        { cwd: ROOT, stdio: 'pipe', shell: true }
+        { cwd: ROOT, stdio: 'pipe', shell: 'cmd.exe' }
       )
     } catch { /* log silencioso — não impede retorno de sucesso */ }
 

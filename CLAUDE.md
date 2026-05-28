@@ -14,7 +14,7 @@ Funciona como uma biblioteca de componentes Astro + um studio para orquestrar pr
 2. **Publicar** (Admin → publish) — sincroniza `minha-lib-astro/` com o registry
 3. **Selecionar** (Builder step 1) — escolhe componentes da biblioteca
 4. **Configurar** (Builder step 2) — cores, fontes, dados do cliente → ArtDirection
-5. **Gerar** (Builder step 3) — cria repo no GitHub com `MANIFEST.md` para o Claude adaptar
+5. **Gerar** (Builder step 3) — cria repo no GitHub com `MANIFESTO.md` para o Claude adaptar
 
 O projeto gerado não é editado aqui — ele vai para outro repositório e é adaptado por um Claude separado seguindo o manifesto.
 
@@ -26,14 +26,14 @@ O projeto gerado não é editado aqui — ele vai para outro repositório e é a
 src/
   components/    — React/TSX: Builder, AdminPanel, ComponentBrowser, ConfigPanel
   lib/           — TypeScript puro: manifest.ts, github.ts, analytics.ts, utils.ts
-  pages/         — Astro: index, builder, admin, analytics, config + preview/*
-  pages/api/     — Endpoints Astro: create-project, extract, remove, publish, record-usage
+  pages/         — Astro: index, builder, admin (+ admin/extract, admin/remove), analytics, config + preview/*
+  pages/api/     — Endpoints Astro: create-project, extract-component, remove-component, publish-component, record-component-usage, registry-proxy
   types/         — index.ts com todos os tipos compartilhados
   layouts/       — AppLayout.astro (sidebar), PreviewLayout.astro (preview isolado)
   styles/        — ui.ts (tokens CSS em JS), app.css
 
 minha-lib-astro/ — Submodule git. NUNCA editar diretamente aqui a menos que pedido.
-scripts/         — Node.js CLI: extract-component.mjs, add-component.mjs, etc.
+scripts/         — Node.js CLI: extract-component.mjs, add-component.mjs, generate-previews.mjs, remove-component.mjs, analytics.mjs
 public/          — Assets estáticos, incluindo logo_astroteca_branca.svg
 _base-project/   — Template base copiado ao criar projeto no GitHub
 ```
@@ -73,8 +73,9 @@ Todos os tipos ficam em `src/types/index.ts`. Nunca criar tipos duplicados em co
 |---------|-----------|
 | `npm run dev` | Inicia dev em localhost:4321 (ou 4322 se ocupada) |
 | `npm run build` | Build de produção — deve passar sem erros |
-| `npm run extract` | Extrai componente da pasta ativa para minha-lib-astro/ |
-| `npm run add` | Wizard para criar componente novo na biblioteca |
+| `npm run extract <caminho>` | Extrai componente de um projeto para minha-lib-astro/ — faz commit + push automático do submodule, previews e analytics |
+| `npm run new` | Wizard para criar componente novo na biblioteca |
+| `npm run previews` | Gera as páginas de preview de todos os componentes |
 | `npm run remove` | Remove componente do registry |
 
 ---
@@ -86,11 +87,11 @@ ProjectConfig + ArtDirection + SelectedComponent[] + AppSettings
        ↓
 generateManifest() — src/lib/manifest.ts
        ↓
-MANIFEST.md (markdown para o Claude do projeto do cliente)
+MANIFESTO.md (markdown para o Claude do projeto do cliente)
        ↓
 createProjectFromTemplate() — src/lib/github.ts
        ↓
-Novo repositório GitHub com componentes + MANIFEST.md
+Novo repositório GitHub com componentes + MANIFESTO.md
 ```
 
 ---
@@ -98,8 +99,9 @@ Novo repositório GitHub com componentes + MANIFEST.md
 ## Pontos de atenção
 
 - **Config do studio** fica em `public/data/config.json` (GitHub token, repos, etc.) — nunca commitar com token real
-- **Analytics** em `public/data/analytics.json` — gerado automaticamente, não editar à mão
-- **Preview pages** em `src/pages/preview/` — uma por componente, geradas pelo extract-component
+- **Registry** é buscado em runtime via `/api/registry-proxy`, que usa a GitHub API para evitar cache de CDN. O `registryUrl` vem do config (ou do localStorage no browser)
+- **Analytics** em `public/data/analytics.json` — gerado automaticamente, não editar à mão. A escrita usa `node:fs`, então só persiste em ambiente local; em serverless (Vercel) o filesystem é read-only
+- **Preview pages** em `src/pages/preview/` — uma por componente, geradas por `npm run extract` e `npm run previews`
 - **PreviewLayout** injeta CSS de preview isolado — não confundir com AppLayout
 
 ---

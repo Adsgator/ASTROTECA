@@ -10,5 +10,12 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "paths": { "@/*": ["./src/*"] }
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".vercel",
+    "_base-project",
+    "minha-lib-astro"
+  ]
 }

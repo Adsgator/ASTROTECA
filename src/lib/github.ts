@@ -209,6 +209,7 @@ export async function createProjectFromTemplate(
 ): Promise<CreateProjectResult> {
   const { githubToken, githubOwner, baseProjectRepo, componentsRepo } = settings
   const repoName = slugify(clientName)
+  const usedComponentIds: string[] = []
 
   try {
     // 1. Cria o repo a partir do template
@@ -258,6 +259,7 @@ export async function createProjectFromTemplate(
             `feat: add component ${meta.name}`
           )
           copiedNames.push(meta.name)
+          usedComponentIds.push(meta.id)
         }
       }
 
@@ -268,31 +270,6 @@ export async function createProjectFromTemplate(
           'src/pages/index.astro', indexAstro,
           'init: index.astro com componentes selecionados'
         )
-
-        // Registra uso desses componentes no analytics
-        try {
-          const componentIds = selectedComponents
-            .filter(c => copiedNames.includes(c.name))
-            .map(c => c.id)
-
-          await fetch(
-            typeof location !== 'undefined'
-              ? `${location.origin}/api/record-component-usage`
-              : `${repo.html_url.replace(/\/[\w-]+$/, '')}/api/record-component-usage`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                componentIds,
-                repoUrl: repo.html_url,
-                projectName: clientName,
-              }),
-            }
-          )
-        } catch (e) {
-          // Falha silenciosa — analytics não deve quebrar a criação de projeto
-          console.error('Erro ao registrar uso de componentes:', e)
-        }
       }
     }
 
@@ -302,6 +279,7 @@ export async function createProjectFromTemplate(
       sshUrl: repo.ssh_url,
       vscodeUrl: `vscode://vscode.git/clone?url=${encodeURIComponent(repo.clone_url)}`,
       success: true,
+      usedComponentIds,
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido'

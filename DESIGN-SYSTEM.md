@@ -51,9 +51,9 @@ O studio usa um tema dark premium com CSS custom properties e classes Tailwind u
 --shadow-glow: 0 0 20px var(--accent-glow), 0 0 40px rgba(240,165,0,0.05)
 ```
 
-### Classes Tailwind do studio (mapeadas via app.css)
+### Classes Tailwind do studio (definidas em `tailwind.config.js`)
 
-As classes abaixo são utilitários configurados no Tailwind da Astroteca. **São exclusivas do studio**, não dos componentes da biblioteca.
+As cores/fontes abaixo são tokens do `tailwind.config.js` da Astroteca; os mesmos valores existem como CSS custom properties em `app.css` (usados nas classes utilitárias `.btn`, `.card`, etc.). **São exclusivas do studio**, não dos componentes da biblioteca.
 
 | Classe | Token/valor |
 |--------|-------------|
@@ -74,9 +74,11 @@ As classes abaixo são utilitários configurados no Tailwind da Astroteca. **Sã
 
 ### Tipografia do studio
 
-- **Interface:** `DM Sans` (400/500/600/700) — carregada via Google Fonts em app.css
-- **Monospace:** `JetBrains Mono` (400/500) — para código, IDs, paths
-- **Display:** `Syne` (400–800) — para headings do studio quando necessário
+Fontes carregadas via Google Fonts no topo de `app.css`. No `tailwind.config.js`: `font-body` (DM Sans), `font-heading` (Syne), `font-mono` (JetBrains Mono).
+
+- **Interface / corpo:** `DM Sans` (300–700) — aplicada ao `body`
+- **Display / headings:** `Syne` (400–800) — aplicada automaticamente a todos os `h1`–`h6` via `app.css`
+- **Monospace:** `JetBrains Mono` (400/500) — para código, IDs, paths (`.mono`, `.code-block`)
 
 ### Padrão de card no studio
 

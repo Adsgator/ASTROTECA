@@ -11,7 +11,7 @@ Astroteca é um **studio interno** da Adsgator. Não é um site público nem um 
 
 | Arquivo / Pasta | Risco |
 |----------------|-------|
-| `minha-lib-astro/` | Submodule git — mudanças precisam de commit separado dentro dele |
+| `minha-lib-astro/` | Submodule git — mudanças precisam de commit separado dentro dele. `npm run extract` já faz commit + push automático deste submodule |
 | `public/data/config.json` | Pode conter GitHub token — nunca commitar com valor real |
 | `public/data/analytics.json` | Gerado automaticamente — não editar à mão |
 | `_base-project/` | Template copiado para projetos de clientes — mudanças afetam todos os projetos futuros |
@@ -36,7 +36,9 @@ Usar sempre os tokens nomeados, nunca valores literais:
 `dark`, `text-main`, `text-soft`, `text-muted`, `border`, `wa`
 
 ### IDs de componentes no registry
-Formato: `nome-kebab-NNNN` onde NNNN é número de 4 dígitos (ex: `hero-split-1234`)
+Componentes extraídos/gerados via `npm run extract` recebem sufixo de 4 dígitos:
+`nome-kebab-NNNN` (ex: `avaliacoes-google-4550`). Componentes curados manualmente na
+seed do registry podem ter IDs sem sufixo (ex: `hero-split`, `cta-banner`).
 
 ---
 
@@ -52,7 +54,7 @@ Formato: `nome-kebab-NNNN` onde NNNN é número de 4 dígitos (ex: `hero-split-1
 
 ## Ambiente
 
-- Runtime: Node.js 18+ / Astro 5.x / React 18 (islands)
+- Runtime: Node.js 20+ (ver `engines` no package.json) / Astro 5.x / React 18 (islands)
 - Deploy: Vercel (SSR via `@astrojs/vercel`)
 - Package manager: npm
 - Git: submodule em `minha-lib-astro/` apontando para repositório separado
