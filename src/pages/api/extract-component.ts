@@ -3,6 +3,7 @@ import {
   existsSync, readFileSync, writeFileSync, mkdirSync,
 } from 'node:fs'
 import { resolve, join, basename, dirname } from 'node:path'
+import { execSync } from 'node:child_process'
 import { toBase64 } from '../../lib/utils'
 
 const ROOT = resolve(process.cwd())
@@ -360,8 +361,25 @@ export const POST: APIRoute = async ({ request }) => {
       await ghUpsert(`src/components/${rw.childCategory}/${rw.childName}.astro`, readFileSync(childFile, 'utf8'), `feat: extract child ${rw.childName}`)
     }
 
+    // src/index.ts principal da lib
+    await ghUpsert('src/index.ts', readFileSync(LIB_INDEX, 'utf8'), `chore: update src/index.ts`)
+
     // Registry
     await ghUpsert('registry.json', JSON.stringify(registry, null, 2) + '\n', `chore: registry — add ${name}`)
+
+    // ── Sincroniza git local ──────────────────────────────────────────────────
+    const LIB_ROOT = join(ROOT, 'minha-lib-astro')
+    try {
+      // Traz os commits criados pela API para o local
+      execSync('git pull --no-edit', { cwd: LIB_ROOT, stdio: 'pipe' })
+    } catch { /* ignora se não houver nada para puxar */ }
+    try {
+      // Commita preview page + referência do submodule no Astroteca
+      execSync(
+        `git add minha-lib-astro src/pages/preview/ && git diff --cached --quiet || git commit -m "feat: extract ${id} + update submodule ref" && git push`,
+        { cwd: ROOT, stdio: 'pipe', shell: true }
+      )
+    } catch { /* log silencioso — não impede retorno de sucesso */ }
 
     return json({
       success: true,

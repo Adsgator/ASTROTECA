@@ -738,19 +738,39 @@ async function main() {
     'Arquivos gerados'
   )
 
-  // ── Gera páginas de preview e commita o ASTROTECA ────────────────────────
+  // ── Commita e publica o submodule minha-lib-astro ────────────────────────
   const s2 = spinner()
-  s2.start('Gerando previews e publicando...')
+  s2.start('Publicando componente na biblioteca...')
+  const LIB_ROOT = join(ROOT, 'minha-lib-astro')
+  try {
+    execSync('git pull --no-edit', { cwd: LIB_ROOT, stdio: 'pipe' })
+  } catch { /* se não tiver nada novo, ignora */ }
+  try {
+    execSync(`git add -A && git commit -m "feat: add ${name} component"`, {
+      cwd: LIB_ROOT,
+      stdio: 'pipe',
+      shell: true,
+    })
+    execSync('git push', { cwd: LIB_ROOT, stdio: 'pipe' })
+    s2.stop('Componente publicado na biblioteca!')
+  } catch (e) {
+    s2.stop(c.yellow('⚠ Não foi possível publicar o componente na biblioteca.'))
+    note(e.message?.slice(0, 200) ?? '', 'Erro submodule')
+  }
+
+  // ── Gera páginas de preview e commita o ASTROTECA ────────────────────────
+  const s3 = spinner()
+  s3.start('Gerando previews e publicando Astroteca...')
   try {
     execSync('node scripts/generate-previews.mjs', { cwd: ROOT, stdio: 'pipe' })
-    execSync(`git add src/pages/preview/ && git commit -m "feat: preview ${id}" && git push`, {
+    execSync(`git add minha-lib-astro src/pages/preview/ && git commit -m "feat: extract ${id} + update submodule ref" && git push`, {
       cwd: ROOT,
       stdio: 'pipe',
       shell: true,
     })
-    s2.stop('Preview publicado!')
+    s3.stop('Preview publicado!')
   } catch (e) {
-    s2.stop(c.yellow('⚠ Não foi possível publicar o preview automaticamente.'))
+    s3.stop(c.yellow('⚠ Não foi possível publicar o preview automaticamente.'))
     note(e.message?.slice(0, 200) ?? '', 'Erro')
   }
 
