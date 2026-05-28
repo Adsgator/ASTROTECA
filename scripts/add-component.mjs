@@ -6,6 +6,8 @@
 import { createInterface } from 'node:readline'
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs'
 import { resolve, join } from 'node:path'
+import { execSync } from 'node:child_process'
+import { toPascal, toKebab, CATEGORIES, EXAMPLES } from './utils.mjs'
 
 const rl = createInterface({ input: process.stdin, output: process.stdout })
 const ask = (q) => new Promise(r => rl.question(q, r))
@@ -21,38 +23,6 @@ const c = {
   reset:  s => `\x1b[0m${s}\x1b[0m`,
 }
 
-// Converte "heroSplit" ou "hero-split" para "HeroSplit"
-const toPascal = s => s.replace(/(^\w|-\w|_\w)/g, m => m.replace(/[-_]/, '').toUpperCase())
-
-// Converte "HeroSplit" para "hero-split"
-const toKebab = s => s
-  .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-  .replace(/([a-z])([A-Z])/g, '$1-$2')
-  .replace(/([a-zA-Z])(\d)/g, '$1-$2')
-  .replace(/[\s_]+/g, '-')
-  .toLowerCase()
-
-const CATEGORIES = ['Hero', 'Features', 'Services', 'Testimonials', 'Process', 'Pricing', 'FAQ', 'CTA', 'Contact', 'Footer', 'Trust', 'Other']
-
-// Valores de exemplo para props comuns
-const EXAMPLES = {
-  headline:          'Transforme sua presença digital',
-  title:             'Título de Exemplo',
-  sectionTitle:      'Por que nos escolher',
-  sectionLabel:      'Nossos Diferenciais',
-  subheadline:       'Resultados reais para negócios que querem crescer.',
-  subtitle:          'Uma descrição clara e objetiva do conteúdo.',
-  description:       'Descrição do serviço ou produto com foco no benefício.',
-  ctaLabel:          'Saiba mais',
-  ctaHref:           '#',
-  ctaSecondaryLabel: 'Como funciona',
-  ctaSecondaryHref:  '#',
-  imageSrc:          '/preview-assets/placeholder-hero.svg',
-  imageAlt:          'Imagem de exemplo',
-  badge:             '⭐ Mais de 200 projetos entregues',
-  name:              'João Silva',
-  email:             'joao@exemplo.com',
-}
 
 function getExample(propName) {
   return EXAMPLES[propName] || `Exemplo de ${propName}`
@@ -152,61 +122,20 @@ ${destructureLines}
 `
 }
 
-// Gera o arquivo .preview.astro
+// Gera o arquivo .preview.astro no formato compatível com generate-previews.mjs
 function generatePreviewCode(name, category, props) {
   const propsStr = props
     .filter(p => p.type === 'string')
-    .map(p => `    ${p.name}="${getExample(p.name)}"`)
+    .map(p => `  ${p.name}="${getExample(p.name)}"`)
     .join('\n')
 
   return `---
-// minha-lib-astro/src/components/${category}/${name}.preview.astro
-// Arquivo de preview para a biblioteca visual.
-// Não vai para produção.
 import ${name} from './${name}.astro'
 ---
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --color-primary:     #7c3aed;
-      --color-on-primary:  #ffffff;
-      --color-secondary:   #111827;
-      --color-bg:          #ffffff;
-      --color-heading:     #111827;
-      --color-text:        #374151;
-      --color-text-muted:  #6b7280;
-      --font-heading:      'Playfair Display', serif;
-      --font-body:         'Inter', sans-serif;
-      --radius:            8px;
-      --radius-lg:         16px;
-      --container-max:     1200px;
-      --container-padding: 1.5rem;
-    }
-
-    body {
-      font-family: var(--font-body);
-      background: var(--color-bg);
-      color: var(--color-text);
-    }
-  </style>
-</head>
-<body>
-  <${name}
+<${name}
 ${propsStr}
-  />
-</body>
-</html>
+/>
 `
 }
 
@@ -282,7 +211,6 @@ async function main() {
   const PREV_FILE    = join(LIB_DIR, `${name}.preview.astro`)
   const INDEX_FILE   = join(LIB_DIR, 'index.ts')
   const REGISTRY     = join(ROOT, 'minha-lib-astro', 'registry.json')
-  const SLUG_FILE    = join(ROOT, 'src', 'pages', 'preview', '[...slug].astro')
 
   // ── Verifica se já existe ──────────────────────────────────────────────────
   if (existsSync(COMP_FILE)) {
@@ -355,29 +283,12 @@ async function main() {
   writeFileSync(REGISTRY, JSON.stringify(registry, null, 2) + '\n')
   console.log(c.green('  ✓') + ` minha-lib-astro/registry.json`)
 
-  // 6. Adiciona entrada no [...slug].astro
-  if (existsSync(SLUG_FILE)) {
-    let slugContent = readFileSync(SLUG_FILE, 'utf8')
-
-    // Adiciona import no topo se não existir
-    const importLine = `import ${name}Preview from '../../../minha-lib-astro/src/components/${category}/${name}.preview.astro'`
-    if (!slugContent.includes(`${name}Preview`)) {
-      // Adiciona antes da linha "const { slug }"
-      slugContent = slugContent.replace(
-        'const { slug } = Astro.params',
-        `${importLine}\n\nconst { slug } = Astro.params`
-      )
-    }
-
-    // Adiciona no mapa se ainda não está
-    if (!slugContent.includes(`'${id}':`)) {
-      slugContent = slugContent.replace(
-        /const previewMap[^=]+=\s*\{/,
-        match => `${match}\n  '${id}': ${name}Preview,`
-      )
-      writeFileSync(SLUG_FILE, slugContent)
-      console.log(c.green('  ✓') + ` src/pages/preview/[...slug].astro (entrada adicionada)`)
-    }
+  // 6. Gera páginas de preview via generate-previews.mjs
+  try {
+    execSync('node scripts/generate-previews.mjs', { cwd: ROOT, stdio: 'pipe' })
+    console.log(c.green('  ✓') + ' src/pages/preview gerado')
+  } catch {
+    console.log(c.yellow('  ⚠ Preview não gerado automaticamente — rode: node scripts/generate-previews.mjs'))
   }
 
   // ── Resultado ─────────────────────────────────────────────────────────────

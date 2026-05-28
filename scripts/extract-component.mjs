@@ -13,6 +13,7 @@ import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { execSync } from 'node:child_process'
 import { recordComponentExtraction } from './analytics.mjs'
+import { toPascal as _toPascal, toKebab as _toKebab, CATEGORIES as _CATEGORIES, EXAMPLES as _EXAMPLES } from './utils.mjs'
 
 const c = {
   cyan:   s => `\x1b[36m${s}\x1b[0m`,
@@ -42,16 +43,10 @@ function suggestAstroFiles(input) {
   } catch { return [] }
 }
 
-const toPascal = s => s.replace(/(^\w|-\w|_\w)/g, m => m.replace(/[-_]/, '').toUpperCase())
+const toPascal = _toPascal
+const toKebab  = _toKebab
+const CATEGORIES = _CATEGORIES
 const randomId = () => String(Math.floor(1000 + Math.random() * 9000))
-const toKebab  = s => s
-  .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-  .replace(/([a-z])([A-Z])/g, '$1-$2')
-  .replace(/([a-zA-Z])(\d)/g, '$1-$2')
-  .replace(/[\s_]+/g, '-')
-  .toLowerCase()
-
-const CATEGORIES = ['Hero', 'Features', 'Services', 'Testimonials', 'Process', 'Pricing', 'FAQ', 'CTA', 'Contact', 'Footer', 'Trust', 'UI', 'Other']
 
 // Componentes utilitários que sempre ganham a pasta UI (independente do contexto)
 const UI_COMPONENTS = /^(button|btn|icon|badge|tag|chip|card|modal|dialog|tooltip|popover|dropdown|input|textarea|select|checkbox|radio|toggle|switch|form|label|avatar|spinner|loader|alert|toast|banner|divider|separator|breadcrumb|pagination|tab|accordion|collapse|drawer|sidebar|nav|navbar|menu|link|image|img|picture|video|embed)s?(\d+)?$/i
@@ -74,17 +69,7 @@ function inferCategory(name) {
   return 'Other'
 }
 
-const EXAMPLES = {
-  headline:     'Transforme sua presença digital',
-  title:        'Título de Exemplo',
-  sectionTitle: 'Por que nos escolher',
-  subheadline:  'Resultados reais para negócios que querem crescer.',
-  ctaLabel:     'Saiba mais',
-  ctaHref:      '#',
-  imageSrc:     '/preview-assets/placeholder-hero.svg',
-  imageAlt:     'Imagem de exemplo',
-  badge:        '⭐ Mais de 200 projetos entregues',
-}
+const EXAMPLES = _EXAMPLES
 
 // Detecta props automaticamente lendo a interface Props do .astro
 function detectProps(code) {
@@ -100,14 +85,13 @@ function detectProps(code) {
     const [, name, optional, type] = match
     const normalizedType = type.includes('[]') ? 'array' : type
 
-    // Pega o valor default (string, número ou booleano)
+    // Pega o valor default — busca apenas no frontmatter para evitar falsos positivos em atributos HTML
     let defaultVal = ''
-    // String: 'valor' ou "valor"
-    const stringDefault = code.match(new RegExp(`${name}\\s*=\\s*['"]([^'"]+)['"]`))
-    // Número: 123
-    const numberDefault = code.match(new RegExp(`${name}\\s*=\\s*(\\d+(?:\\.\\d+)?)`))
-    // Booleano: true/false
-    const boolDefault = code.match(new RegExp(`${name}\\s*=\\s*(true|false)`))
+    const frontmatterMatch = code.match(/^---\r?\n([\s\S]*?)\r?\n---/m)
+    const searchScope = frontmatterMatch ? frontmatterMatch[1] : code
+    const stringDefault = searchScope.match(new RegExp(`\\b${name}\\s*=\\s*['"]([^'"]+)['"]`))
+    const numberDefault = searchScope.match(new RegExp(`\\b${name}\\s*=\\s*(\\d+(?:\\.\\d+)?)`))
+    const boolDefault = searchScope.match(new RegExp(`\\b${name}\\s*=\\s*(true|false)`))
 
     if (stringDefault?.[1]) defaultVal = stringDefault[1]
     else if (numberDefault?.[1]) defaultVal = numberDefault[1]
@@ -130,9 +114,7 @@ function normalizeAbsoluteImports(code) {
     /^(import\s+(\{[^}]+\}|\w+)\s+from\s+['"])([^'"]*?)minha-lib-astro[/\\]src[/\\]components[/\\]([^'"]+)(['"])/gm,
     (match, prefix, imports, _, rest, suffix) => {
       const normalized = rest.replace(/\\/g, '/')
-      const depth = (normalized.match(/\//g) || []).length
-      const upDirs = '../'.repeat(depth)
-      return `${prefix}${upDirs}${normalized}${suffix}`
+      return `${prefix}../${normalized}${suffix}`
     }
   )
 }
@@ -144,7 +126,7 @@ function resolveImportAliases(code, sourceDir, projectRoot) {
     /^(import\s+(\{[^}]+\}|\w+)\s+from\s+)['"]@\/([^'"]+)['"](\s*;?)$/gm,
     (match, prefix, imports, path, semi) => {
       const relativePath = relative(sourceDir, join(projectRoot, path)).replace(/\\/g, '/')
-      return `${prefix}'${relativePath || '.'}/${relativePath ? '' : path}'${semi}`
+      return `${prefix}'${relativePath || `./${path}`}'${semi}`
     }
   )
 
@@ -153,7 +135,7 @@ function resolveImportAliases(code, sourceDir, projectRoot) {
     /^(import\s+(\{[^}]+\}|\w+)\s+from\s+)['"]~\/([^'"]+)['"](\s*;?)$/gm,
     (match, prefix, imports, path, semi) => {
       const relativePath = relative(sourceDir, join(projectRoot, path)).replace(/\\/g, '/')
-      return `${prefix}'${relativePath || '.'}/${relativePath ? '' : path}'${semi}`
+      return `${prefix}'${relativePath || `./${path}`}'${semi}`
     }
   )
 
@@ -251,8 +233,14 @@ function sanitizeForLibrary(code) {
     code = code.replace(pattern, (match) => {
       // Nunca remover import type
       if (match.includes('import type')) return match
-      const varMatch = match.match(/import\s+(?:\{[^}]*\}|(\w+))/)
-      if (varMatch?.[1]) removedAssetVars.push(varMatch[1])
+      const namedMatch = match.match(/import\s+\{([^}]+)\}/)
+      const defaultMatch = match.match(/import\s+(\w+)\s+from/)
+      if (namedMatch?.[1]) {
+        namedMatch[1].split(',').map(s => s.trim().split(/\s+as\s+/).pop()).filter(Boolean)
+          .forEach(v => removedAssetVars.push(v))
+      } else if (defaultMatch?.[1]) {
+        removedAssetVars.push(defaultMatch[1])
+      }
       return ''
     })
   }
@@ -267,8 +255,8 @@ function sanitizeForLibrary(code) {
   code = code.replace(/<Image\s+[^/]*src=\{[^}]+\}[^/]*\/?>/gs, '<img src="/preview-assets/placeholder.svg" alt="imagem" />')
   code = code.replace(/<Picture\s+[^/]*\/>/gs, '<img src="/preview-assets/placeholder.svg" alt="imagem" />')
 
-  // Remove imports do Astro Image se não houver mais referências
-  if (!code.includes('Image') && !code.includes('Picture')) {
+  // Remove imports do Astro Image se não houver mais referências como tag JSX
+  if (!/<\s*Image[\s/>]/.test(code) && !/<\s*Picture[\s/>]/.test(code)) {
     code = code.replace(/^import\s+\{?\s*(?:Image|Picture|getImage)[^}]*\}\s+from\s+['"]astro\/assets['"];?\s*$/gm, '')
   }
 
@@ -283,20 +271,6 @@ function sanitizeForLibrary(code) {
 
   // Detecta React/Vue components
   const frameworkComps = detectFrameworkComponents(code)
-  if (frameworkComps.length > 0) {
-    code = code.replace('---', `---
-// ⚠️  ATENÇÃO: Este componente importa componentes React/Vue.
-// Instale as dependências necessárias:
-${frameworkComps.some(c => c.type === 'React') ? '//   npm install @astrojs/react react react-dom\n' : ''}${frameworkComps.some(c => c.type === 'Vue') ? '//   npm install @astrojs/vue vue\n' : ''}`)
-  }
-
-  // Detecta imports dinâmicos
-  if (detectDynamicImports(code)) {
-    code = code.replace('---', `---
-// ⚠️  ATENÇÃO: Este componente usa imports dinâmicos.
-// Valide que todas as dependências estão disponíveis em runtime.
-`)
-  }
 
   // Substitui dados sensíveis
   code = code.replace(/https:\/\/wa\.me\/[^\s'"]+/g, 'https://wa.me/5500000000000')
@@ -308,22 +282,25 @@ ${frameworkComps.some(c => c.type === 'React') ? '//   npm install @astrojs/reac
   code = code.replace(/data-project-id=["'][^"']+["']/g, 'data-project-id="project-id"')
   code = code.replace(/data-account-id=["'][^"']+["']/g, 'data-account-id="account-id"')
 
-  // Avisa sobre cores hardcoded
+  // Acumula avisos e insere de uma vez no frontmatter (evita replace('---') encadeado que aninha avisos)
   const hasTailwindColors = /\b(bg|text|border)-(red|blue|green|purple|indigo|violet|pink|orange|yellow|gray|slate|zinc|neutral|stone|amber|lime|emerald|teal|cyan|sky|fuchsia|rose)-\d+/g.test(code)
-  if (hasTailwindColors) {
-    code = code.replace('---', `---
-// ⚠️  ATENÇÃO: Este componente foi extraído de outro projeto.
-// Substitua as classes Tailwind de cor hardcoded (ex: bg-violet-600)
-// por classes que usam CSS variables (ex: bg-[var(--color-primary)])
-`)
+  const warnings = []
+  if (frameworkComps.length > 0) {
+    const reactLine = frameworkComps.some(c => c.type === 'React') ? '//   npm install @astrojs/react react react-dom\n' : ''
+    const vueLine = frameworkComps.some(c => c.type === 'Vue') ? '//   npm install @astrojs/vue vue\n' : ''
+    warnings.push(`// ⚠️  ATENÇÃO: Este componente importa componentes React/Vue.\n// Instale as dependências necessárias:\n${reactLine}${vueLine}`)
   }
-
-  // Avisa sobre variáveis de ambiente
+  if (detectDynamicImports(code)) {
+    warnings.push('// ⚠️  ATENÇÃO: Este componente usa imports dinâmicos.\n// Valide que todas as dependências estão disponíveis em runtime.')
+  }
+  if (hasTailwindColors) {
+    warnings.push('// ⚠️  ATENÇÃO: Este componente foi extraído de outro projeto.\n// Substitua as classes Tailwind de cor hardcoded (ex: bg-violet-600)\n// por classes que usam CSS variables (ex: bg-[var(--color-primary)])')
+  }
   if (/import\.meta\.env\.|process\.env\.|Astro\.locals\./.test(code)) {
-    code = code.replace('---', `---
-// ⚠️  ATENÇÃO: Este componente usa variáveis de ambiente.
-// Configure as seguintes env vars no seu projeto antes de usar este componente.
-`)
+    warnings.push('// ⚠️  ATENÇÃO: Este componente usa variáveis de ambiente.\n// Configure as seguintes env vars no seu projeto antes de usar este componente.')
+  }
+  if (warnings.length > 0) {
+    code = code.replace(/^---/m, `---\n${warnings.join('\n')}`)
   }
 
   return code
@@ -646,9 +623,9 @@ async function main() {
 
   // Reescreve imports dos filhos escolhidos em AMBAS as versões
   for (const rw of childRewrites) {
-    const relToParent = join(rw.childDir, `${rw.childName}.astro`)
-      .replace(LIB_DIR, '.')
+    let relToParent = relative(LIB_DIR, join(rw.childDir, `${rw.childName}.astro`))
       .replace(/\\/g, '/')
+    if (!relToParent.startsWith('.')) relToParent = './' + relToParent
 
     const importRegex = new RegExp(`import\\s+${rw.importName}\\s+from\\s+['"]${rw.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`)
     libraryCode = libraryCode.replace(importRegex, `import ${rw.importName} from '${relToParent}'`)
@@ -763,7 +740,7 @@ async function main() {
   s3.start('Gerando previews e publicando Astroteca...')
   try {
     execSync('node scripts/generate-previews.mjs', { cwd: ROOT, stdio: 'pipe' })
-    execSync(`git add minha-lib-astro src/pages/preview/ && git commit -m "feat: extract ${id} + update submodule ref" && git push`, {
+    execSync(`git add minha-lib-astro src/pages/preview/ public/data/analytics.json && git commit -m "feat: extract ${id} + update submodule ref" && git push`, {
       cwd: ROOT,
       stdio: 'pipe',
       shell: true,

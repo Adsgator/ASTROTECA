@@ -2,9 +2,10 @@
 // Utilitários de analytics — versão Node.js para usar em scripts
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ANALYTICS_PATH = resolve('public/data/analytics.json')
+const ANALYTICS_PATH = join(fileURLToPath(new URL('..', import.meta.url)), 'public/data/analytics.json')
 
 export function loadAnalytics() {
   if (!existsSync(ANALYTICS_PATH)) {
@@ -13,7 +14,8 @@ export function loadAnalytics() {
   try {
     const content = readFileSync(ANALYTICS_PATH, 'utf-8')
     return JSON.parse(content)
-  } catch {
+  } catch (e) {
+    console.warn('[analytics] analytics.json corrompido, iniciando vazio:', e.message)
     return {}
   }
 }
@@ -46,7 +48,13 @@ export function recordComponentExtraction(componentId, componentName, category) 
 export function recordComponentUsage(componentId, repoUrl, projectName) {
   const analytics = loadAnalytics()
 
-  if (analytics[componentId]) {
+  if (!analytics[componentId]) {
+    console.warn(`[analytics] "${componentId}" não encontrado no analytics — uso não registrado`)
+    return
+  }
+
+  const alreadyRecorded = analytics[componentId].usedIn.some(u => u.repo === repoUrl)
+  if (!alreadyRecorded) {
     analytics[componentId].usedIn.push({
       repo: repoUrl,
       projectName,

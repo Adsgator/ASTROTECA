@@ -5,6 +5,7 @@
 
 import { existsSync, readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs'
 import { resolve, join } from 'node:path'
+import { toKebab } from './utils.mjs'
 
 const c = {
   cyan:   s => `\x1b[36m${s}\x1b[0m`,
@@ -14,12 +15,6 @@ const c = {
   dim:    s => `\x1b[2m${s}\x1b[0m`,
 }
 
-const toKebab = s => s
-  .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-  .replace(/([a-z])([A-Z])/g, '$1-$2')
-  .replace(/([a-zA-Z])(\d)/g, '$1-$2')
-  .replace(/[\s_]+/g, '-')
-  .toLowerCase()
 
 const ROOT        = resolve(process.cwd())
 const LIB_COMPS   = join(ROOT, 'minha-lib-astro', 'src', 'components')
@@ -57,7 +52,7 @@ for (const category of categories) {
 
     // Formato atual: partial sem HTML wrapper
     // Remove o bloco frontmatter (---...---) e usa só o conteúdo do componente
-    const withoutFrontmatter = sourceContent.replace(/^---[\s\S]*?---\n*/m, '').trim()
+    const withoutFrontmatter = sourceContent.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n*/m, '').trim()
 
     const adjustedContent = `---
 import ${componentName} from '../../../minha-lib-astro/src/components/${category}/${componentName}.astro'

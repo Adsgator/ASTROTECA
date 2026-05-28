@@ -48,10 +48,10 @@
   <linearGradient id="text-shimmer" gradientUnits="userSpaceOnUse" x1="-3143" y1="900" x2="0" y2="900">
     <stop offset="0%"   stop-color="white"/>
     <stop offset="40%"  stop-color="white"/>
-    <stop offset="47%"  stop-color="#c8d8ff"/>
-    <stop offset="50%"  stop-color="#aac4ff" stop-opacity="1"/>
+    <stop offset="47%"  stop-color="#ffe08a"/>
+    <stop offset="50%"  stop-color="#ffd000" stop-opacity="1"/>
     <stop offset="51%"  stop-color="white"   stop-opacity="1"/>
-    <stop offset="52%"  stop-color="#e8f0ff" stop-opacity="0.9"/>
+    <stop offset="52%"  stop-color="#fff4c2" stop-opacity="0.9"/>
     <stop offset="54%"  stop-color="white"/>
     <stop offset="100%" stop-color="white"/>
     <animate attributeName="x1" values="-3143;-3143;3143;3143" keyTimes="0;0.04;0.22;1" dur="24s" repeatCount="indefinite"/>

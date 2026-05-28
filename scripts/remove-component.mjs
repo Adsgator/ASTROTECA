@@ -4,7 +4,7 @@
 
 import { intro, outro, select, confirm, cancel, isCancel, note } from '@clack/prompts'
 import { existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
-import { resolve, join } from 'node:path'
+import { resolve, join, relative } from 'node:path'
 
 const c = {
   red:   s => `\x1b[31m${s}\x1b[0m`,
@@ -96,7 +96,7 @@ async function main() {
   const previewSrc = join(LIB_COMPS, component.componentFile.replace('.astro', '.preview.astro'))
   if (existsSync(previewSrc)) {
     rmSync(previewSrc)
-    removed.push(previewSrc.replace(ROOT + '\\', ''))
+    removed.push(relative(ROOT, previewSrc).replace(/\\/g, '/'))
   }
 
   // 3. Remove a página de preview gerada
@@ -106,7 +106,31 @@ async function main() {
     removed.push(`src/pages/preview/${component.id}.astro`)
   }
 
-  // 4. Remove do registry
+  // 4. Limpa index.ts da categoria
+  const categoryIndexPath = join(LIB_COMPS, component.category, 'index.ts')
+  if (existsSync(categoryIndexPath)) {
+    const exportLine = `export { default as ${component.name} }`
+    const lines = readFileSync(categoryIndexPath, 'utf8').split('\n')
+    const filtered = lines.filter(l => !l.trim().startsWith(exportLine))
+    const hasRealExports = filtered.some(l => l.trim().startsWith('export'))
+    if (hasRealExports) {
+      writeFileSync(categoryIndexPath, filtered.join('\n'))
+      removed.push(`minha-lib-astro/src/components/${component.category}/index.ts`)
+    } else {
+      rmSync(categoryIndexPath)
+      removed.push(`minha-lib-astro/src/components/${component.category}/index.ts (deletado)`)
+      // Remove a linha do src/index.ts que re-exportava essa categoria
+      const srcIndexPath = join(ROOT, 'minha-lib-astro', 'src', 'index.ts')
+      if (existsSync(srcIndexPath)) {
+        const srcLines = readFileSync(srcIndexPath, 'utf8').split('\n')
+        const srcFiltered = srcLines.filter(l => !l.includes(`./components/${component.category}/index`))
+        writeFileSync(srcIndexPath, srcFiltered.join('\n'))
+        removed.push('minha-lib-astro/src/index.ts')
+      }
+    }
+  }
+
+  // 5. Remove do registry
   const newRegistry = registry.filter(r => r.id !== component.id)
   writeFileSync(REGISTRY, JSON.stringify(newRegistry, null, 2) + '\n')
   removed.push('minha-lib-astro/registry.json')
