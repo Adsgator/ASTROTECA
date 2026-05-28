@@ -55,18 +55,17 @@ for (const category of categories) {
 
     const sourceContent = readFileSync(sourcePath, 'utf8')
 
-    // Extrai apenas o conteúdo dentro do <body> do .preview.astro
-    // e gera uma página limpa usando PreviewLayout (que já tem HTML/head/Tailwind)
-    const bodyMatch = sourceContent.match(/<body>([\s\S]*?)<\/body>/)
-    const bodyContent = bodyMatch ? bodyMatch[1].trim() : sourceContent
+    // Formato atual: partial sem HTML wrapper
+    // Remove o bloco frontmatter (---...---) e usa só o conteúdo do componente
+    const withoutFrontmatter = sourceContent.replace(/^---[\s\S]*?---\n*/m, '').trim()
 
     const adjustedContent = `---
 import ${componentName} from '../../../minha-lib-astro/src/components/${category}/${componentName}.astro'
 import PreviewLayout from '../../layouts/PreviewLayout.astro'
 ---
 
-<PreviewLayout>
-  ${bodyContent}
+<PreviewLayout title="${componentName} — Preview">
+  ${withoutFrontmatter}
 </PreviewLayout>
 `
 
