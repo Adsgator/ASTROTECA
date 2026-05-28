@@ -8,7 +8,7 @@
 
 import { intro, outro, text, select, multiselect, isCancel, cancel, note, spinner } from '@clack/prompts'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs'
-import { resolve, join, basename, dirname } from 'node:path'
+import { resolve, join, basename, dirname, relative } from 'node:path'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { execSync } from 'node:child_process'
@@ -114,52 +114,84 @@ function detectProps(code) {
   return props
 }
 
-// Sanitiza dados sensíveis do cliente extraídos junto com o componente
-function sanitizeCode(code) {
-  // Remove imports de assets locais e coleta os nomes das variáveis removidas
-  const removedAssetVars = []
-  code = code.replace(/^import\s+(\w+)\s+from\s+['"](?:\.{1,2}\/)*(?:@\/)?assets\/[^'"]+['"];?\s*$/gm, (_, varName) => {
-    removedAssetVars.push(varName)
-    return ''
-  })
-
-  // Remove referências às variáveis de asset removidas em props de objeto (ex: image: leticiaImg,)
-  for (const v of removedAssetVars) {
-    code = code.replace(new RegExp(`(\\w+):\\s*${v}\\s*,`, 'g'), '')
-    // Remove também uso direto como atributo JSX (ex: src={leticiaImg})
-    code = code.replace(new RegExp(`\\w+=\\{${v}\\}`, 'g'), '')
-  }
-
-  // Remove uso do componente <Image> que dependia de assets locais (src={variavel})
-  // substitui por um img placeholder
-  code = code.replace(/<Image\s[^/]*src=\{[^}]+\}[^/]*\/>/gs, '<img src="/preview-assets/placeholder-hero.svg" alt="imagem" />')
-
-  // Converte imports com path absoluto apontando para dentro da própria lib
-  // ex: import X from 'C:/PROJETOS/.../minha-lib-astro/src/components/Foo/Bar.astro'
-  //  → import X from '../Foo/Bar.astro'  (relativo à pasta do componente destino)
-  code = code.replace(
-    /^(import\s+(\w+)\s+from\s+['"])([^'"]*?)minha-lib-astro[/\\]src[/\\]components[/\\]([^'"]+)(['"])/gm,
-    (match, prefix, name, _, rest, suffix) => {
-      // Normaliza barras para forward slash
+// Converte imports absolutos pra relativos (usado em ambos os fluxos)
+function normalizeAbsoluteImports(code) {
+  return code.replace(
+    /^(import\s+(\{[^}]+\}|\w+)\s+from\s+['"])([^'"]*?)minha-lib-astro[/\\]src[/\\]components[/\\]([^'"]+)(['"])/gm,
+    (match, prefix, imports, _, rest, suffix) => {
       const normalized = rest.replace(/\\/g, '/')
-      // Conta quantas pastas tem para subir até components/ (ex: FAQ/FAQ3539 → ../FAQ/FAQ3539)
       const depth = (normalized.match(/\//g) || []).length
       const upDirs = '../'.repeat(depth)
       return `${prefix}${upDirs}${normalized}${suffix}`
     }
   )
+}
 
-  // Substitui URLs de WhatsApp por placeholder
+// Converte aliases de imports (@/, ~/) pra caminhos relativos
+function resolveImportAliases(code, sourceDir, projectRoot) {
+  // @/ → relativo ao project root
+  code = code.replace(
+    /^(import\s+(\{[^}]+\}|\w+)\s+from\s+)['"]@\/([^'"]+)['"](\s*;?)$/gm,
+    (match, prefix, imports, path, semi) => {
+      const relativePath = relative(sourceDir, join(projectRoot, path)).replace(/\\/g, '/')
+      return `${prefix}'${relativePath || '.'}/${relativePath ? '' : path}'${semi}`
+    }
+  )
+
+  // ~/ → relativo ao project root (mesmo que @/)
+  code = code.replace(
+    /^(import\s+(\{[^}]+\}|\w+)\s+from\s+)['"]~\/([^'"]+)['"](\s*;?)$/gm,
+    (match, prefix, imports, path, semi) => {
+      const relativePath = relative(sourceDir, join(projectRoot, path)).replace(/\\/g, '/')
+      return `${prefix}'${relativePath || '.'}/${relativePath ? '' : path}'${semi}`
+    }
+  )
+
+  return code
+}
+
+// Sanitiza dados sensíveis e remove assets (PARA BIBLIOTECA)
+function sanitizeForLibrary(code) {
+  // Remove imports de assets (todos os padrões)
+  const assetPatterns = [
+    /^import\s+\{[^}]*\}\s+from\s+['"][^'"]*\/assets[^'"]*['"];?\s*$/gm,
+    /^import\s+(\w+)\s+from\s+['"][^'"]*\/assets\/[^'"]*['"];?\s*$/gm,
+    /^import\s+(\w+)\s+from\s+['"](?:\.{1,2}\/)*(?:@|~)?\/?\s*assets\/[^'"]*['"];?\s*$/gm,
+  ]
+
+  const removedAssetVars = []
+  for (const pattern of assetPatterns) {
+    code = code.replace(pattern, (match) => {
+      const varMatch = match.match(/import\s+(?:\{[^}]*\}|(\w+))/)
+      if (varMatch?.[1]) removedAssetVars.push(varMatch[1])
+      return ''
+    })
+  }
+
+  // Remove referências às variáveis de asset removidas
+  for (const v of removedAssetVars) {
+    code = code.replace(new RegExp(`(\\w+):\\s*${v}\\s*,`, 'g'), '')
+    code = code.replace(new RegExp(`\\w+=\\{${v}\\}`, 'g'), '')
+  }
+
+  // Remove Image/Picture components que usavam assets locais
+  code = code.replace(/<Image\s+[^/]*src=\{[^}]+\}[^/]*\/?>/gs, '<img src="/preview-assets/placeholder.svg" alt="imagem" />')
+  code = code.replace(/<Picture\s+[^/]*\/>/gs, '<img src="/preview-assets/placeholder.svg" alt="imagem" />')
+
+  // Remove imports do Astro Image se não houver mais referências
+  if (!code.includes('Image') && !code.includes('Picture')) {
+    code = code.replace(/^import\s+\{?\s*(?:Image|Picture|getImage)[^}]*\}\s+from\s+['"]astro\/assets['"];?\s*$/gm, '')
+  }
+
+  // Substitui dados sensíveis
   code = code.replace(/https:\/\/wa\.me\/[^\s'"]+/g, 'https://wa.me/5500000000000')
-
-  // Substitui números de telefone (formatos BR: (xx) x...)
   code = code.replace(/\(\d{2}\)\s?9?\d{4}[-\s]?\d{4}/g, '(00) 00000-0000')
-
-  // Substitui CNPJ
   code = code.replace(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/g, '00.000.000/0000-00')
-
-  // Substitui URLs absolutas de redes sociais por # (instagram, tiktok, facebook, youtube, linkedin)
   code = code.replace(/href="https:\/\/(www\.)?(instagram|tiktok|facebook|youtube|linkedin)\.com\/[^"]+"/g, 'href="#"')
+
+  // Remove dados hardcoded que parecem IDs/URLs específicas
+  code = code.replace(/data-project-id=["'][^"']+["']/g, 'data-project-id="project-id"')
+  code = code.replace(/data-account-id=["'][^"']+["']/g, 'data-account-id="account-id"')
 
   // Avisa sobre cores hardcoded
   const hasTailwindColors = /\b(bg|text|border)-(red|blue|green|purple|indigo|violet|pink|orange|yellow|gray|slate|zinc|neutral|stone|amber|lime|emerald|teal|cyan|sky|fuchsia|rose)-\d+/g.test(code)
@@ -168,11 +200,24 @@ function sanitizeCode(code) {
 // ⚠️  ATENÇÃO: Este componente foi extraído de outro projeto.
 // Substitua as classes Tailwind de cor hardcoded (ex: bg-violet-600)
 // por classes que usam CSS variables (ex: bg-[var(--color-primary)])
-// ou adicione ao tailwind.config: colors: { primary: 'var(--color-primary)' }
-// e use: bg-primary, text-primary, border-primary`)
+`)
+  }
+
+  // Avisa sobre variáveis de ambiente
+  if (/import\.meta\.env\.|process\.env\.|Astro\.locals\./.test(code)) {
+    code = code.replace('---', `---
+// ⚠️  ATENÇÃO: Este componente usa variáveis de ambiente.
+// Configure as seguintes env vars no seu projeto antes de usar este componente.
+`)
   }
 
   return code
+}
+
+// Mantém código intacto mas fixa imports (PARA PREVIEW)
+function sanitizeForPreview(code) {
+  // Só fixa os imports absolutos, mantém tudo mais igual ao original
+  return normalizeAbsoluteImports(code)
 }
 
 // Detecta imports locais de componentes .astro (exclui assets, pacotes npm e astro:*)
@@ -191,7 +236,7 @@ function detectLocalComponentImports(code, sourceDir) {
 }
 
 // Copia componentes filhos para a lib, cada um na sua própria pasta de categoria
-function copyChildComponents(children, ROOT) {
+function copyChildComponents(children, ROOT, sourceDir) {
   const rewrites = []
   for (const child of children) {
     const childBaseName = toPascal(basename(child.absolutePath, '.astro'))
@@ -201,9 +246,14 @@ function copyChildComponents(children, ROOT) {
     const childDir = join(ROOT, 'minha-lib-astro', 'src', 'components', childCategory)
     if (!existsSync(childDir)) mkdirSync(childDir, { recursive: true })
     const destPath = join(childDir, `${childName}.astro`)
+
     let childCode = readFileSync(child.absolutePath, 'utf8')
-    childCode = sanitizeCode(childCode)
+    // Aplica mesmas transformações que o componente pai
+    childCode = normalizeAbsoluteImports(childCode)
+    childCode = resolveImportAliases(childCode, dirname(child.absolutePath), ROOT)
+    childCode = sanitizeForLibrary(childCode)
     writeFileSync(destPath, childCode)
+
     // Caminho relativo do componente pai até o filho (pode estar em pasta diferente)
     rewrites.push({
       original: child.relativePath,
@@ -312,7 +362,13 @@ async function detectExtraTokens(code, sourceDir, ROOT) {
   return extra
 }
 
-function generatePreviewCode(name, _category, props) {
+function generatePreviewCode(name, _category, props, fullCode) {
+  // Se passou código completo do componente, usa ele direto (visual igual ao original)
+  if (fullCode) {
+    return fullCode
+  }
+
+  // Fallback: gera preview simples com props de exemplo
   const propsStr = props
     .filter(p => p.type === 'string')
     .map(p => `  ${p.name}="${EXAMPLES[p.name] || `Exemplo de ${p.name}`}"`)
@@ -457,38 +513,45 @@ async function main() {
 
   // 1. Copia filhos escolhidos, cada um na sua pasta de categoria
   const childRewrites = chosenChildren.length > 0
-    ? copyChildComponents(chosenChildren, ROOT)
+    ? copyChildComponents(chosenChildren, ROOT, sourceDir)
     : []
 
-  // 2. Componente adaptado e sanitizado
-  let adaptedCode = sanitizeCode(rawCode)
+  // 2a. Prepara código base (fixa imports absolutos)
+  let baseCode = normalizeAbsoluteImports(rawCode)
+  baseCode = resolveImportAliases(baseCode, sourceDir, ROOT)
 
-  // Reescreve imports dos filhos escolhidos com o caminho relativo correto
+  // 2b. Gera versão PARA BIBLIOTECA (limpa)
+  let libraryCode = sanitizeForLibrary(baseCode)
+
+  // 2c. Gera versão PARA PREVIEW (mantém dados originais)
+  let previewCode = sanitizeForPreview(baseCode)
+
+  // Reescreve imports dos filhos escolhidos em AMBAS as versões
   for (const rw of childRewrites) {
     const relToParent = join(rw.childDir, `${rw.childName}.astro`)
       .replace(LIB_DIR, '.')
       .replace(/\\/g, '/')
-    adaptedCode = adaptedCode.replace(
-      new RegExp(`import\\s+${rw.importName}\\s+from\\s+['"]${rw.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`),
-      `import ${rw.importName} from '${relToParent}'`
-    )
+
+    const importRegex = new RegExp(`import\\s+${rw.importName}\\s+from\\s+['"]${rw.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`)
+    libraryCode = libraryCode.replace(importRegex, `import ${rw.importName} from '${relToParent}'`)
+    previewCode = previewCode.replace(importRegex, `import ${rw.importName} from '${relToParent}'`)
   }
 
-  // Remove (comenta) imports dos filhos NÃO escolhidos
+  // Remove (comenta) imports dos filhos NÃO escolhidos em AMBAS as versões
   const rejectedChildren = allChildImports.filter(
     c => !chosenChildren.find(ch => ch.importName === c.importName)
   )
   for (const rj of rejectedChildren) {
-    adaptedCode = adaptedCode.replace(
-      new RegExp(`^import\\s+${rj.importName}\\s+from\\s+['"][^'"]+['"];?\\s*$`, 'gm'),
-      `// import ${rj.importName} removido (componente filho não importado)`
-    )
+    const commentRegex = new RegExp(`^import\\s+${rj.importName}\\s+from\\s+['"][^'"]+['"];?\\s*$`, 'gm')
+    libraryCode = libraryCode.replace(commentRegex, `// import ${rj.importName} removido`)
+    previewCode = previewCode.replace(commentRegex, `// import ${rj.importName} removido`)
   }
 
-  writeFileSync(COMP_FILE, adaptedCode)
+  // Salva componente limpo para a biblioteca
+  writeFileSync(COMP_FILE, libraryCode)
 
-  // 2. Preview
-  writeFileSync(PREV_FILE, generatePreviewCode(name, category, detectedProps))
+  // Salva componente completo para o preview
+  writeFileSync(PREV_FILE, generatePreviewCode(name, category, detectedProps, previewCode))
 
   // 3. index.ts da categoria
   let indexContent = existsSync(INDEX_FILE) ? readFileSync(INDEX_FILE, 'utf8') : ''
