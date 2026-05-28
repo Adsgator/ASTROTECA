@@ -1,19 +1,98 @@
 # Design System — Astroteca
 
-Referência para criar componentes compatíveis com a biblioteca e com todos os projetos.
-Use este arquivo como contexto ao pedir componentes para uma IA.
+Este arquivo documenta **dois sistemas de design distintos** que coexistem no projeto:
+
+1. **Studio UI** — o tema dark do próprio Astroteca (sidebar, cards, botões do studio)
+2. **Biblioteca de componentes** — o design system dos componentes que vão para projetos de clientes
 
 ---
 
-## Como funciona a compatibilidade
+## 1. Studio UI (app.css + Tailwind)
 
-Os componentes usam classes Tailwind com tokens customizados (`bg-primary`, `text-text-main`, etc.).
-Para o componente funcionar em um projeto, o `tailwind.config.js` dele precisa ter os mesmos tokens.
-O `tailwind.config.js` padrão abaixo deve ser copiado para todos os projetos novos.
+O studio usa um tema dark premium com CSS custom properties e classes Tailwind utilitárias.
+
+### Tokens CSS (`:root` em app.css)
+
+```css
+/* Superfícies (dark, em camadas) */
+--bg:            #06060e   /* fundo base da página */
+--surface:       #0c0c1a   /* cards, painéis */
+--raised:        #131325   /* itens elevados, hover background */
+--hover:         #1a1a30   /* estado hover de itens */
+--border:        #1e1e38   /* bordas */
+--border-subtle: #141428   /* divisores suaves */
+
+/* Texto */
+--ink-primary:   #ededf5   /* texto principal */
+--ink-secondary: #7a7a95   /* texto secundário */
+--ink-muted:     #3a3a52   /* texto desabilitado */
+
+/* Accent (laranja âmbar — cor da marca Astroteca) */
+--accent:        #f0a500
+--accent-dim:    rgba(240,165,0,0.08)
+--accent-hover:  #fbbf24
+--accent-glow:   rgba(240,165,0,0.15)
+
+/* Status */
+--ok:   #22c55e   /* sucesso */
+--fail: #ef4444   /* erro */
+--warn: #f59e0b   /* aviso */
+
+/* Layout */
+--sidebar-w: 240px
+--radius:    12px
+--radius-sm: 8px
+--radius-lg: 16px
+
+/* Sombras */
+--shadow-sm:   0 1px 2px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.15)
+--shadow-md:   0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2)
+--shadow-lg:   0 8px 30px rgba(0,0,0,0.5), 0 4px 10px rgba(0,0,0,0.3)
+--shadow-glow: 0 0 20px var(--accent-glow), 0 0 40px rgba(240,165,0,0.05)
+```
+
+### Classes Tailwind do studio (mapeadas via app.css)
+
+As classes abaixo são utilitários configurados no Tailwind da Astroteca. **São exclusivas do studio**, não dos componentes da biblioteca.
+
+| Classe | Token/valor |
+|--------|-------------|
+| `bg-bg` | `var(--bg)` |
+| `bg-surface` | `var(--surface)` |
+| `bg-raised` | `var(--raised)` |
+| `bg-hover` | `var(--hover)` |
+| `border-border` | `var(--border)` |
+| `border-border-subtle` | `var(--border-subtle)` |
+| `text-ink-primary` | `var(--ink-primary)` |
+| `text-ink-secondary` | `var(--ink-secondary)` |
+| `text-ink-muted` | `var(--ink-muted)` |
+| `text-accent` | `var(--accent)` |
+| `bg-accent` | `var(--accent)` |
+| `text-ok` | `var(--ok)` |
+| `text-fail` | `var(--fail)` |
+| `text-warn` | `var(--warn)` |
+
+### Tipografia do studio
+
+- **Interface:** `DM Sans` (400/500/600/700) — carregada via Google Fonts em app.css
+- **Monospace:** `JetBrains Mono` (400/500) — para código, IDs, paths
+- **Display:** `Syne` (400–800) — para headings do studio quando necessário
+
+### Padrão de card no studio
+
+```astro
+<div class="bg-surface border border-border rounded-[var(--radius)] p-6 shadow-[var(--shadow-sm)]">
+  <!-- conteúdo -->
+</div>
+```
 
 ---
 
-## tailwind.config.js padrão
+## 2. Componentes da Biblioteca (projetos de clientes)
+
+Os componentes em `minha-lib-astro/` seguem um design system **diferente** — neutro e adaptável para qualquer cliente. Os tokens abaixo são substituídos pelos valores do cliente em `tailwind.config.js`.
+
+### tailwind.config.js padrão (copiado para cada projeto)
 
 ```js
 /** @type {import('tailwindcss').Config} */
@@ -47,9 +126,7 @@ export default {
       },
 
       fontFamily: {
-        // fonte de títulos — substituir pela do cliente
         serif: ['"Cormorant Garamond"', 'Georgia', 'ui-serif', 'serif'],
-        // fonte de corpo — substituir pela do cliente
         sans:  ['"DM Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
 
@@ -62,13 +139,13 @@ export default {
       },
 
       spacing: {
-        section: 'clamp(5rem, 10vw, 8rem)',  // padding vertical de seções
+        section: 'clamp(5rem, 10vw, 8rem)',
       },
 
       maxWidth: {
-        prose:   '65ch',    // texto corrido
-        content: '860px',   // coluna de conteúdo
-        wide:    '1200px',  // container máximo
+        prose:   '65ch',
+        content: '860px',
+        wide:    '1200px',
       },
 
       borderRadius: {
@@ -79,8 +156,10 @@ export default {
       },
 
       boxShadow: {
-        card:  '0 2px 16px rgba(29,29,28,0.07)',
-        float: '0 4px 24px rgba(29,29,28,0.15)',
+        card:         '0 2px 16px rgba(29,29,28,0.07)',
+        float:        '0 4px 24px rgba(29,29,28,0.15)',
+        'primary-sm': '0 4px 14px {{colorPrimary}}40',
+        'primary-md': '0 8px 24px {{colorPrimary}}4d',
       },
 
       transitionTimingFunction: {
@@ -92,39 +171,13 @@ export default {
 }
 ```
 
----
-
-## Estrutura de pastas da biblioteca
-
-```
-minha-lib-astro/src/components/
-  Hero/           — seções de hero (HeroSplit, HeroCentered, HeroSimples...)
-  Features/       — grade de features / diferenciais
-  Services/       — seções de serviços
-  Testimonials/   — depoimentos / avaliações
-  Process/        — etapas / como funciona
-  Pricing/        — tabelas de preço
-  FAQ/            — perguntas frequentes
-  CTA/            — call to action
-  Contact/        — formulário e seção de contato
-  Footer/         — rodapés
-  Trust/          — selos, prêmios, logos de clientes
-  UI/             — componentes atômicos: Button, Badge, Icon, Card...
-  Other/          — qualquer outro que não se encaixa acima
-```
-
----
-
-## Estrutura de um componente
-
-Todo componente segue este padrão:
+### Estrutura de um componente da biblioteca
 
 ```astro
 ---
 // Categoria/NomeComponente.astro
 
 interface Props {
-  // props tipadas aqui
   headline: string
   subheadline?: string
   ctaLabel?: string
@@ -151,35 +204,30 @@ const {
 - Sempre ter valores padrão razoáveis para props opcionais
 - Usar `py-section` para padding vertical de seções
 - Usar `w-[90%] max-w-wide mx-auto` para container padrão
-- Usar `max-w-content` para colunas de texto
-- Sem JavaScript no componente salvo exceções (accordions, sliders)
+- Sem JavaScript no componente (exceto acordeões, sliders)
 - Sem imports de assets locais (imagens ficam em `public/`)
 
----
-
-## Tokens de cor — uso correto
+### Tokens de cor — uso correto
 
 | Token | Uso |
-|---|---|
+|-------|-----|
 | `bg-background` | fundo base da página |
 | `bg-surface` | cards, seções alternadas |
 | `bg-surface-alt` | fundos mais escuros / contraste leve |
 | `bg-primary` | botão primário, CTA principal |
 | `bg-primary-dark` | hover do botão primário |
 | `bg-secondary` | badge, label, destaque dourado |
-| `text-main` | todo texto principal |
-| `text-soft` | texto secundário / descrições |
-| `text-muted` | placeholders, textos de apoio |
+| `text-text-main` | todo texto principal |
+| `text-text-soft` | texto secundário / descrições |
+| `text-text-muted` | placeholders, textos de apoio |
 | `text-primary` | links, destaques em texto |
 | `border-border` | bordas de cards e inputs |
 | `text-wa` / `bg-wa` | botão/link de WhatsApp |
 
----
-
-## Tokens de fonte — uso correto
+### Tokens de fonte — uso correto
 
 | Classe | Uso |
-|---|---|
+|--------|-----|
 | `font-serif` | títulos, headlines (h1, h2, h3) |
 | `font-sans` | corpo de texto, botões, labels |
 | `text-display-xl` | hero headline principal |
@@ -188,21 +236,17 @@ const {
 | `text-display-sm` | títulos de cards |
 | `text-label` | labels em caixa alta (`uppercase tracking-widest`) |
 
----
+### Padrões de seção
 
-## Padrões de seção
-
-### Seção padrão (fundo branco)
 ```astro
+<!-- Fundo branco -->
 <section class="py-section bg-background">
   <div class="w-[90%] max-w-wide mx-auto">
     <!-- conteúdo -->
   </div>
 </section>
-```
 
-### Seção alternada (fundo surface)
-```astro
+<!-- Fundo surface -->
 <section class="py-section bg-surface">
   <div class="w-[90%] max-w-wide mx-auto">
     <!-- conteúdo -->
@@ -210,7 +254,8 @@ const {
 </section>
 ```
 
-### Cabeçalho de seção (label + título + descrição)
+### Cabeçalho de seção padrão
+
 ```astro
 <div class="text-center mb-12 max-w-content mx-auto">
   <span class="text-label font-sans font-medium uppercase tracking-widest text-secondary block mb-3">
@@ -226,6 +271,7 @@ const {
 ```
 
 ### Botão primário
+
 ```astro
 <a
   href={href}
@@ -239,20 +285,8 @@ const {
 </a>
 ```
 
-### Botão secundário (outline)
-```astro
-<a
-  href={href}
-  class="inline-flex items-center justify-center font-sans font-medium
-         bg-transparent text-text-main border border-border rounded
-         px-6 py-3 text-sm
-         transition-all duration-200 hover:border-text-soft hover:bg-surface"
->
-  {label}
-</a>
-```
-
 ### Card padrão
+
 ```astro
 <div class="bg-surface rounded-lg shadow-card p-6 border border-border">
   <!-- conteúdo -->
@@ -263,10 +297,8 @@ const {
 
 ## Prompt para pedir componentes a uma IA
 
-Use este bloco como contexto ao pedir um componente novo:
-
 ```
-Crie um componente Astro para a Astroteca seguindo estas regras:
+Crie um componente Astro para a biblioteca Astroteca seguindo estas regras:
 
 DESIGN SYSTEM:
 - Cores: primary (#436f3e), primary-dark (#2f5129), secondary (#d59740),
@@ -294,8 +326,9 @@ COMPONENTE: [descreva o que quer aqui]
 
 ## Checklist antes de extrair um componente
 
-- [ ] Componente não tem imports de `../assets/` (imagens locais removidas)
-- [ ] Não contém dados reais do cliente (telefone, CNPJ, redes sociais pessoais)
-- [ ] Props estão declaradas com `interface Props`
+- [ ] Sem imports de `../assets/` (imagens locais removidas)
+- [ ] Sem dados reais do cliente (telefone, CNPJ, redes sociais pessoais)
+- [ ] Props declaradas com `interface Props`
 - [ ] Funciona com dados de exemplo genéricos
-- [ ] Nome do arquivo está em PascalCase (ex: `HeroSplit.astro`)
+- [ ] Nome do arquivo em PascalCase (`HeroSplit.astro`)
+- [ ] `npm run build` sem erros após adicionar ao registry
