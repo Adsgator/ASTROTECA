@@ -21,11 +21,31 @@ function apiUrl(path: string) {
 // ─── Registry ────────────────────────────────────────────────────────────────
 
 /**
- * Busca o registry.json diretamente da URL raw do GitHub
- * (não precisa de token se o repo for público)
+ * Converte URL raw.githubusercontent.com para api.github.com/contents
+ * para evitar cache do CDN do GitHub.
+ * Ex: https://raw.githubusercontent.com/owner/repo/branch/registry.json
+ *  → https://api.github.com/repos/owner/repo/contents/registry.json?ref=branch
+ */
+function toApiUrl(url: string): string {
+  const match = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/)
+  if (!match) return url
+  const [, owner, repo, ref, path] = match
+  return `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${ref}`
+}
+
+/**
+ * Busca o registry.json via API do GitHub (sem cache de CDN).
  */
 export async function fetchRegistry(registryUrl: string): Promise<ComponentMeta[]> {
-  const res = await fetch(`${registryUrl}?t=${Date.now()}`, { cache: 'no-store' })
+  const url = toApiUrl(registryUrl)
+  const isApiUrl = url.includes('api.github.com')
+
+  const res = await fetch(url, {
+    cache: 'no-store',
+    headers: isApiUrl
+      ? { Accept: 'application/vnd.github.raw+json', 'X-GitHub-Api-Version': '2022-11-28' }
+      : {},
+  })
   if (!res.ok) throw new Error(`Erro ao buscar registry: ${res.status}`)
   return res.json()
 }
