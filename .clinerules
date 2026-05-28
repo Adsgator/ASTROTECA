@@ -1,0 +1,66 @@
+# .clinerules — Astroteca
+
+## Identidade do projeto
+
+Astroteca é um **studio interno** da Adsgator. Não é um site público nem um produto SaaS.
+É uma ferramenta de produtividade para criar projetos de clientes via componentes Astro.
+
+---
+
+## Arquivos que exigem cuidado extra
+
+| Arquivo / Pasta | Risco |
+|----------------|-------|
+| `minha-lib-astro/` | Submodule git — mudanças precisam de commit separado dentro dele |
+| `public/data/config.json` | Pode conter GitHub token — nunca commitar com valor real |
+| `public/data/analytics.json` | Gerado automaticamente — não editar à mão |
+| `_base-project/` | Template copiado para projetos de clientes — mudanças afetam todos os projetos futuros |
+| `src/lib/github.ts` | Cria repos GitHub reais — testar com cuidado |
+| `src/pages/api/create-project.ts` | Endpoint que dispara criação de repositório — irreversível |
+
+---
+
+## Convenções obrigatórias
+
+### Componentes da biblioteca (minha-lib-astro)
+- Arquivo: PascalCase (`HeroSplit.astro`, `PricingCards.astro`)
+- Frontmatter: `interface Props` tipada com valores default em todas as props opcionais
+- Container padrão: `w-[90%] max-w-wide mx-auto`
+- Padding de seção: `py-section`
+- Sem imports de imagens locais
+- Sem JavaScript exceto accordion/slider
+
+### Tokens de cor no Tailwind
+Usar sempre os tokens nomeados, nunca valores literais:
+`primary`, `primary-dark`, `secondary`, `background`, `surface`, `surface-alt`,
+`dark`, `text-main`, `text-soft`, `text-muted`, `border`, `wa`
+
+### IDs de componentes no registry
+Formato: `nome-kebab-NNNN` onde NNNN é número de 4 dígitos (ex: `hero-split-1234`)
+
+---
+
+## Proibições
+
+- Não criar tipos TypeScript fora de `src/types/index.ts`
+- Não usar `any` em `src/lib/` ou `src/components/`
+- Não fazer fetch direto para GitHub API fora de `src/lib/github.ts`
+- Não modificar `DESIGN-SYSTEM.md` sem atualizar o `tailwind.config.js` padrão junto
+- Não commitar `public/data/config.json` com tokens ou senhas
+
+---
+
+## Ambiente
+
+- Runtime: Node.js 18+ / Astro 5.x / React 18 (islands)
+- Deploy: Vercel (SSR via `@astrojs/vercel`)
+- Package manager: npm
+- Git: submodule em `minha-lib-astro/` apontando para repositório separado
+
+---
+
+## Antes de commitar
+
+1. `npm run build` deve passar sem erros
+2. Verificar que `public/data/config.json` não tem token real
+3. Se mudou `minha-lib-astro/`: commitar lá primeiro, depois atualizar o ponteiro aqui
