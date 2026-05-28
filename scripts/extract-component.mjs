@@ -138,8 +138,15 @@ function sanitizeCode(code) {
   // ex: import X from 'C:/PROJETOS/.../minha-lib-astro/src/components/Foo/Bar.astro'
   //  → import X from '../Foo/Bar.astro'  (relativo à pasta do componente destino)
   code = code.replace(
-    /^(import\s+\w+\s+from\s+['"]).*?minha-lib-astro\/src\/components\/([^'"]+)(['"])/gm,
-    (_, prefix, rest, suffix) => `${prefix}../${rest}${suffix}`
+    /^(import\s+(\w+)\s+from\s+['"])([^'"]*?)minha-lib-astro[/\\]src[/\\]components[/\\]([^'"]+)(['"])/gm,
+    (match, prefix, name, _, rest, suffix) => {
+      // Normaliza barras para forward slash
+      const normalized = rest.replace(/\\/g, '/')
+      // Conta quantas pastas tem para subir até components/ (ex: FAQ/FAQ3539 → ../FAQ/FAQ3539)
+      const depth = (normalized.match(/\//g) || []).length
+      const upDirs = '../'.repeat(depth)
+      return `${prefix}${upDirs}${normalized}${suffix}`
+    }
   )
 
   // Substitui URLs de WhatsApp por placeholder
