@@ -12,6 +12,7 @@ import { resolve, join, basename, dirname, relative } from 'node:path'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { execSync } from 'node:child_process'
+import { recordComponentExtraction } from './analytics.mjs'
 
 const c = {
   cyan:   s => `\x1b[36m${s}\x1b[0m`,
@@ -718,6 +719,13 @@ async function main() {
   }
   registry.push(registryEntry)
   writeFileSync(REGISTRY, JSON.stringify(registry, null, 2) + '\n')
+
+  // Registra a extração no analytics
+  try {
+    recordComponentExtraction(id, name, category)
+  } catch (e) {
+    // Falha silenciosa — analytics não deve quebrar a extração
+  }
 
   s.stop('Arquivos criados!')
 

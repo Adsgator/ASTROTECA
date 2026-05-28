@@ -248,6 +248,31 @@ export async function createProjectFromTemplate(
           'src/pages/index.astro', indexAstro,
           'init: index.astro com componentes selecionados'
         )
+
+        // Registra uso desses componentes no analytics
+        try {
+          const componentIds = selectedComponents
+            .filter(c => copiedNames.includes(c.name))
+            .map(c => c.id)
+
+          await fetch(
+            typeof location !== 'undefined'
+              ? `${location.origin}/api/record-component-usage`
+              : `${repo.html_url.replace(/\/[\w-]+$/, '')}/api/record-component-usage`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                componentIds,
+                repoUrl: repo.html_url,
+                projectName: clientName,
+              }),
+            }
+          )
+        } catch (e) {
+          // Falha silenciosa — analytics não deve quebrar a criação de projeto
+          console.error('Erro ao registrar uso de componentes:', e)
+        }
       }
     }
 
