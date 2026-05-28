@@ -1,0 +1,137 @@
+---
+import SectionHeader from 'C:/PROJETOS/ADSGATOR/ASTROTECA/minha-lib-astro/src/components/Other/SectionHeader3269.astro';
+
+const faqs = [
+  {
+    q: 'O plano alimentar é individualizado?',
+    a: 'Sim. Cada paciente recebe um plano alimentar exclusivo, pensado de acordo com suas necessidades, objetivos e o ajuste nutricional necessário para o que você quer alcançar.',
+  },
+  {
+    q: 'Vou precisar fazer restrições extremas?',
+    a: 'Não. Eu acredito que reeducação alimentar não funciona com extremos. O foco é uma adequação saudável e sustentável, construída no seu ritmo e de acordo com a sua vida real.',
+  },
+  {
+    q: 'Com que frequência acontecem as consultas?',
+    a: 'A frequência mínima é mensal. O tempo total do acompanhamento é definido de acordo com o pacote escolhido e os objetivos de cada paciente.',
+  },
+  {
+    q: 'O atendimento online funciona igual ao presencial?',
+    a: 'Sim. O acompanhamento online continua sendo totalmente personalizado. A avaliação física é feita por medidas de circunferências e fotos evolutivas, com orientação completa da minha parte.',
+  },
+  {
+    q: 'Em quanto tempo começo a ver resultados?',
+    a: 'Os resultados variam de pessoa para pessoa. Com consistência e o acompanhamento adequado, já é possível perceber melhorias na disposição e no bem-estar nas primeiras semanas.',
+  },
+  {
+    q: 'Como funciona a primeira consulta?',
+    a: 'Na primeira consulta, escuto sua rotina, seus objetivos e seu histórico de saúde. Faço a avaliação física e, se necessário, analiso seus exames laboratoriais. Tudo para que o plano alimentar seja construído com clareza e de acordo com a sua realidade.',
+  },
+];
+---
+
+<section
+  id="faq"
+  class="bg-surface section-py"
+  aria-labelledby="faq-heading"
+>
+  <div class="container-content">
+    <SectionHeader
+      label="Perguntas frequentes"
+      title="Tire suas dúvidas antes de começar"
+      subtitle="As dúvidas mais comuns de quem está considerando iniciar o acompanhamento."
+      labelColor="text-secondary"
+    />
+
+    <div class="max-w-2xl mx-auto" data-animate>
+      {faqs.map((item, i) => (
+        <div class="faq-item border-b border-border last:border-none" data-faq-item>
+          <button
+            class="w-full flex items-center justify-between gap-4 py-5 text-left font-sans text-base font-medium text-text-main hover:text-primary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            aria-expanded="false"
+            aria-controls={`faq-answer-${i}`}
+            id={`faq-btn-${i}`}
+            data-faq-trigger
+          >
+            <span>{item.q}</span>
+            <span class="shrink-0 w-5 h-5 text-text-muted transition-transform duration-200" aria-hidden="true" data-faq-icon>
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <line x1="10" y1="4" x2="10" y2="16" />
+                <line x1="4" y1="10" x2="16" y2="10" />
+              </svg>
+            </span>
+          </button>
+
+          <div
+            id={`faq-answer-${i}`}
+            role="region"
+            aria-labelledby={`faq-btn-${i}`}
+            class="overflow-hidden"
+            style="max-height: 0"
+            data-faq-answer
+          >
+            <p class="font-sans text-sm text-text-soft leading-relaxed pb-5 pr-8">{item.a}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (function () {
+    var items = document.querySelectorAll('[data-faq-item]');
+    var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    items.forEach(function(item) {
+      var trigger = item.querySelector('[data-faq-trigger]');
+      var answer = item.querySelector('[data-faq-answer]');
+      var icon = item.querySelector('[data-faq-icon]');
+      if (!trigger || !answer) return;
+
+      trigger.addEventListener('click', function() {
+        var isOpen = trigger.getAttribute('aria-expanded') === 'true';
+
+        // Fechar todos
+        items.forEach(function(other) {
+          var otherTrigger = other.querySelector('[data-faq-trigger]');
+          var otherAnswer = other.querySelector('[data-faq-answer]');
+          var otherIcon = other.querySelector('[data-faq-icon]');
+          if (otherTrigger && otherAnswer) {
+            otherTrigger.setAttribute('aria-expanded', 'false');
+            otherAnswer.style.maxHeight = '0';
+            if (otherIcon) otherIcon.style.transform = 'rotate(0deg)';
+          }
+        });
+
+        // Abrir este se estava fechado
+        if (!isOpen) {
+          trigger.setAttribute('aria-expanded', 'true');
+          answer.style.maxHeight = answer.scrollHeight + 'px';
+          if (icon) icon.style.transform = 'rotate(45deg)';
+        }
+      });
+    });
+  })();
+</script>
+
+<style>
+  [data-faq-answer] {
+    transition: max-height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    opacity: 0;
+  }
+
+  [data-faq-trigger][aria-expanded="true"] + [data-faq-answer] {
+    opacity: 1;
+  }
+
+  [data-faq-icon] {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-faq-answer],
+    [data-faq-icon] {
+      transition: none;
+    }
+  }
+</style>

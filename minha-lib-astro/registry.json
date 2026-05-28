@@ -7,15 +7,49 @@
     "previewPath": "/preview/header-simples",
     "screenshot": "",
     "componentFile": "Header/HeaderSimples.astro",
-    "tags": ["header", "navbar", "menu", "navegacao"],
-    "bestFor": ["toda landing page"],
+    "tags": [
+      "header",
+      "navbar",
+      "menu",
+      "navegacao"
+    ],
+    "bestFor": [
+      "toda landing page"
+    ],
     "props": [
-      { "name": "brandName", "type": "string", "required": true },
-      { "name": "brandHref", "type": "string", "required": false, "default": "/" },
-      { "name": "links", "type": "array", "required": false, "description": "Array de {label, href}" },
-      { "name": "ctaLabel", "type": "string", "required": false },
-      { "name": "ctaHref", "type": "string", "required": false, "default": "#contato" },
-      { "name": "transparent", "type": "boolean", "required": false }
+      {
+        "name": "brandName",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "brandHref",
+        "type": "string",
+        "required": false,
+        "default": "/"
+      },
+      {
+        "name": "links",
+        "type": "array",
+        "required": false,
+        "description": "Array de {label, href}"
+      },
+      {
+        "name": "ctaLabel",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "ctaHref",
+        "type": "string",
+        "required": false,
+        "default": "#contato"
+      },
+      {
+        "name": "transparent",
+        "type": "boolean",
+        "required": false
+      }
     ],
     "order": -1,
     "createdAt": "2026-05-27T00:00:00.000Z",
@@ -504,22 +538,43 @@
     "updatedAt": "2026-05-27T02:42:22.263Z"
   },
   {
-    "id": "avaliacoes-google-4249",
-    "name": "AvaliacoesGoogle4249",
+    "id": "avaliacoes-google-4520",
+    "name": "AvaliacoesGoogle4520",
     "category": "Testimonials",
-    "description": "teste de seção",
-    "previewPath": "/preview/avaliacoes-google-4249",
+    "description": "Avaliações do Google com fade nas laterais",
+    "previewPath": "/preview/avaliacoes-google-4520",
     "screenshot": "",
-    "componentFile": "Testimonials/AvaliacoesGoogle4249.astro",
+    "componentFile": "Testimonials/AvaliacoesGoogle4520.astro",
     "tags": [
+      "social",
       "review"
     ],
     "bestFor": [
-      "Avaliações"
+      "Todas as Landing Pages",
+      "só integrar o design"
     ],
     "props": [],
-    "order": 12,
-    "createdAt": "2026-05-27T02:45:23.304Z",
-    "updatedAt": "2026-05-27T02:45:23.304Z"
+    "order": 13,
+    "createdAt": "2026-05-27T22:31:05.124Z",
+    "updatedAt": "2026-05-27T22:31:05.124Z"
+  },
+  {
+    "id": "faq-3539",
+    "name": "FAQ3539",
+    "category": "FAQ",
+    "description": "Perguntas frequentes",
+    "previewPath": "/preview/faq-3539",
+    "screenshot": "",
+    "componentFile": "FAQ/FAQ3539.astro",
+    "tags": [
+      "FAQ"
+    ],
+    "bestFor": [
+      "Geral"
+    ],
+    "props": [],
+    "order": 14,
+    "createdAt": "2026-05-27T22:34:48.969Z",
+    "updatedAt": "2026-05-27T22:34:48.969Z"
   }
 ]
