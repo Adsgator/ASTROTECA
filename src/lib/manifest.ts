@@ -2,7 +2,22 @@
 
 import type { ProjectConfig, ArtDirection, SelectedComponent, AppSettings } from '../types'
 
-export const DEFAULT_TEMPLATE = `# Manifesto do Projeto — {{clientName}}
+export const DEFAULT_TEMPLATE = `> **Como usar:** Cole este arquivo em uma nova conversa com o Claude junto com o prompt abaixo.
+
+**Prompt sugerido:**
+\`\`\`
+Você está adaptando um projeto Astro para o cliente {{clientName}} (nicho: {{niche}}).
+Siga este MANIFEST.md passo a passo:
+1. Atualize tailwind.config.js com as cores da seção 3
+2. Atualize global.css com as fontes da seção 4
+3. Atualize Layout.astro com SEO (seção 5), GTM/WhatsApp (seção 6), Schema.org (seção 7)
+4. Para cada componente da seção 8, substitua os textos placeholder pelos valores de "Copy / Textos"
+5. Não altere estrutura HTML, classes Tailwind, ou lógica JavaScript — apenas dados do cliente
+\`\`\`
+
+---
+
+# Manifesto do Projeto — {{clientName}}
 **Gerado em:** {{date}}
 **Tipo:** {{projectType}}
 **Nicho:** {{niche}}
@@ -64,6 +79,16 @@ Atualize também as sombras coloridas para refletir a cor primária e secundári
 'secondary-sm': '0 4px 15px {{colorSecondary}}40',
 'secondary-md': '0 8px 25px {{colorSecondary}}59',
 \`\`\`
+
+---
+
+## 3.1 Direção Artística
+
+| Campo | Valor |
+|-------|-------|
+| Tom / Mood | {{mood}} |
+| Referências visuais | {{references}} |
+| Notas adicionais | {{notes}} |
 
 ---
 
@@ -302,6 +327,10 @@ export function generateManifest(
     fontHeadingEncoded:   `family=${fontToGoogleEncoded(artDirection.fontHeading)}:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500`,
     fontBody:             artDirection.fontBody,
     fontBodySlug:         fontToSlug(artDirection.fontBody),
+    // Direção artística
+    mood:                 artDirection.mood || '—',
+    references:           artDirection.references || '—',
+    notes:                artDirection.notes || '—',
     // Componentes
     components:        buildComponentsSection(components),
     socialLinks:       buildSocialLinks(project),

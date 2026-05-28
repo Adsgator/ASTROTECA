@@ -123,6 +123,7 @@ export default function Builder({ availableComponents }: Props) {
   const [creating, setCreating] = useState(false)
   const [result, setResult] = useState<{ repoUrl: string; cloneUrl: string } | null>(null)
   const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -266,6 +267,14 @@ export default function Builder({ availableComponents }: Props) {
     a.download = `${project.clientName || 'projeto'}-manifest.md`
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  function copyManifestToClipboard() {
+    const text = getManifest()
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
   }
 
   async function createProject() {
@@ -817,6 +826,9 @@ export default function Builder({ availableComponents }: Props) {
             <div className="flex gap-3 pt-4 border-t border-border">
               <button className={ui.btnOutline} onClick={downloadManifest} title={selected.length === 0 ? 'Adicione componentes antes de baixar' : 'Baixar manifesto como arquivo Markdown'}>
                 Baixar Manifesto (.md)
+              </button>
+              <button className={ui.btnOutline} onClick={copyManifestToClipboard} title={selected.length === 0 ? 'Adicione componentes antes de copiar' : 'Copiar manifesto para colar no Claude'}>
+                {copied ? '✓ Copiado!' : 'Copiar para Claude'}
               </button>
               <button
                 className={ui.btnPrimary}

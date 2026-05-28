@@ -193,10 +193,41 @@ function detectSlots(code) {
   return [...new Set(slots)]
 }
 
+// Extrai textos padrão do template como defaults de copy
+function extractCopyDefaults(code) {
+  // Extrai a seção de template (tudo após o segundo ---)
+  const parts = code.split('---')
+  if (parts.length < 3) return undefined
+  const templateSection = parts[2]
+
+  const copy = {}
+
+  // Atributos semânticos em componentes filho
+  const attrRegex = /\b(title|subtitle|label|description|text|cta|heading|caption|eyebrow)\s*=\s*"([^"]{3,100})"/gi
+  for (const [, key, val] of templateSection.matchAll(attrRegex)) {
+    const keyLower = key.toLowerCase()
+    if (!copy[keyLower]) copy[keyLower] = val
+  }
+
+  // Texto em tags HTML visíveis (h1-h6, p, button, a, span, li)
+  const tagRegex = /<(h[1-6]|p|button|a|span|li)[^>]*>\s*([A-ZÀ-ÿa-z][^<]{5,120}?)\s*<\/\1>/gi
+  let tagIdx = 0
+  for (const [, tag, text] of templateSection.matchAll(tagRegex)) {
+    const cleaned = text.trim()
+    // Ignorar: começa com {, tem \n, tem menos de 5 chars
+    if (!cleaned.startsWith('{') && !cleaned.includes('\n') && cleaned.length >= 5) {
+      const keyName = `${tag}_${tagIdx++}`
+      copy[keyName] = cleaned
+    }
+  }
+
+  return Object.keys(copy).length > 0 ? copy : undefined
+}
+
 // Detecta imports dinâmicos
 function detectDynamicImports(code) {
   const dynamicPatterns = [
-    /import\(['"][^'"]+['"]\)/g,
+    /import\s*\(\s*['"][^'"]+['"]\s*\)/g,
     /import\.meta\.glob\(/g,
   ]
   return dynamicPatterns.some(p => p.test(code))
@@ -664,6 +695,10 @@ async function main() {
 
   // Detecta slots (default + nomeados)
   const slots = detectSlots(previewCode)
+
+  // Extrai textos padrão do template como defaults de copy
+  const copyDefaults = extractCopyDefaults(previewCode)
+
   const registryEntry = {
     id, name, category, description,
     previewPath: `/preview/${id}`,
@@ -678,6 +713,7 @@ async function main() {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...(slots.length > 0 ? { slots } : {}),
+    ...(copyDefaults ? { copy: copyDefaults } : {}),
     ...(Object.keys(extraTokens).length > 0 ? { tokens: extraTokens } : {}),
   }
   registry.push(registryEntry)
