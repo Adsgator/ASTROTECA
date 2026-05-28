@@ -99,15 +99,24 @@ function detectProps(code) {
     const [, name, optional, type] = match
     const normalizedType = type.includes('[]') ? 'array' : type
 
-    // Pega o valor default se existir no destructure
-    const defaultMatch = code.match(new RegExp(`${name}\\s*=\\s*['"]([^'"]+)['"]`))
-    const defaultVal = defaultMatch ? defaultMatch[1] : ''
+    // Pega o valor default (string, número ou booleano)
+    let defaultVal = ''
+    // String: 'valor' ou "valor"
+    const stringDefault = code.match(new RegExp(`${name}\\s*=\\s*['"]([^'"]+)['"]`))
+    // Número: 123
+    const numberDefault = code.match(new RegExp(`${name}\\s*=\\s*(\\d+(?:\\.\\d+)?)`))
+    // Booleano: true/false
+    const boolDefault = code.match(new RegExp(`${name}\\s*=\\s*(true|false)`))
+
+    if (stringDefault?.[1]) defaultVal = stringDefault[1]
+    else if (numberDefault?.[1]) defaultVal = numberDefault[1]
+    else if (boolDefault?.[1]) defaultVal = boolDefault[1]
 
     props.push({
       name,
       type: normalizedType,
       required: !optional,
-      default: defaultVal,
+      ...(defaultVal ? { default: defaultVal } : {}),
     })
   }
 
@@ -150,9 +159,55 @@ function resolveImportAliases(code, sourceDir, projectRoot) {
   return code
 }
 
+// Detecta CSS Modules
+function detectCSSModules(code) {
+  const cssModuleRegex = /^import\s+(\w+)\s+from\s+['"][^'"]*\.module\.css['"];?\s*$/gm
+  const modules = []
+  let match
+  while ((match = cssModuleRegex.exec(code)) !== null) {
+    modules.push(match[1])
+  }
+  return modules
+}
+
+// Detecta componentes React/Vue
+function detectFrameworkComponents(code) {
+  const reactVueRegex = /^import\s+\{?(\w+)\}?\s+from\s+['"]\.\/([^'"]*\.(jsx|tsx|vue))['"];?\s*$/gm
+  const components = []
+  let match
+  while ((match = reactVueRegex.exec(code)) !== null) {
+    const ext = match[3]
+    components.push({ name: match[1], file: match[2], type: ext === 'vue' ? 'Vue' : 'React' })
+  }
+  return components
+}
+
+// Detecta slots no template
+function detectSlots(code) {
+  const slotRegex = /<slot\s+(?:name=["']([^"']+)["'])?\s*\/?>/g
+  const slots = ['default']
+  let match
+  while ((match = slotRegex.exec(code)) !== null) {
+    if (match[1]) slots.push(match[1])
+  }
+  return [...new Set(slots)]
+}
+
+// Detecta imports dinâmicos
+function detectDynamicImports(code) {
+  const dynamicPatterns = [
+    /import\(['"][^'"]+['"]\)/g,
+    /import\.meta\.glob\(/g,
+  ]
+  return dynamicPatterns.some(p => p.test(code))
+}
+
 // Sanitiza dados sensíveis e remove assets (PARA BIBLIOTECA)
 function sanitizeForLibrary(code) {
-  // Remove imports de assets (todos os padrões)
+  // Preserve import type — são apenas tipos, não afetam runtime
+  const preserveImportType = code.match(/^import\s+type\s+.*$/gm) ?? []
+
+  // Remove imports de assets (todos os padrões) — mas não type imports
   const assetPatterns = [
     /^import\s+\{[^}]*\}\s+from\s+['"][^'"]*\/assets[^'"]*['"];?\s*$/gm,
     /^import\s+(\w+)\s+from\s+['"][^'"]*\/assets\/[^'"]*['"];?\s*$/gm,
@@ -162,6 +217,8 @@ function sanitizeForLibrary(code) {
   const removedAssetVars = []
   for (const pattern of assetPatterns) {
     code = code.replace(pattern, (match) => {
+      // Nunca remover import type
+      if (match.includes('import type')) return match
       const varMatch = match.match(/import\s+(?:\{[^}]*\}|(\w+))/)
       if (varMatch?.[1]) removedAssetVars.push(varMatch[1])
       return ''
@@ -181,6 +238,32 @@ function sanitizeForLibrary(code) {
   // Remove imports do Astro Image se não houver mais referências
   if (!code.includes('Image') && !code.includes('Picture')) {
     code = code.replace(/^import\s+\{?\s*(?:Image|Picture|getImage)[^}]*\}\s+from\s+['"]astro\/assets['"];?\s*$/gm, '')
+  }
+
+  // Detecta CSS Modules — remove imports e substitui usos
+  const cssModules = detectCSSModules(code)
+  for (const moduleName of cssModules) {
+    code = code.replace(new RegExp(`^import\\s+${moduleName}\\s+from\\s+['"][^'"]*\\.module\\.css['"];?\\s*$`, 'gm'), '')
+    // Substitui styles.className por string de classe (aviso comentado)
+    code = code.replace(new RegExp(`\\$\\{${moduleName}\\.(\\w+)\\}`, 'g'), `/* Classe: \$1 */ \$1`)
+    code = code.replace(new RegExp(`${moduleName}\\.(\\w+)`, 'g'), `\$1 /* do CSS Module */`)
+  }
+
+  // Detecta React/Vue components
+  const frameworkComps = detectFrameworkComponents(code)
+  if (frameworkComps.length > 0) {
+    code = code.replace('---', `---
+// ⚠️  ATENÇÃO: Este componente importa componentes React/Vue.
+// Instale as dependências necessárias:
+${frameworkComps.some(c => c.type === 'React') ? '//   npm install @astrojs/react react react-dom\n' : ''}${frameworkComps.some(c => c.type === 'Vue') ? '//   npm install @astrojs/vue vue\n' : ''}`)
+  }
+
+  // Detecta imports dinâmicos
+  if (detectDynamicImports(code)) {
+    code = code.replace('---', `---
+// ⚠️  ATENÇÃO: Este componente usa imports dinâmicos.
+// Valide que todas as dependências estão disponíveis em runtime.
+`)
   }
 
   // Substitui dados sensíveis
@@ -222,7 +305,8 @@ function sanitizeForPreview(code) {
 
 // Detecta imports locais de componentes .astro (exclui assets, pacotes npm e astro:*)
 function detectLocalComponentImports(code, sourceDir) {
-  const importRegex = /^import\s+(\w+)\s+from\s+['"](\.{1,2}\/[^'"]+\.astro)['"]/gm
+  // Captura: import Name from '../../components/Child.astro' (qualquer nível de ..)
+  const importRegex = /^import\s+(\w+)\s+from\s+['"]((?:\.{1,2}\/)+[^'"]+\.astro)['"]/gm
   const found = []
   let match
   while ((match = importRegex.exec(code)) !== null) {
@@ -473,7 +557,9 @@ async function main() {
 
   // ── Filhos: detecta, pergunta quais importar, define categorias ──────────
   const sourceDir = dirname(resolvedPath)
-  const allChildImports = detectLocalComponentImports(rawCode, sourceDir)
+  // Detecta filhos APÓS resolver aliases para capturar @/ e ~/ imports também
+  const resolvedBaseCode = resolveImportAliases(normalizeAbsoluteImports(rawCode), sourceDir, resolve(process.cwd()))
+  const allChildImports = detectLocalComponentImports(resolvedBaseCode, sourceDir)
 
   let chosenChildren = []
   if (allChildImports.length > 0) {
@@ -575,7 +661,10 @@ async function main() {
     try { registry = JSON.parse(readFileSync(REGISTRY, 'utf8')) } catch {}
   }
   registry = registry.filter(r => r.id !== id)
-  registry.push({
+
+  // Detecta slots (default + nomeados)
+  const slots = detectSlots(previewCode)
+  const registryEntry = {
     id, name, category, description,
     previewPath: `/preview/${id}`,
     screenshot: '',
@@ -588,8 +677,10 @@ async function main() {
     order: registry.length + 1,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    ...(slots.length > 0 ? { slots } : {}),
     ...(Object.keys(extraTokens).length > 0 ? { tokens: extraTokens } : {}),
-  })
+  }
+  registry.push(registryEntry)
   writeFileSync(REGISTRY, JSON.stringify(registry, null, 2) + '\n')
 
   s.stop('Arquivos criados!')
