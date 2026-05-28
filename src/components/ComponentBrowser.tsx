@@ -84,12 +84,19 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
   }
 
   useEffect(() => {
-    if (!registryUrl) {
+    const url = registryUrl || (() => {
+      try {
+        const s = localStorage.getItem('acs-settings')
+        return s ? (JSON.parse(s) as { registryUrl?: string }).registryUrl || '' : ''
+      } catch { return '' }
+    })()
+
+    if (!url) {
       setComponents(getFallbackRegistry())
       return
     }
     setLoading(true)
-    fetch(`/api/registry-proxy?url=${encodeURIComponent(registryUrl)}`)
+    fetch(`/api/registry-proxy?url=${encodeURIComponent(url)}`)
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then((data: ComponentMeta[]) => { setComponents(normalizeComponents(data)); setError('') })
       .catch(() => setError('Erro ao carregar registro'))
