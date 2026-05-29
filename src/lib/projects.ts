@@ -6,6 +6,11 @@ import { generateId, slugify } from './utils'
 const PROJECTS_KEY = 'acs-projects'
 const ACTIVE_KEY = 'acs-active-project'
 
+// Guard: typeof window !== 'undefined' para evitar erro no SSR
+function getStorage() {
+  return typeof window !== 'undefined' ? window.localStorage : null
+}
+
 const DEFAULT_BRIEFING: Briefing = {
   briefingBruto: '',
   nomeCliente: '', nomeMarca: '', segmento: '',
@@ -77,18 +82,24 @@ export const DEFAULT_BUILDER_STATE: BuilderState = {
 
 export function getProjects(): ClientProject[] {
   try {
-    return JSON.parse(localStorage.getItem(PROJECTS_KEY) ?? '[]')
+    const storage = getStorage()
+    if (!storage) return []
+    return JSON.parse(storage.getItem(PROJECTS_KEY) ?? '[]')
   } catch {
     return []
   }
 }
 
 export function getActiveProjectId(): string | null {
-  return localStorage.getItem(ACTIVE_KEY)
+  const storage = getStorage()
+  if (!storage) return null
+  return storage.getItem(ACTIVE_KEY)
 }
 
 export function setActiveProjectId(id: string): void {
-  localStorage.setItem(ACTIVE_KEY, id)
+  const storage = getStorage()
+  if (!storage) return
+  storage.setItem(ACTIVE_KEY, id)
 }
 
 export function getProject(id: string): ClientProject | null {
@@ -96,18 +107,22 @@ export function getProject(id: string): ClientProject | null {
 }
 
 export function saveProject(project: ClientProject): void {
+  const storage = getStorage()
+  if (!storage) return
   const projects = getProjects().filter(p => p.id !== project.id)
   projects.push({ ...project, updatedAt: new Date().toISOString() })
-  localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects))
+  storage.setItem(PROJECTS_KEY, JSON.stringify(projects))
 }
 
 export function deleteProject(id: string): void {
+  const storage = getStorage()
+  if (!storage) return
   const projects = getProjects().filter(p => p.id !== id)
-  localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects))
+  storage.setItem(PROJECTS_KEY, JSON.stringify(projects))
   if (getActiveProjectId() === id) {
     const next = projects[projects.length - 1]
     if (next) setActiveProjectId(next.id)
-    else localStorage.removeItem(ACTIVE_KEY)
+    else storage.removeItem(ACTIVE_KEY)
   }
 }
 
@@ -127,20 +142,23 @@ export function createProject(name: string): ClientProject {
 }
 
 export function exportAllData(): string {
+  const storage = getStorage()
   return JSON.stringify({
     version: 2,
     exportedAt: new Date().toISOString(),
     projects: getProjects(),
-    settings: localStorage.getItem('acs-settings'),
+    settings: storage?.getItem('acs-settings') ?? null,
   }, null, 2)
 }
 
 export function importAllData(json: string): { projects: number; settings: boolean } {
+  const storage = getStorage()
+  if (!storage) return { projects: 0, settings: false }
   const data = JSON.parse(json)
   const projects: ClientProject[] = data.projects ?? []
-  localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects))
+  storage.setItem(PROJECTS_KEY, JSON.stringify(projects))
   if (data.settings) {
-    localStorage.setItem('acs-settings', data.settings)
+    storage.setItem('acs-settings', data.settings)
   }
   return { projects: projects.length, settings: !!data.settings }
 }
