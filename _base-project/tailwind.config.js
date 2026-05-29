@@ -12,6 +12,7 @@ import { tokens } from '../tailwind-tokens.js'
 
 export default {
   content: ['./src/**/*.{astro,html,js,jsx,ts,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       ...tokens,

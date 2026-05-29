@@ -17,6 +17,7 @@ import GTM from '../components/global/GTM.astro';
 import WhatsAppFloat from '../components/global/WhatsAppFloat.astro';
 import CookieBanner from '../components/islands/CookieBanner.tsx';
 import ScrollAnimations from '../components/islands/ScrollAnimations.tsx';
+import ThemeToggle from '../components/islands/ThemeToggle.tsx';
 import '../styles/global.css';
 
 interface Props {
@@ -66,9 +67,18 @@ const finalSchema = schema || defaultSchema;
 ---
 
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-default-theme="light">
 <head>
   <meta charset="UTF-8" />
+
+  <!-- Dark mode — deve executar ANTES de qualquer CSS para evitar flash -->
+  <script is:inline>
+    (function(){
+      var t = localStorage.getItem('theme');
+      if (!t) t = document.documentElement.dataset.defaultTheme || 'light';
+      if (t === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
 
   <!-- GTM Head — imediatamente após charset -->
   <GTM id={GTM_ID} />
@@ -175,6 +185,8 @@ const finalSchema = schema || defaultSchema;
   />
 
   <ScrollAnimations client:load />
+
+  <ThemeToggle client:idle />
 
 </body>
 </html>

@@ -30,6 +30,16 @@ export const tokens = {
     'text-muted':   '#8a8a8a',
     border:         '#e5dfd6',
     wa:             '#25D366',
+
+    // ── Dark mode palette (usada pelo ThemeToggle nos projetos cliente) ──
+    // Valores default — cada projeto substitui conforme ArtDirection.
+    'dark-bg':           '#0f0f0f',
+    'dark-surface':      '#1a1a1a',
+    'dark-surface-alt':  '#242424',
+    'dark-text-main':    '#e8e8e8',
+    'dark-text-soft':    '#b0b0b0',
+    'dark-text-muted':   '#707070',
+    'dark-border':       '#2a2a2a',
   },
 
   // ── TIPOGRAFIA ─────────────────────────────────────────────

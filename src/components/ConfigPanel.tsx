@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
-import type { AppSettings } from '../types'
+import type { AppSettingsV2 } from '../types'
 import { validateGithubToken } from '../lib/github'
+import { callGemini } from '../lib/gemini'
+import { getProjects, exportAllData, importAllData } from '../lib/projects'
 import * as ui from '../styles/ui'
 
-const DEFAULT_SETTINGS: AppSettings = {
+const DEFAULT_SETTINGS: AppSettingsV2 = {
   githubToken: '',
   githubOwner: '',
   componentsRepo: 'minha-lib-astro',
@@ -19,14 +21,19 @@ const DEFAULT_SETTINGS: AppSettings = {
   npmNamespace: '@astroteca',
   userName: '',
   userEmail: '',
+  geminiApiKey: '',
+  geminiModel: 'gemini-2.5-flash',
 }
 
 export default function ConfigPanel() {
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+  const [settings, setSettings] = useState<AppSettingsV2>(DEFAULT_SETTINGS)
   const [saved, setSaved] = useState(false)
   const [validating, setValidating] = useState(false)
   const [tokenError, setTokenError] = useState('')
   const [tokenUser, setTokenUser] = useState<string | null>(null)
+  const [testingGemini, setTestingGemini] = useState(false)
+  const [geminiStatus, setGeminiStatus] = useState<{ ok: boolean; msg: string } | null>(null)
+  const [importError, setImportError] = useState('')
 
   useEffect(() => {
     const saved = localStorage.getItem('acs-settings')
@@ -35,7 +42,7 @@ export default function ConfigPanel() {
     }
   }, [])
 
-  function update<K extends keyof AppSettings>(key: K, value: AppSettings[K]) {
+  function update<K extends keyof AppSettingsV2>(key: K, value: AppSettingsV2[K]) {
     setSettings(prev => ({ ...prev, [key]: value }))
     setSaved(false)
   }
@@ -44,6 +51,52 @@ export default function ConfigPanel() {
     localStorage.setItem('acs-settings', JSON.stringify(settings))
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
+  }
+
+  async function handleTestGemini() {
+    setTestingGemini(true)
+    setGeminiStatus(null)
+    try {
+      const result = await callGemini({
+        apiKey: settings.geminiApiKey,
+        model: settings.geminiModel,
+        systemPrompt: 'You are a helpful assistant.',
+        userPrompt: 'Respond with exactly: OK',
+      })
+      setGeminiStatus({ ok: true, msg: result.trim().slice(0, 80) })
+    } catch (e) {
+      setGeminiStatus({ ok: false, msg: e instanceof Error ? e.message : 'Erro desconhecido' })
+    } finally {
+      setTestingGemini(false)
+    }
+  }
+
+  function handleExport() {
+    const data = exportAllData()
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `astroteca-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = ev => {
+      try {
+        const json = JSON.parse(ev.target?.result as string)
+        importAllData(json)
+        setImportError('')
+        alert('Backup importado com sucesso! Recarregue a página.')
+      } catch {
+        setImportError('Arquivo inválido ou corrompido')
+      }
+    }
+    reader.readAsText(file)
   }
 
   async function handleValidateToken() {
@@ -163,6 +216,59 @@ export default function ConfigPanel() {
       </div>
 
       <div className={`${ui.cardBase} p-5`}>
+        <h2 className="text-lg font-semibold mb-4">Inteligência Artificial</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <Field label="Chave da API Gemini">
+              <input
+                className={ui.inputBase}
+                type="password"
+                value={settings.geminiApiKey}
+                onChange={e => update('geminiApiKey', e.target.value)}
+                placeholder="AIza..."
+              />
+            </Field>
+            <div className="flex items-center gap-2 mt-1">
+              <a
+                href="https://aistudio.google.com/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-accent hover:underline"
+              >
+                Obter chave no Google AI Studio →
+              </a>
+            </div>
+          </div>
+          <Field label="Modelo">
+            <select
+              className={ui.selectBase}
+              value={settings.geminiModel}
+              onChange={e => update('geminiModel', e.target.value as AppSettingsV2['geminiModel'])}
+            >
+              <option value="gemini-2.5-flash">Flash (recomendado)</option>
+              <option value="gemini-2.5-flash-lite">Flash Lite (fallback)</option>
+              <option value="gemini-2.5-pro">Pro (mais lento, mais preciso)</option>
+            </select>
+          </Field>
+          <div className="flex flex-col justify-end">
+            <button
+              className={`${ui.btnOutline} py-1 px-3 text-xs`}
+              onClick={handleTestGemini}
+              disabled={testingGemini || !settings.geminiApiKey}
+              title={!settings.geminiApiKey ? 'Digite a chave antes de testar' : 'Testar conexão com o Gemini'}
+            >
+              {testingGemini ? 'Testando...' : 'Testar conexão'}
+            </button>
+            {geminiStatus && (
+              <span className={`mt-1 text-xs ${geminiStatus.ok ? 'text-ok' : 'text-fail'}`}>
+                {geminiStatus.ok ? '✓ ' : '✗ '}{geminiStatus.msg}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className={`${ui.cardBase} p-5`}>
         <h2 className="text-lg font-semibold mb-4">Padroes</h2>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Fonte dos Titulos">
@@ -255,6 +361,22 @@ export default function ConfigPanel() {
           placeholder="# {{PROJECT_NAME}}\n\n## Art Direction\n..."
           rows={10}
         />
+      </div>
+      <div className={`${ui.cardBase} p-5`}>
+        <h2 className="text-lg font-semibold mb-4">Dados</h2>
+        <p className="text-xs text-ink-secondary mb-3">
+          {getProjects().length} projeto{getProjects().length !== 1 ? 's' : ''} salvos
+        </p>
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={handleExport} className={`${ui.btnOutline} text-xs`}>
+            ↓ Exportar Backup
+          </button>
+          <label className={`${ui.btnOutline} text-xs cursor-pointer`}>
+            ↑ Importar Backup
+            <input type="file" accept=".json" className="hidden" onChange={handleImport} />
+          </label>
+        </div>
+        {importError && <p className="text-xs text-fail mt-2">{importError}</p>}
       </div>
     </div>
   )

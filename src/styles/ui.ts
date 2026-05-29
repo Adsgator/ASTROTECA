@@ -20,3 +20,7 @@ export const cardBase = 'rounded-xl border border-white/[0.06] bg-surface/60 bac
 export const cardInteractive = `${cardBase} cursor-pointer transition-all hover:border-accent/30 hover:shadow-lg hover:bg-surface/80`
 
 export const badgeBase = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium'
+
+export const tabActive = 'bg-accent text-black shadow-[0_2px_8px_rgba(240,165,0,0.25)] rounded-lg px-3.5 py-2 text-xs font-semibold transition-all'
+export const tabInactive = 'text-ink-secondary hover:bg-raised hover:text-ink-primary rounded-lg px-3.5 py-2 text-xs font-semibold transition-all'
+export const selectBase = 'w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm backdrop-blur-sm focus:border-accent focus:ring-1 focus:ring-accent/50 outline-none transition-all'

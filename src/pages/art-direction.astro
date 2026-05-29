@@ -1,0 +1,457 @@
+---
+// Página standalone de Direção de Arte — compartilhável via link.
+// Dados chegam pela query string: ?data=BASE64(JSON de ArtDirectionV2 + nomeCliente)
+// Não usa AppLayout — CSS inline independente.
+
+const raw = Astro.url.searchParams.get('data') ?? ''
+
+interface ArtData {
+  nomeCliente?: string
+  colorPrimary?: string
+  colorPrimaryDark?: string
+  colorSecondary?: string
+  colorBackground?: string
+  colorSurface?: string
+  colorSurfaceAlt?: string
+  colorDark?: string
+  colorText?: string
+  colorTextSoft?: string
+  colorTextMuted?: string
+  colorBorder?: string
+  darkColorBackground?: string
+  darkColorSurface?: string
+  darkColorSurfaceAlt?: string
+  darkColorText?: string
+  darkColorTextSoft?: string
+  darkColorTextMuted?: string
+  darkColorBorder?: string
+  fontHeading?: string
+  fontBody?: string
+  mood?: string
+  references?: string
+  notes?: string
+  defaultTheme?: 'light' | 'dark'
+  studioName?: string
+}
+
+let data: ArtData = {}
+let parseError = false
+
+try {
+  if (raw) {
+    const json = decodeURIComponent(escape(atob(raw)))
+    data = JSON.parse(json)
+  }
+} catch {
+  parseError = true
+}
+
+const {
+  nomeCliente = 'Cliente',
+  colorPrimary = '#000000',
+  colorPrimaryDark = '#000000',
+  colorSecondary = '#888888',
+  colorBackground = '#ffffff',
+  colorSurface = '#f5f5f5',
+  colorSurfaceAlt = '#ebebeb',
+  colorDark = '#1d1d1d',
+  colorText = '#1d1d1d',
+  colorTextSoft = '#535353',
+  colorTextMuted = '#8a8a8a',
+  colorBorder = '#e5e5e5',
+  darkColorBackground = '#0f0f0f',
+  darkColorSurface = '#1a1a1a',
+  darkColorSurfaceAlt = '#242424',
+  darkColorText = '#e8e8e8',
+  darkColorTextSoft = '#b0b0b0',
+  darkColorTextMuted = '#707070',
+  darkColorBorder = '#2a2a2a',
+  fontHeading = 'Cormorant Garamond',
+  fontBody = 'DM Sans',
+  mood = '',
+  references = '',
+  notes = '',
+  defaultTheme = 'light',
+  studioName = 'Astroteca',
+} = data
+
+const now = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+
+const lightColors = [
+  { label: 'Primária',       value: colorPrimary },
+  { label: 'Primária Escura',value: colorPrimaryDark },
+  { label: 'Secundária',     value: colorSecondary },
+  { label: 'Fundo',          value: colorBackground },
+  { label: 'Surface',        value: colorSurface },
+  { label: 'Surface Alt',    value: colorSurfaceAlt },
+  { label: 'Tom Escuro',     value: colorDark },
+  { label: 'Texto',          value: colorText },
+  { label: 'Texto Suave',    value: colorTextSoft },
+  { label: 'Texto Muted',    value: colorTextMuted },
+  { label: 'Borda',          value: colorBorder },
+]
+
+const darkColors = [
+  { label: 'Fundo',      value: darkColorBackground },
+  { label: 'Surface',    value: darkColorSurface },
+  { label: 'Surface Alt',value: darkColorSurfaceAlt },
+  { label: 'Texto',      value: darkColorText },
+  { label: 'Texto Suave',value: darkColorTextSoft },
+  { label: 'Texto Muted',value: darkColorTextMuted },
+  { label: 'Borda',      value: darkColorBorder },
+]
+
+const headingEncoded = fontHeading.replace(/\s+/g, '+')
+const bodyEncoded    = fontBody.replace(/\s+/g, '+')
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Direção de Arte — {nomeCliente}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href={`https://fonts.googleapis.com/css2?family=${headingEncoded}:wght@400;600;700&family=${bodyEncoded}:wght@300;400;500&display=swap`}
+    rel="stylesheet"
+  />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body), system-ui, sans-serif;
+      background: #fafafa;
+      color: #1d1d1d;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 2rem 4rem;
+    }
+
+    /* Header */
+    .art-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding-bottom: 2rem;
+      border-bottom: 2px solid #e5e5e5;
+      margin-bottom: 2.5rem;
+    }
+    .art-header h1 {
+      font-family: var(--font-heading), Georgia, serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .art-header .meta {
+      text-align: right;
+      font-size: 0.8rem;
+      color: #888;
+    }
+    .art-header .meta strong {
+      display: block;
+      font-size: 0.85rem;
+      color: #444;
+    }
+    .tag-tema {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.2rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: #f0f0f0;
+      color: #555;
+    }
+
+    /* Sections */
+    section { margin-bottom: 2.5rem; }
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 1rem;
+    }
+
+    /* Paleta */
+    .palette-group { margin-bottom: 1.5rem; }
+    .palette-group h3 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 0.75rem;
+    }
+    .swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .swatch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .swatch-box {
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .swatch-label {
+      font-size: 0.65rem;
+      color: #666;
+      text-align: center;
+      max-width: 72px;
+    }
+    .swatch-hex {
+      font-size: 0.6rem;
+      color: #999;
+      font-family: monospace;
+    }
+
+    /* Tipografia */
+    .font-specimen {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .font-specimen .font-tag {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 0.5rem;
+    }
+    .font-specimen .sample-heading {
+      font-size: 1.8rem;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    .font-specimen .sample-body {
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-top: 0.4rem;
+      color: #444;
+    }
+
+    /* Mood */
+    .mood-box {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      font-size: 0.9rem;
+      color: #333;
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+
+    /* Actions */
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-primary-art {
+      background: #1d1d1d;
+      color: white;
+    }
+    .btn-primary-art:hover { background: #333; }
+    .btn-outline-art {
+      background: white;
+      color: #333;
+      border-color: #ddd;
+    }
+    .btn-outline-art:hover { background: #f5f5f5; }
+
+    /* Footer */
+    .art-footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #bbb;
+      padding-top: 2rem;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    /* Error */
+    .error-box {
+      background: #fff5f5;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      color: #b91c1c;
+    }
+
+    /* Print */
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .swatch-box { border: 1px solid #ccc !important; box-shadow: none !important; }
+      @page { margin: 1.5cm; }
+    }
+  </style>
+</head>
+<body style={`--font-heading: '${fontHeading}'; --font-body: '${fontBody}'`}>
+  <div class="page">
+
+    {parseError ? (
+      <div class="error-box">
+        <p style="font-size:1.5rem; margin-bottom:0.5rem">⚠️</p>
+        <p><strong>Link inválido ou corrompido.</strong></p>
+        <p style="font-size:0.85rem; margin-top:0.5rem; opacity:0.7">Gere um novo link na Astroteca.</p>
+      </div>
+    ) : (
+      <>
+        <header class="art-header">
+          <div>
+            <h1>{nomeCliente}</h1>
+            <p style="font-size:0.9rem; color:#888; margin-top:0.25rem">Direção de Arte</p>
+          </div>
+          <div class="meta">
+            <strong>{studioName}</strong>
+            <span>{now}</span>
+            <span class="tag-tema">
+              {defaultTheme === 'dark' ? '🌙 Tema Escuro' : '☀️ Tema Claro'}
+            </span>
+          </div>
+        </header>
+
+        <div class="actions no-print">
+          <button class="btn btn-primary-art" onclick="window.print()">
+            🖨️ Imprimir / Salvar PDF
+          </button>
+          <button
+            class="btn btn-outline-art"
+            onclick={`navigator.clipboard.writeText(window.location.href).then(()=>alert('Link copiado!'))`}
+          >
+            🔗 Copiar Link
+          </button>
+        </div>
+
+        <!-- Paleta de Cores -->
+        <section>
+          <p class="section-title">Paleta de Cores</p>
+
+          <div class="palette-group">
+            <h3>☀️ Tema Claro</h3>
+            <div class="swatches">
+              {lightColors.map(c => (
+                <div class="swatch">
+                  <div class="swatch-box" style={`background:${c.value}`} />
+                  <span class="swatch-label">{c.label}</span>
+                  <span class="swatch-hex">{c.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="palette-group">
+            <h3>🌙 Tema Escuro</h3>
+            <div class="swatches">
+              {darkColors.map(c => (
+                <div class="swatch">
+                  <div class="swatch-box" style={`background:${c.value}; border-color:rgba(255,255,255,0.1)`} />
+                  <span class="swatch-label">{c.label}</span>
+                  <span class="swatch-hex">{c.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <!-- Tipografia -->
+        <section>
+          <p class="section-title">Tipografia</p>
+
+          <div class="font-specimen">
+            <p class="font-tag">Heading — {fontHeading}</p>
+            <p class="sample-heading" style={`font-family: '${fontHeading}', Georgia, serif`}>
+              Aa Bb Cc — {fontHeading}
+            </p>
+            <p class="sample-body" style={`font-family: '${fontHeading}', Georgia, serif`}>
+              O impacto da sua mensagem começa na tipografia certa.
+            </p>
+          </div>
+
+          <div class="font-specimen">
+            <p class="font-tag">Body — {fontBody}</p>
+            <p class="sample-heading" style={`font-family: '${fontBody}', system-ui, sans-serif; font-weight:500`}>
+              Aa Bb Cc — {fontBody}
+            </p>
+            <p class="sample-body" style={`font-family: '${fontBody}', system-ui, sans-serif; font-weight:300`}>
+              Clareza e legibilidade para cada linha de conteúdo do site.
+            </p>
+          </div>
+        </section>
+
+        <!-- Mood -->
+        {(mood || references || notes) && (
+          <section>
+            <p class="section-title">Mood & Referências</p>
+            {mood && (
+              <>
+                <p style="font-size:0.75rem; color:#999; margin-bottom:0.5rem">Mood</p>
+                <div class="mood-box" style="margin-bottom:0.75rem">{mood}</div>
+              </>
+            )}
+            {references && (
+              <>
+                <p style="font-size:0.75rem; color:#999; margin-bottom:0.5rem">Referências</p>
+                <div class="mood-box" style="margin-bottom:0.75rem">{references}</div>
+              </>
+            )}
+            {notes && (
+              <>
+                <p style="font-size:0.75rem; color:#999; margin-bottom:0.5rem">Observações</p>
+                <div class="mood-box">{notes}</div>
+              </>
+            )}
+          </section>
+        )}
+
+        <footer class="art-footer no-print">
+          Gerado por {studioName} · {now}
+        </footer>
+      </>
+    )}
+
+  </div>
+</body>
+</html>

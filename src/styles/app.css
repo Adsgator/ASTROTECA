@@ -623,3 +623,24 @@ textarea:focus {
   outline: none;
   box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
 }
+
+/* ─── Markdown Content (Builder sidebar document preview) ────────────────── */
+.markdown-content h1 { @apply text-lg font-bold text-ink-primary mb-2; }
+.markdown-content h2 { @apply text-sm font-semibold text-ink-primary mt-4 mb-1.5; }
+.markdown-content h3 { @apply text-xs font-semibold text-ink-secondary mt-3 mb-1; }
+.markdown-content p { @apply text-xs text-ink-secondary mb-2 leading-relaxed; }
+.markdown-content code { @apply text-[10px] bg-raised px-1 py-0.5 rounded font-mono; }
+.markdown-content pre { @apply bg-raised p-3 rounded-lg overflow-x-auto text-[10px] mb-3; }
+.markdown-content table { @apply w-full text-xs border-collapse mb-3; }
+.markdown-content th { @apply text-left p-1.5 border-b border-white/10 font-medium text-ink-secondary; }
+.markdown-content td { @apply p-1.5 border-b border-white/[0.04] text-ink-secondary; }
+.markdown-content ul { @apply list-disc pl-4 text-xs text-ink-secondary mb-2; }
+.markdown-content hr { @apply border-white/[0.06] my-3; }
+
+/* ─── Step transition ────────────────────────────────────────────────────── */
+.step-content { transition: opacity 150ms ease, transform 150ms ease; }
+.step-content.transitioning { opacity: 0; transform: translateY(8px); }
+
+/* ─── Spin animation ─────────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.animate-spin { animation: spin 1s linear infinite; }

@@ -47,6 +47,14 @@
     @apply font-serif font-normal;
   }
 
+  /* ── Dark mode base ── */
+  .dark body {
+    @apply bg-dark-bg text-dark-text-main;
+  }
+  .dark ::selection {
+    @apply bg-primary/30;
+  }
+
   /* Remove animações para quem prefere */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -190,6 +198,15 @@
     @apply opacity-100;
     animation: shimmer 1.5s infinite;
   }
+
+  /* ── Dark mode token overrides ── */
+  .dark .bg-background  { @apply bg-dark-bg; }
+  .dark .bg-surface     { @apply bg-dark-surface; }
+  .dark .bg-surface-alt { @apply bg-dark-surface-alt; }
+  .dark .text-text-main  { @apply text-dark-text-main; }
+  .dark .text-text-soft  { @apply text-dark-text-soft; }
+  .dark .text-text-muted { @apply text-dark-text-muted; }
+  .dark .border-border   { @apply border-dark-border; }
 
   /* ── Divisor decorativo ── */
   .divider-ornament {

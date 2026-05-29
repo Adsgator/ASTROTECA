@@ -156,3 +156,96 @@ export interface PropMeta {
   required: boolean
   description: string
 }
+
+// ─── Gemini AI ──────────────────────────────────────────────────────────────
+
+export type GeminiModel = 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gemini-2.5-pro'
+
+// ─── Builder v2 ─────────────────────────────────────────────────────────────
+
+export type BuilderStep = 'briefing' | 'estrutura' | 'arte' | 'componentes' | 'preview' | 'gerar'
+export type OutputPath = 'library' | 'manual' | 'hybrid'
+
+export interface Briefing {
+  briefingBruto: string
+  // Tab 1: Identidade & Contato
+  nomeCliente: string; nomeMarca: string; segmento: string
+  tipo: 'servico' | 'mentoria' | 'consultoria' | 'produto' | 'saas' | 'curso'
+  propostaValor: string; dominio: string
+  anosExperiencia: string; formacao: string; certificacoes: string
+  whatsapp: string; email: string; horarios: string
+  gtmId: string; objetivoConversao: string; whatsappMensagem: string
+  instagram: string; tiktok: string; youtube: string; facebook: string
+  googleBusiness: string; googleNota: string; googleQtd: string
+  // Tab 2: Serviço & Público
+  servicoPrincipal: string; servicosDescricao: string
+  comoFunciona: string; resultadoEsperado: string; prazoResultado: string
+  precoExibir: boolean
+  precoPlano1Nome: string; precoPlano1Valor: string; precoPlano1Descricao: string
+  precoPlano2Nome: string; precoPlano2Valor: string; precoPlano2Descricao: string
+  formaPagamento: string
+  publicoPrimario: string; publicoDor: string; publicoResultado: string
+  avatarNome: string; avatarIdade: string; avatarProfissao: string
+  objecoes: string
+  // Tab 3: Autoridade & Prova
+  diferencial: string; fraseImpacto: string; historia: string
+  depoimento1Nome: string; depoimento1Texto: string; depoimento1Resultado: string
+  depoimento2Nome: string; depoimento2Texto: string; depoimento2Resultado: string
+  depoimento3Nome: string; depoimento3Texto: string; depoimento3Resultado: string
+  faq: string
+  // Tab 4: Visual & SEO
+  estiloDesejado: string; sensacaoVisitante: string
+  tomComunicacao: string; restricoes: string
+  seoTitulo: string; seoDescricao: string; seoKeywords: string
+  schemaTipo: string
+}
+
+export interface PageSection {
+  id: string
+  type: string
+  label: string
+  enabled: boolean
+  position: number
+  copy: Record<string, string>
+  fromLibrary: boolean
+  componentId?: string
+}
+
+export interface ArtDirectionV2 extends ArtDirection {
+  defaultTheme: 'light' | 'dark'
+  darkColorBackground: string
+  darkColorSurface: string
+  darkColorSurfaceAlt: string
+  darkColorText: string
+  darkColorTextSoft: string
+  darkColorTextMuted: string
+  darkColorBorder: string
+  palettePreset?: string
+}
+
+export interface BuilderState {
+  step: BuilderStep
+  briefingTab: number
+  briefing: Briefing
+  sections: PageSection[]
+  art: ArtDirectionV2
+  selected: SelectedComponent[]
+  copyEdits: Record<string, Record<string, string>>
+  outputPath: OutputPath
+  intakeAnalyzed: boolean
+}
+
+export interface ClientProject {
+  id: string
+  name: string
+  slug: string
+  createdAt: string
+  updatedAt: string
+  builderState: BuilderState
+}
+
+// Estende AppSettings com campos Gemini
+export interface AppSettingsV2 extends AppSettings {
+  geminiApiKey: string
+  geminiModel: GeminiModel
+}
