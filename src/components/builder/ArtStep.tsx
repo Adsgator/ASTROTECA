@@ -69,9 +69,78 @@ function FontPreview({ font }: { font: string }) {
   )
 }
 
+// Mini-preview de landing page com as cores aplicadas
+function ColorPreview({ art, nomeCliente }: { art: ArtDirectionV2; nomeCliente: string }) {
+  const isDark = art.defaultTheme === 'dark'
+  const bg = isDark ? art.darkColorBackground || '#111827' : art.colorBackground
+  const surface = isDark ? art.darkColorSurface || '#1f2937' : art.colorSurface
+  const text = isDark ? art.darkColorText || '#f9fafb' : art.colorText
+  const textSoft = isDark ? art.darkColorTextSoft || '#d1d5db' : art.colorTextSoft
+  const border = isDark ? art.darkColorBorder || '#374151' : art.colorBorder
+
+  return (
+    <div
+      className="rounded-xl overflow-hidden border border-white/10 shadow-lg"
+      style={{ background: bg, color: text, fontFamily: art.fontBody ? `"${art.fontBody}", sans-serif` : undefined }}
+    >
+      {/* Header */}
+      <div style={{ background: surface, borderBottom: `1px solid ${border}` }} className="px-4 py-2.5 flex items-center justify-between">
+        <span style={{ fontFamily: art.fontHeading ? `"${art.fontHeading}", serif` : undefined, color: text }} className="text-sm font-bold">
+          {nomeCliente || 'Marca'}
+        </span>
+        <div
+          className="text-xs font-semibold px-3 py-1 rounded-full"
+          style={{ background: art.colorPrimary, color: '#fff' }}
+        >
+          Contato
+        </div>
+      </div>
+      {/* Hero */}
+      <div style={{ background: art.colorDark || '#1a1a2e', padding: '20px 16px' }}>
+        <div style={{ fontFamily: art.fontHeading ? `"${art.fontHeading}", serif` : undefined, color: '#fff', fontSize: 18, fontWeight: 700, lineHeight: 1.2, marginBottom: 8 }}>
+          Título Principal da Página
+        </div>
+        <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, marginBottom: 12 }}>
+          Subtítulo descritivo do serviço ou proposta de valor.
+        </div>
+        <div className="flex gap-2">
+          <div className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: art.colorPrimary, color: '#fff' }}>
+            CTA Principal
+          </div>
+          <div className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'transparent', color: '#fff', border: `1px solid rgba(255,255,255,0.3)` }}>
+            Saiba Mais
+          </div>
+        </div>
+      </div>
+      {/* Seção clara */}
+      <div style={{ background: bg, padding: '12px 16px', borderTop: `1px solid ${border}` }}>
+        <div style={{ color: art.colorPrimary, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+          Serviços
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {[1, 2, 3].map(i => (
+            <div key={i} style={{ background: surface, borderRadius: 8, padding: '8px', border: `1px solid ${border}` }}>
+              <div style={{ background: art.colorPrimary, width: 20, height: 20, borderRadius: 4, marginBottom: 6 }} />
+              <div style={{ color: text, fontSize: 10, fontWeight: 600, marginBottom: 3 }}>Serviço {i}</div>
+              <div style={{ color: textSoft, fontSize: 9 }}>Descrição breve aqui.</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Footer */}
+      <div style={{ background: surface, borderTop: `1px solid ${border}`, padding: '8px 16px' }}>
+        <div style={{ color: textSoft, fontSize: 9, textAlign: 'center' }}>
+          © {new Date().getFullYear()} {nomeCliente || 'Marca'} — Todos os direitos reservados
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studioName = 'Astroteca' }: ArtStepProps) {
   const [darkExpanded, setDarkExpanded] = useState(false)
   const [shared, setShared] = useState(false)
+  const [showPreview, setShowPreview] = useState(true)
 
   function shareArtDirection() {
     const payload = { ...art, nomeCliente, studioName }
@@ -106,7 +175,9 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
   }
 
   return (
-    <div className="space-y-5">
+    <div className="grid grid-cols-[1fr_320px] gap-5 h-full">
+      {/* Coluna esquerda: controles */}
+      <div className="space-y-5 overflow-y-auto min-h-0">
       {/* Presets */}
       <div>
         <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider mb-2">Presets de Paleta</p>
@@ -306,6 +377,41 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
             <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Compartilhar Direção de Arte</>
           )}
         </button>
+      </div>
+      </div>{/* fim coluna esquerda */}
+
+      {/* Coluna direita: preview ao vivo */}
+      <div className="flex flex-col min-h-0">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest">Preview ao Vivo</p>
+          <button
+            onClick={() => setShowPreview(v => !v)}
+            className="text-[10px] text-ink-muted hover:text-ink-primary transition-colors"
+          >
+            {showPreview ? 'Ocultar' : 'Mostrar'}
+          </button>
+        </div>
+        {showPreview && (
+          <div className="flex-1 overflow-y-auto">
+            <ColorPreview art={art} nomeCliente={nomeCliente} />
+            <div className="mt-3 flex gap-1.5 flex-wrap">
+              {[
+                { label: 'Primary', color: art.colorPrimary },
+                { label: 'Secondary', color: art.colorSecondary },
+                { label: 'BG', color: art.colorBackground },
+                { label: 'Surface', color: art.colorSurface },
+                { label: 'Text', color: art.colorText },
+                { label: 'Dark BG', color: art.darkColorBackground },
+              ].map(({ label, color }) => color && (
+                <div key={label} className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-raised/50 border border-white/5">
+                  <div className="w-3 h-3 rounded-sm border border-white/10 flex-shrink-0" style={{ background: color }} />
+                  <span className="text-[10px] text-ink-muted">{label}</span>
+                  <span className="text-[10px] text-ink-secondary font-mono">{color}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

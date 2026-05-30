@@ -70,6 +70,9 @@ export default function ComponentsStep({
     }
   }
 
+  const enabledSections = sections.filter(s => s.enabled).sort((a, b) => a.position - b.position)
+  const coveredCount = enabledSections.filter(s => s.fromLibrary && s.componentId).length
+
   return (
     <div className="space-y-4">
       {/* Banner informativo */}
@@ -77,6 +80,39 @@ export default function ComponentsStep({
         <svg className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         Este passo é opcional — pule se vai criar todos os componentes com Claude a partir do documento.
       </div>
+
+      {/* Cobertura de seções */}
+      {enabledSections.length > 0 && (
+        <div className={cn(ui.cardBase, 'p-4')}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider">Cobertura de Seções</p>
+            <span className="text-xs text-ink-muted">{coveredCount}/{enabledSections.length} cobertas</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {enabledSections.map(s => {
+              const covered = s.fromLibrary && s.componentId
+              return (
+                <div
+                  key={s.id}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium border',
+                    covered
+                      ? 'bg-ok/10 border-ok/20 text-ok'
+                      : 'bg-raised border-white/5 text-ink-muted',
+                  )}
+                >
+                  {covered ? (
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  ) : (
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+                  )}
+                  {s.label}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Barra de busca + filtros */}
       <div className="space-y-2">

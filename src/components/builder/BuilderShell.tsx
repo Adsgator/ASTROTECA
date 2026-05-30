@@ -12,9 +12,11 @@ import {
   DEFAULT_BUILDER_STATE,
 } from '../../lib/projects'
 import { buildDefaultSections } from '../../lib/section-defaults'
+import { buildSectionsFromSuggestions } from '../../lib/intake-prompt'
 import { createProjectFromTemplate } from '../../lib/github'
 import { generateDocument } from '../../lib/export-document'
 import { wait } from '../../lib/utils'
+import type { IntakeResult } from '../../lib/intake-prompt'
 import StepNav from './StepNav'
 import ProjectSelector from './ProjectSelector'
 import BriefingStep from './BriefingStep'
@@ -40,6 +42,7 @@ type BuilderAction =
   | { type: 'UPDATE_COPY'; componentId: string; copy: Record<string, string> }
   | { type: 'SET_OUTPUT_PATH'; path: OutputPath }
   | { type: 'LOAD_STATE'; state: BuilderState }
+  | { type: 'APPLY_INTAKE'; result: IntakeResult; sections: PageSection[] }
 
 function builderReducer(state: BuilderState, action: BuilderAction): BuilderState {
   switch (action.type) {
@@ -62,6 +65,16 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
       return { ...state, outputPath: action.path }
     case 'LOAD_STATE':
       return action.state
+    case 'APPLY_INTAKE':
+      return {
+        ...state,
+        briefing: action.result.briefing,
+        art: Object.keys(action.result.art).length > 0
+          ? { ...state.art, ...action.result.art }
+          : state.art,
+        sections: action.sections,
+        intakeAnalyzed: true,
+      }
     default:
       return state
   }
@@ -302,6 +315,7 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
               current={displayStep}
               validation={validation}
               onStep={goToStep}
+              intakeAnalyzed={state.intakeAnalyzed}
             />
           </div>
         </div>
@@ -320,6 +334,11 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
               settings={settings}
               filledByAI={filledByAI}
               onFilledByAI={setFilledByAI}
+              onIntakeResult={result => {
+                const sections = buildSectionsFromSuggestions(result.suggestedSectionTypes, result.briefing)
+                dispatch({ type: 'APPLY_INTAKE', result, sections })
+                setFilledByAI(result.filledFields)
+              }}
             />
           )}
           {displayStep === 'estrutura' && (
@@ -327,6 +346,7 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
               sections={state.sections}
               briefing={state.briefing}
               onChange={sections => dispatch({ type: 'SET_SECTIONS', sections })}
+              settings={settings}
             />
           )}
           {displayStep === 'arte' && (
@@ -349,6 +369,7 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
             <PreviewStep
               selected={state.selected}
               art={state.art}
+              sections={state.sections}
             />
           )}
           {displayStep === 'gerar' && (

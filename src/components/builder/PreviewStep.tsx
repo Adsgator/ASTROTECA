@@ -1,17 +1,36 @@
 // src/components/builder/PreviewStep.tsx
 
-import type { SelectedComponent, ArtDirectionV2 } from '../../types'
+import { useState } from 'react'
+import type { SelectedComponent, ArtDirectionV2, PageSection } from '../../types'
 import * as ui from '../../styles/ui'
+import { cn } from '../../lib/utils'
 
 interface PreviewStepProps {
   selected: SelectedComponent[]
   art: ArtDirectionV2
+  sections?: PageSection[]
 }
 
-export default function PreviewStep({ selected, art }: PreviewStepProps) {
-  function openFullPreview() {
-    const ids = selected.map(s => s.meta.id).join(',')
-    window.open(`/builder/preview-full?components=${ids}`, '_blank')
+export default function PreviewStep({ selected, art, sections = [] }: PreviewStepProps) {
+  const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop')
+
+  const enabledSections = sections.filter(s => s.enabled).sort((a, b) => a.position - b.position)
+
+  // Componentes ordenados por posição
+  const sortedComponents = [...selected].sort((a, b) => a.position - b.position)
+
+  // Monta URL do preview com art direction como query params
+  function buildPreviewUrl(compId: string): string {
+    const params = new URLSearchParams({
+      primary: art.colorPrimary,
+      secondary: art.colorSecondary,
+      bg: art.colorBackground,
+      surface: art.colorSurface,
+      text: art.colorText,
+      fontHeading: art.fontHeading,
+      fontBody: art.fontBody,
+    })
+    return `/preview/${compId}?${params.toString()}`
   }
 
   const swatches = [
@@ -22,53 +41,129 @@ export default function PreviewStep({ selected, art }: PreviewStepProps) {
   ]
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3 h-full">
       {/* Barra superior */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-ink-primary">Preview da Página</span>
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-1">
+          <span className="text-sm font-semibold text-ink-primary">Preview</span>
           <div className="flex gap-1.5">
-            {swatches.map(s => (
+            {swatches.map(s => s.color && (
               <div
                 key={s.label}
-                className="w-4 h-4 rounded-full border border-white/10"
+                className="w-4 h-4 rounded-full border border-white/10 flex-shrink-0"
                 style={{ background: s.color }}
                 title={`${s.label}: ${s.color}`}
               />
             ))}
           </div>
+          {art.fontHeading && (
+            <span className="text-[10px] text-ink-muted bg-raised px-1.5 py-0.5 rounded">
+              {art.fontHeading}
+            </span>
+          )}
         </div>
-        <button onClick={openFullPreview} className={ui.btnOutline + ' text-xs'}>
-          ↗ Abrir em Nova Aba
-        </button>
+
+        {/* Toggle viewport */}
+        <div className="flex items-center gap-1 bg-raised/50 rounded-lg p-0.5 border border-white/5">
+          <button
+            onClick={() => setViewport('desktop')}
+            className={cn(
+              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all',
+              viewport === 'desktop' ? ui.tabActive : ui.tabInactive,
+            )}
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Desktop
+          </button>
+          <button
+            onClick={() => setViewport('mobile')}
+            className={cn(
+              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all',
+              viewport === 'mobile' ? ui.tabActive : ui.tabInactive,
+            )}
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            Mobile
+          </button>
+        </div>
       </div>
 
-      {/* Container principal */}
-      <div className="rounded-xl bg-white overflow-hidden border border-white/10 max-h-[calc(100vh-14rem)] overflow-y-auto">
-        {selected.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center px-8" style={{ background: art.colorBackground }}>
-            <span className="text-4xl mb-3">👁️</span>
-            <p className="text-sm font-medium" style={{ color: art.colorText }}>
-              Nenhum componente selecionado
-            </p>
-            <p className="text-xs mt-1" style={{ color: art.colorTextSoft }}>
-              Volte ao passo anterior e selecione componentes da biblioteca
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col">
-            {selected
-              .sort((a, b) => a.position - b.position)
-              .map(s => (
+      {/* Container de preview */}
+      <div className="flex-1 min-h-0 flex gap-4">
+        {/* Área de iframes */}
+        <div
+          className={cn(
+            'flex-1 rounded-xl overflow-hidden border border-white/10 overflow-y-auto transition-all bg-white',
+            viewport === 'mobile' && 'max-w-[390px] mx-auto',
+          )}
+        >
+          {sortedComponents.length === 0 ? (
+            <div
+              className="flex flex-col items-center justify-center py-24 text-center px-8"
+              style={{ background: art.colorBackground || '#fff' }}
+            >
+              <svg className="w-10 h-10 mb-3 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: art.colorText || '#333' }}><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <p className="text-sm font-medium" style={{ color: art.colorText || '#333' }}>
+                Nenhum componente selecionado
+              </p>
+              <p className="text-xs mt-1" style={{ color: art.colorTextSoft || '#666' }}>
+                Volte ao passo anterior e selecione componentes da biblioteca
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {sortedComponents.map(s => (
                 <iframe
                   key={s.meta.id}
-                  src={s.meta.previewUrl ?? s.meta.previewPath ?? `/preview/${s.meta.id}`}
-                  className="w-full border-0"
-                  style={{ height: 400 }}
+                  src={buildPreviewUrl(s.meta.id)}
+                  className="w-full border-0 border-b border-black/5"
+                  style={{ height: viewport === 'mobile' ? 500 : 420 }}
                   title={s.meta.name}
                   loading="lazy"
                 />
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* Painel lateral: seções e componentes */}
+        {(enabledSections.length > 0 || sortedComponents.length > 0) && (
+          <div className="w-52 flex-shrink-0 flex flex-col gap-3 overflow-y-auto">
+            {sortedComponents.length > 0 && (
+              <div>
+                <p className="text-[10px] font-semibold text-ink-muted uppercase tracking-widest mb-2">Componentes</p>
+                <div className="space-y-1">
+                  {sortedComponents.map((s, i) => (
+                    <div key={s.meta.id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-raised/40 border border-white/5">
+                      <span className="w-4 h-4 rounded-full bg-accent/20 text-accent text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                        {i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-medium text-ink-primary truncate">{s.meta.name}</p>
+                        <p className="text-[10px] text-ink-muted">{s.meta.category}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {enabledSections.length > 0 && (
+              <div>
+                <p className="text-[10px] font-semibold text-ink-muted uppercase tracking-widest mb-2">Seções</p>
+                <div className="space-y-1">
+                  {enabledSections.map((s, i) => (
+                    <div key={s.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-raised/30 border border-white/5">
+                      <span className="text-[10px] text-ink-muted w-3 text-right flex-shrink-0">{i + 1}</span>
+                      <p className="text-[11px] text-ink-secondary truncate">{s.label}</p>
+                      {s.fromLibrary && (
+                        <svg className="w-3 h-3 text-ok flex-shrink-0 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

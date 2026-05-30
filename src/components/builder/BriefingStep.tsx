@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import type { Briefing, AppSettingsV2 } from '../../types'
 import { callGemini } from '../../lib/gemini'
-import { buildIntakePrompt, applyIntakeResult } from '../../lib/intake-prompt'
+import { buildIntakePrompt, applyIntakeResult, type IntakeResult } from '../../lib/intake-prompt'
 import * as ui from '../../styles/ui'
 import { cn } from '../../lib/utils'
 import Dialog from './Dialog'
@@ -15,6 +15,7 @@ interface BriefingStepProps {
   settings: AppSettingsV2
   filledByAI: string[]
   onFilledByAI: (fields: string[]) => void
+  onIntakeResult?: (result: IntakeResult) => void
 }
 
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
@@ -127,7 +128,7 @@ const BRIEFING_TEMPLATES = [
   },
 ]
 
-export default function BriefingStep({ briefing, onChange, settings, filledByAI, onFilledByAI }: BriefingStepProps) {
+export default function BriefingStep({ briefing, onChange, settings, filledByAI, onFilledByAI, onIntakeResult }: BriefingStepProps) {
   const [tab, setTab] = useState(0)
   const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState('')
@@ -145,9 +146,15 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
         systemPrompt: system,
         userPrompt: user,
       })
-      const { briefing: updated, filledFields } = applyIntakeResult(briefing, response)
-      onChange(updated)
-      onFilledByAI(filledFields)
+      const result = applyIntakeResult(briefing, response)
+      if (onIntakeResult) {
+        // Callback completo: briefing + art + sections
+        onIntakeResult(result)
+      } else {
+        // Fallback: só atualiza briefing
+        onChange(result.briefing)
+        onFilledByAI(result.filledFields)
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erro ao analisar briefing')
     } finally {
