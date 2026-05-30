@@ -476,24 +476,5 @@
       "toda landing page"
     ],
     "order": 70
-  },
-  {
-    "id": "avaliacoes-google-1261",
-    "name": "AvaliacoesGoogle1261",
-    "category": "Testimonials",
-    "description": "teste ava",
-    "previewPath": "/preview/avaliacoes-google-1261",
-    "screenshot": "",
-    "componentFile": "Testimonials/AvaliacoesGoogle1261.astro",
-    "tags": [
-      "review"
-    ],
-    "bestFor": [
-      "tudo"
-    ],
-    "props": [],
-    "order": 12,
-    "createdAt": "2026-05-30T00:47:31.306Z",
-    "updatedAt": "2026-05-30T00:47:31.306Z"
   }
 ]
