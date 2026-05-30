@@ -8,7 +8,7 @@
 // fontes etc. abaixo — nunca mude os nomes dos tokens.
 // ─────────────────────────────────────────────────────────────
 
-import { tokens } from '../tailwind-tokens.js'
+import { tokens } from './tailwind-tokens.js'
 
 export default {
   content: ['./src/**/*.{astro,html,js,jsx,ts,tsx}'],

@@ -285,23 +285,12 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
     gerar: !!state.briefing.nomeCliente && state.sections.some(s => s.enabled),
   }
 
-  // Mobile gate
-  if (typeof window !== 'undefined' && window.innerWidth < 768) {
-    return (
-      <div className="p-8 text-center">
-        <svg className="w-10 h-10 mx-auto mb-3 text-ink-muted opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>
-        <p className="text-lg font-semibold text-ink-primary">Abra no desktop</p>
-        <p className="text-sm text-ink-secondary mt-2">O Builder funciona melhor em telas maiores (768px+).</p>
-      </div>
-    )
-  }
-
   return (
-    <div className="flex h-full gap-4">
+    <div className="flex flex-col xl:flex-row h-full gap-4">
       {/* Coluna principal */}
       <div className="flex-1 min-w-0 flex flex-col gap-3">
         {/* Header: ProjectSelector + StepNav */}
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-wrap">
           <ProjectSelector
             activeProject={activeProject}
             projects={projects}
@@ -408,7 +397,7 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
       </div>
 
       {/* Sidebar direita */}
-      <div className={cn(ui.cardBase, 'w-96 flex-shrink-0 overflow-hidden')}>
+      <div className={cn(ui.cardBase, 'xl:w-96 flex-shrink-0 overflow-hidden')}>
         <BuilderSidebar
           tab={sidebarTab}
           onTabChange={t => setSidebarTab(t as typeof sidebarTab)}

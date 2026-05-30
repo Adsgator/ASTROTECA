@@ -20,6 +20,16 @@ O projeto gerado não é editado aqui — ele vai para outro repositório e é a
 
 ---
 
+## Documentos de referência
+
+| Documento | Propósito |
+|-----------|-----------|
+| `DESIGN-SYSTEM.md` | Tokens do studio + tokens da biblioteca de componentes |
+| `COMPONENT-BLUEPRINT.md` | Guia completo para criar componentes — tokens, estrutura, categorias, exemplo de referência |
+| `AUDIT-CHECKLIST.md` | Checklist de auditoria para projetos de clientes (12 seções, 100+ itens) |
+
+---
+
 ## Estrutura crítica
 
 ```
@@ -34,8 +44,8 @@ src/
 
 minha-lib-astro/ — Submodule git. NUNCA editar diretamente aqui a menos que pedido.
 scripts/         — Node.js CLI: extract-component.mjs, add-component.mjs, generate-previews.mjs, remove-component.mjs, analytics.mjs
-public/          — Assets estáticos, incluindo logo_astroteca_branca.svg
-_base-project/   — Template base copiado ao criar projeto no GitHub
+public/          — Assets estáticos (logo_astroteca_branca.svg) + public/data/ (config.json, analytics.json)
+_base-project/   — Template base copiado ao criar projeto no GitHub. Self-contained com tailwind-tokens.js próprio
 ```
 
 ---
@@ -98,7 +108,7 @@ Novo repositório GitHub com componentes + MANIFESTO.md
 
 ## Pontos de atenção
 
-- **Config do studio** fica em `public/data/config.json` (GitHub token, repos, etc.) — nunca commitar com token real
+- **Config do studio** fica em `public/data/config.json` (GitHub token, repos, etc.) — template com placeholders já existe, nunca commitar com token real
 - **Registry** é buscado em runtime via `/api/registry-proxy`, que usa a GitHub API para evitar cache de CDN. O `registryUrl` vem do config (ou do localStorage no browser)
 - **Analytics** em `public/data/analytics.json` — gerado automaticamente, não editar à mão. A escrita usa `node:fs`, então só persiste em ambiente local; em serverless (Vercel) o filesystem é read-only
 - **Preview pages** em `src/pages/preview/` — uma por componente, geradas por `npm run extract` e `npm run previews`

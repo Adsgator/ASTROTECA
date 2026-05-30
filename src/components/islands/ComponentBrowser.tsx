@@ -291,7 +291,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
         </div>
       )}
       {/* ── Page Header ── */}
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold font-heading tracking-tight text-ink-primary">
             Biblioteca
@@ -301,7 +301,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-6 px-5 py-2.5 rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl">
+          <div className="flex items-center gap-4 sm:gap-6 px-4 sm:px-5 py-2.5 rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl">
             <div className="text-center">
               <div className="text-lg font-bold text-ink-primary leading-none">{totalCount}</div>
               <div className="text-[10px] text-ink-muted uppercase tracking-wider mt-0.5">Total</div>
@@ -321,8 +321,8 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
       </div>
 
       {/* ── Search & Filters ── */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative flex-1 sm:max-w-md">
           <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
           <input
             type="text"
@@ -379,7 +379,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
 
       {/* ── Main Content: Grid + Detail ── */}
       {!loading && !error && (
-        <div className="grid grid-cols-[1fr_380px] gap-6 min-h-[calc(100vh-14rem)]">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 min-h-[calc(100vh-14rem)]">
           {/* Component Grid */}
           <div className="flex flex-col gap-3 overflow-y-auto pr-1">
             {filtered.length === 0 ? (
@@ -470,9 +470,9 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
           </div>
 
           {/* ── Detail Panel ── */}
-          <div className={`flex flex-col gap-4 overflow-y-auto ${selected ? 'animate-slide-right' : ''}`}>
+          <div className={`flex flex-col gap-4 overflow-y-auto ${selected ? 'animate-slide-right' : 'hidden lg:flex'}`}>
             {!selected ? (
-              <div className="flex flex-col items-center justify-center h-full rounded-xl border border-dashed border-white/[0.08] text-ink-muted">
+              <div className="hidden lg:flex flex-col items-center justify-center h-full rounded-xl border border-dashed border-white/[0.08] text-ink-muted">
                 <svg className="w-10 h-10 mb-3 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>
                 <p className="text-sm">Clique em um componente</p>
                 <p className="text-xs text-ink-muted/60 mt-0.5">para ver detalhes e preview</p>

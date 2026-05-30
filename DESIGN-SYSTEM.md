@@ -297,32 +297,15 @@ const {
 
 ---
 
-## Prompt para pedir componentes a uma IA
+## Guia completo para criar componentes
 
-```
-Crie um componente Astro para a biblioteca Astroteca seguindo estas regras:
+Para instruções detalhadas sobre como criar componentes profissionais para a biblioteca, incluindo todas as categorias, tokens, animações, data attributes e exemplo completo de referência, consulte **[COMPONENT-BLUEPRINT.md](COMPONENT-BLUEPRINT.md)**.
 
-DESIGN SYSTEM:
-- Cores: primary (#436f3e), primary-dark (#2f5129), secondary (#d59740),
-  background (#fff), surface (#f7f4f0), surface-alt (#f0ebe3),
-  text-main (#1d1d1c), text-soft (#535353), text-muted (#8a8a8a), border (#e5dfd6)
-- Fontes: font-serif (Cormorant Garamond) para títulos, font-sans (DM Sans) para corpo
-- Tamanhos: text-display-xl/lg/md/sm para títulos, text-label para labels em caps
-- Espaçamento: py-section para seções, w-[90%] max-w-wide mx-auto para container
-- Border radius: rounded (6px), rounded-lg (12px), rounded-xl (20px)
-- Sombras: shadow-card, shadow-float
+---
 
-ESTRUTURA OBRIGATÓRIA:
-- Arquivo .astro com interface Props tipada no frontmatter
-- Valores padrão em todas as props opcionais
-- Sem imports de imagens locais
-- Sem JavaScript inline (exceto se for accordion/slider)
-- Props de texto simples (string), não JSX
+## Auditoria de projetos de clientes
 
-CATEGORIA: [Hero / Features / Services / Testimonials / Process / Pricing / FAQ / CTA / Contact / Footer / UI]
-
-COMPONENTE: [descreva o que quer aqui]
-```
+Para auditar projetos gerados (SEO, performance, design, conversão, acessibilidade, LGPD), consulte **[AUDIT-CHECKLIST.md](AUDIT-CHECKLIST.md)**.
 
 ---
 

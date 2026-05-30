@@ -7,14 +7,25 @@ Astroteca é um **studio interno** da Adsgator. Não é um site público nem um 
 
 ---
 
+## Documentos de referência
+
+| Documento | Propósito |
+|-----------|-----------|
+| `CLAUDE.md` | Guia principal para qualquer IA trabalhando no projeto |
+| `DESIGN-SYSTEM.md` | Tokens do studio + tokens da biblioteca de componentes |
+| `COMPONENT-BLUEPRINT.md` | Guia completo para criar componentes profissionais para a biblioteca |
+| `AUDIT-CHECKLIST.md` | Checklist de auditoria para projetos de clientes (12 seções, 100+ itens) |
+
+---
+
 ## Arquivos que exigem cuidado extra
 
 | Arquivo / Pasta | Risco |
 |----------------|-------|
 | `minha-lib-astro/` | Submodule git — mudanças precisam de commit separado dentro dele. `npm run extract` já faz commit + push automático deste submodule |
-| `public/data/config.json` | Pode conter GitHub token — nunca commitar com valor real |
+| `public/data/config.json` | Contém GitHub token — nunca commitar com valor real. Template com placeholders já existe |
 | `public/data/analytics.json` | Gerado automaticamente — não editar à mão |
-| `_base-project/` | Template copiado para projetos de clientes — mudanças afetam todos os projetos futuros |
+| `_base-project/` | Template copiado para projetos de clientes — mudanças afetam todos os projetos futuros. Inclui `tailwind-tokens.js` próprio para ser self-contained |
 | `src/lib/github.ts` | Cria repos GitHub reais — testar com cuidado |
 | `src/pages/api/create-project.ts` | Endpoint que dispara criação de repositório — irreversível |
 
