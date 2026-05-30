@@ -69,9 +69,16 @@ function sanitize(code: string): string {
   // 2. Remove referências às variáveis de asset removidas em estruturas de dados
   for (const v of removedAssetVars) {
     const escapedV = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    // Match: "    image: leticiaImg," ou "    image: leticiaImg" (com ou sem vírgula, com indentação)
+
+    // Caso 1: Propriedade em sua própria linha (com ou sem vírgula)
+    // Match: "    image: leticiaImg," ou "    image: leticiaImg"
     const linePattern = new RegExp(String.raw`^\s*\w+:\s*` + escapedV + String.raw`\s*,?\s*$`, 'gm')
     code = code.replace(linePattern, '')
+
+    // Caso 2: Propriedade inline em objeto (dentro de uma linha)
+    // Match: "{ image: leticiaImg }" ou "{ image: leticiaImg, }" ou ", image: leticiaImg }"
+    const inlinePattern = new RegExp(String.raw`(\{|,)\s*\w+:\s*` + escapedV + String.raw`\s*(?=,|\}|\n)`, 'g')
+    code = code.replace(inlinePattern, '$1')
   }
 
   // 3. Remove referências restantes em expressões (JSX/template)
