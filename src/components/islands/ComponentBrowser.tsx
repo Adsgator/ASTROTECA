@@ -405,31 +405,41 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
                     >
                       {/* Thumbnail */}
                       <div className="h-32 relative overflow-hidden">
-                        <div
-                          className="absolute inset-0 opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-300"
-                          style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div
-                            className="w-14 h-14 rounded-2xl flex items-center justify-center opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all duration-300 animate-float"
-                            style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}
-                          >
-                            <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                              <path d={iconPath} />
-                            </svg>
-                          </div>
-                        </div>
-                        {/* Wireframe lines for visual texture */}
-                        <div className="absolute inset-x-4 top-5 space-y-1.5 opacity-[0.06]">
-                          <div className="h-2 rounded-full bg-white w-3/4" />
-                          <div className="h-1.5 rounded-full bg-white w-full" />
-                          <div className="h-1.5 rounded-full bg-white w-5/6" />
-                          <div className="flex gap-1.5 mt-2">
-                            <div className="h-8 rounded bg-white w-1/3" />
-                            <div className="h-8 rounded bg-white w-1/3" />
-                            <div className="h-8 rounded bg-white w-1/3" />
-                          </div>
-                        </div>
+                        {c.screenshotUrl ? (
+                          <img
+                            src={c.screenshotUrl}
+                            alt={c.name}
+                            className="w-full h-full object-cover object-top"
+                          />
+                        ) : (
+                          <>
+                            <div
+                              className="absolute inset-0 opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-300"
+                              style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div
+                                className="w-14 h-14 rounded-2xl flex items-center justify-center opacity-20 group-hover:opacity-0 transition-all duration-300 animate-float"
+                                style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}
+                              >
+                                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d={iconPath} />
+                                </svg>
+                              </div>
+                            </div>
+                            {/* Wireframe lines for visual texture */}
+                            <div className="absolute inset-x-4 top-5 space-y-1.5 opacity-[0.06]">
+                              <div className="h-2 rounded-full bg-white w-3/4" />
+                              <div className="h-1.5 rounded-full bg-white w-full" />
+                              <div className="h-1.5 rounded-full bg-white w-5/6" />
+                              <div className="flex gap-1.5 mt-2">
+                                <div className="h-8 rounded bg-white w-1/3" />
+                                <div className="h-8 rounded bg-white w-1/3" />
+                                <div className="h-8 rounded bg-white w-1/3" />
+                              </div>
+                            </div>
+                          </>
+                        )}
                         {/* Category dot indicator */}
                         <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/30 backdrop-blur-sm">
                           <span className="w-1.5 h-1.5 rounded-full" style={{ background: g1 }} />
@@ -471,7 +481,30 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
               <>
                 {/* Preview area */}
                 <div className="rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl overflow-hidden">
-                  {selected.previewUrl && !previewError ? (
+                  {selected.screenshotUrl ? (
+                    /* Screenshot estática com link para preview completo */
+                    <div className="relative group">
+                      <img
+                        src={selected.screenshotUrl}
+                        alt={`Preview de ${selected.name}`}
+                        className="w-full h-[260px] object-cover object-top"
+                      />
+                      {selected.previewUrl && (
+                        <a
+                          href={selected.previewUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm"
+                          title="Ver preview completo"
+                        >
+                          <span className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/60 text-white text-sm font-medium border border-white/20">
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                            Ver em tela cheia
+                          </span>
+                        </a>
+                      )}
+                    </div>
+                  ) : selected.previewUrl && !previewError ? (
                     <div className="relative group">
                       <a
                         href={selected.previewUrl}
@@ -491,20 +524,10 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
                       />
                     </div>
                   ) : selected.previewUrl && previewError ? (
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '260px',
-                      color: '#555',
-                      gap: '0.5rem',
-                    }}>
-                      <span style={{ fontSize: '2rem' }}>🧩</span>
-                      <p style={{ fontSize: '0.875rem' }}>Preview não disponível</p>
-                      <p style={{ fontSize: '0.75rem', color: '#444' }}>
-                        Rode <code>npm run previews</code> para gerar
-                      </p>
+                    <div className="flex flex-col items-center justify-center h-[260px] gap-2 text-ink-muted">
+                      <svg className="w-10 h-10 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+                      <p className="text-sm">Preview não disponível</p>
+                      <p className="text-xs text-ink-muted/60">Rode <code className="text-accent/80">npm run previews</code> para gerar</p>
                     </div>
                   ) : (
                     <div className="h-[200px] relative overflow-hidden">

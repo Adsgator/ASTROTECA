@@ -147,7 +147,13 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
                 art.defaultTheme === theme ? 'border-accent bg-accent/5' : 'hover:border-white/10',
               )}
             >
-              <span className="text-lg">{theme === 'light' ? '☀️' : '🌙'}</span>
+              <div className="text-accent">
+                {theme === 'light' ? (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                ) : (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                )}
+              </div>
               <p className="text-xs font-semibold text-ink-primary mt-1">
                 {theme === 'light' ? 'Tema Claro' : 'Tema Escuro'}
               </p>
@@ -161,7 +167,7 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
 
       {/* Cores Light */}
       <div className={ui.cardBase + ' p-4'}>
-        <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider mb-3">☀️ Cores Light</p>
+        <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider mb-3">Cores Light</p>
         <div className="grid grid-cols-3 gap-3">
           <ColorSwatch label="Primary" value={art.colorPrimary} onChange={v => patch({ colorPrimary: v })} />
           <ColorSwatch label="Primary Dark" value={art.colorPrimaryDark} onChange={v => patch({ colorPrimaryDark: v })} />
@@ -179,23 +185,24 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
 
       {/* Cores Dark */}
       <div className={ui.cardBase + ' overflow-hidden'}>
-        <button
+        <div
           onClick={() => setDarkExpanded(v => !v)}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-raised/30 transition-colors"
+          className="w-full flex items-center justify-between p-4 text-left hover:bg-raised/30 transition-colors cursor-pointer"
         >
           <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider">
-            🌙 Cores Dark
+            Cores Dark
           </p>
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); generateDark() }}
               className={cn(ui.btnGhost, 'text-[11px] py-1 px-2')}
             >
-              ↻ Gerar do Light
+              Gerar do Light
             </button>
-            <span className="text-ink-muted text-xs">{darkExpanded ? '▲' : '▼'}</span>
+            <svg className="w-3.5 h-3.5 text-ink-muted transition-transform" style={{ transform: darkExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-        </button>
+        </div>
 
         {darkExpanded && (
           <div className="p-4 pt-0 border-t border-white/[0.06]">
@@ -293,7 +300,11 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
               : 'bg-white/5 text-ink-secondary border border-white/10 hover:border-accent/40 hover:text-ink-primary'
           )}
         >
-          {shared ? '✓ Link copiado!' : '🔗 Compartilhar Direção de Arte'}
+          {shared ? (
+            <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Link copiado!</>
+          ) : (
+            <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Compartilhar Direção de Arte</>
+          )}
         </button>
       </div>
     </div>

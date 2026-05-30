@@ -78,7 +78,12 @@ export default function RemoveForm() {
             <span className="font-semibold">"{result.name}" removido com sucesso!</span>
           </div>
           <div className="text-xs text-ink-muted space-y-0.5">
-            {result.removed.map(f => <p key={f}>✓ {f}</p>)}
+            {result.removed.map(f => (
+              <p key={f} className="flex items-center gap-1">
+                <svg className="w-3 h-3 text-ok flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                {f}
+              </p>
+            ))}
           </div>
           <button onClick={() => setResult(null)} className={`${ui.btnGhost} text-xs mt-3`}>
             Remover outro

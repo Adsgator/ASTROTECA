@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import AdminForm from './AdminForm'
 import ExtractForm from './ExtractForm'
 import RemoveForm from './RemoveForm'
 
 type Tab = 'adicionar' | 'extrair' | 'remover'
 
-const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+const tabs: { id: Tab; label: string; icon: ReactNode }[] = [
   {
     id: 'adicionar',
     label: 'Adicionar',

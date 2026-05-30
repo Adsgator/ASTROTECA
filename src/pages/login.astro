@@ -1,0 +1,191 @@
+---
+import '../styles/app.css'
+
+const error = Astro.url.searchParams.get('error')
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#06060e" />
+  <link rel="icon" type="image/svg+xml" href="/favicon-astroteca.svg" />
+  <title>Astroteca — Login</title>
+</head>
+<body>
+  <canvas id="space-bg" aria-hidden="true"></canvas>
+
+  <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-xs">
+      <!-- Logo -->
+      <div class="flex justify-center mb-8">
+        <img src="/logo_astroteca_branca.svg" alt="Astroteca" class="h-24 w-auto animate-float" />
+      </div>
+
+      <!-- Card -->
+      <div class="rounded-2xl border border-white/[0.08] bg-surface/80 backdrop-blur-xl shadow-2xl p-8">
+        <h1 class="text-lg font-semibold text-ink-primary text-center mb-1">Acesso restrito</h1>
+        <p class="text-sm text-ink-secondary text-center mb-6">Digite o PIN para entrar</p>
+
+        <form method="POST" action="/api/auth" id="pin-form">
+          <!-- Input de PIN -->
+          <div class="flex justify-center gap-2 mb-6" id="pin-boxes">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <input
+                type="password"
+                inputmode="numeric"
+                maxlength="1"
+                pattern="[0-9]"
+                autocomplete="off"
+                data-index={i}
+                class="w-10 h-12 text-center text-lg font-bold rounded-xl border border-white/[0.08] bg-raised text-ink-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+              />
+            ))}
+          </div>
+
+          <!-- Campo hidden que acumula o PIN -->
+          <input type="hidden" name="pin" id="pin-value" />
+
+          {error && (
+            <p class="text-fail text-sm text-center mb-4">PIN incorreto. Tente novamente.</p>
+          )}
+
+          <button
+            type="submit"
+            id="submit-btn"
+            class="w-full py-2.5 rounded-xl bg-accent text-black font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled
+          >
+            Entrar
+          </button>
+        </form>
+      </div>
+
+      <p class="text-center text-xs text-ink-muted mt-6">Astroteca Studio · Adsgator</p>
+    </div>
+  </div>
+
+  <!-- Fundo espacial (mesmo do AppLayout) -->
+  <script is:inline>
+  (function () {
+    const canvas = document.getElementById('space-bg')
+    const ctx = canvas.getContext('2d')
+    let W, H
+    const cam = { x: 0, y: 0, vx: 0.04, vy: 0.015 }
+    const spectral = [
+      [155,176,255],[170,191,255],[202,215,255],[248,247,255],
+      [255,244,232],[255,222,180],[255,189,130],
+    ]
+    const spectralWeights = [2,5,12,20,25,22,14]
+    function pickSpectral() {
+      let total = 0; for (const w of spectralWeights) total += w
+      let r = Math.random() * total
+      for (let i = 0; i < spectral.length; i++) { r -= spectralWeights[i]; if (r <= 0) return spectral[i] }
+      return spectral[4]
+    }
+    let nebulaBuf
+    function buildNebula() {
+      nebulaBuf = document.createElement('canvas')
+      nebulaBuf.width = W + 200; nebulaBuf.height = H + 200
+      const nc = nebulaBuf.getContext('2d')
+      const gasBlobs = [
+        {cx:0.70,cy:0.15,rx:0.42,ry:0.35,col:[65,45,140],a:0.065},
+        {cx:0.12,cy:0.78,rx:0.32,ry:0.30,col:[35,65,180],a:0.050},
+        {cx:0.48,cy:0.42,rx:0.60,ry:0.24,col:[95,45,155],a:0.032},
+        {cx:0.90,cy:0.80,rx:0.24,ry:0.22,col:[50,35,120],a:0.042},
+      ]
+      const bW = nebulaBuf.width, bH = nebulaBuf.height
+      for (const b of gasBlobs) {
+        const cx=b.cx*bW,cy=b.cy*bH,rx=b.rx*bW,ry=b.ry*bH,maxR=Math.max(rx,ry)
+        const g=nc.createRadialGradient(0,0,0,0,0,maxR)
+        g.addColorStop(0,`rgba(${b.col[0]},${b.col[1]},${b.col[2]},${b.a})`)
+        g.addColorStop(1,`rgba(${b.col[0]},${b.col[1]},${b.col[2]},0)`)
+        nc.save();nc.translate(cx,cy);nc.scale(rx/maxR,ry/maxR);nc.fillStyle=g
+        nc.fillRect(-maxR,-maxR,maxR*2,maxR*2);nc.restore()
+      }
+    }
+    let stars=[]
+    function initStars() {
+      stars=[]
+      for(let i=0;i<800;i++){
+        const c=pickSpectral()
+        stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*0.8+0.1,
+          baseAlpha:Math.random()*0.4+0.05,twinkleAmp:Math.random()*0.15,
+          twinkleSpeed:Math.random()*0.008+0.002,twinklePhase:Math.random()*Math.PI*2,
+          color:c,depth:Math.random()*0.5+0.1})
+      }
+    }
+    function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;buildNebula();initStars()}
+    function draw(){
+      requestAnimationFrame(draw)
+      cam.x+=cam.vx;cam.y+=cam.vy
+      ctx.fillStyle='#040409';ctx.fillRect(0,0,W,H)
+      ctx.drawImage(nebulaBuf,-(cam.x*0.08)%200-100,-(cam.y*0.08)%200-100)
+      for(const s of stars){
+        s.twinklePhase+=s.twinkleSpeed
+        const alpha=Math.max(0,Math.min(1,s.baseAlpha+Math.sin(s.twinklePhase)*s.twinkleAmp))
+        const [r,g,b]=s.color
+        const px=s.x-cam.x*s.depth,py=s.y-cam.y*s.depth
+        ctx.beginPath();ctx.arc(px,py,s.r,0,Math.PI*2)
+        ctx.fillStyle=`rgba(${r},${g},${b},${alpha})`;ctx.fill()
+      }
+    }
+    window.addEventListener('resize',resize);resize();requestAnimationFrame(draw)
+  })()
+  </script>
+
+  <!-- Lógica dos boxes de PIN -->
+  <script is:inline>
+  (function () {
+    const boxes = Array.from(document.querySelectorAll('[data-index]'))
+    const pinValue = document.getElementById('pin-value')
+    const submitBtn = document.getElementById('submit-btn')
+
+    function updatePin() {
+      const pin = boxes.map(b => b.value).join('')
+      pinValue.value = pin
+      submitBtn.disabled = pin.length < 6
+    }
+
+    boxes.forEach((box, i) => {
+      box.addEventListener('input', () => {
+        // Aceita só dígito
+        box.value = box.value.replace(/\D/g, '').slice(-1)
+        updatePin()
+        if (box.value && i < boxes.length - 1) boxes[i + 1].focus()
+      })
+
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !box.value && i > 0) {
+          boxes[i - 1].value = ''
+          boxes[i - 1].focus()
+          updatePin()
+        }
+        if (e.key === 'ArrowLeft' && i > 0) boxes[i - 1].focus()
+        if (e.key === 'ArrowRight' && i < boxes.length - 1) boxes[i + 1].focus()
+      })
+
+      box.addEventListener('paste', (e) => {
+        e.preventDefault()
+        const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+        pasted.split('').forEach((ch, j) => {
+          if (boxes[j]) boxes[j].value = ch
+        })
+        const next = Math.min(pasted.length, boxes.length - 1)
+        boxes[next].focus()
+        updatePin()
+      })
+    })
+
+    // Foco automático no primeiro box
+    boxes[0]?.focus()
+
+    // Submit ao completar os 6 dígitos
+    document.getElementById('pin-form').addEventListener('submit', (e) => {
+      if (pinValue.value.length < 6) e.preventDefault()
+    })
+  })()
+  </script>
+</body>
+</html>

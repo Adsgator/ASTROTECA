@@ -3,7 +3,7 @@
 import type { BuilderStep } from '../../types'
 
 interface StepNavProps {
-  steps: { key: BuilderStep; label: string; icon: string }[]
+  steps: { key: BuilderStep; label: string; iconPath?: string }[]
   current: BuilderStep
   validation: Record<BuilderStep, boolean>
   onStep: (step: BuilderStep) => void
@@ -27,10 +27,16 @@ export default function StepNav({ steps, current, validation, onStep }: StepNavP
                   : 'text-ink-secondary hover:bg-raised hover:text-ink-primary',
               ].join(' ')}
             >
-              <span>{step.icon}</span>
+              {step.iconPath && (
+                <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={step.iconPath} />
+                </svg>
+              )}
               <span>{step.label}</span>
               {isDone && !isActive && (
-                <span className="text-ok text-[10px] leading-none">✓</span>
+                <svg className="w-3 h-3 text-ok flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
               )}
             </button>
             {i < steps.length - 1 && (

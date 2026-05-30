@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro'
+import type { ComponentMeta, PropDefinition } from '../../types'
 import {
   existsSync, readFileSync, writeFileSync, mkdirSync,
 } from 'node:fs'
@@ -321,16 +322,16 @@ export const POST: APIRoute = async ({ request }) => {
     if (!libIdx.includes(libLine)) writeFileSync(LIB_INDEX, libIdx.trimEnd() + (libIdx ? '\n' : '') + libLine + '\n')
 
     // registry.json local
-    let registry: any[] = []
+    let registry: ComponentMeta[] = []
     try { registry = JSON.parse(readFileSync(REGISTRY, 'utf8')) } catch {}
-    registry = registry.filter((r: any) => r.id !== id)
+    registry = registry.filter(r => r.id !== id)
     const newEntry = {
-      id, name, category, description,
+      id, name, category: category as ComponentMeta['category'], description,
       previewPath: `/preview/${id}`,
       screenshot: '',
       componentFile: `${category}/${name}.astro`,
       tags, bestFor,
-      props: props.map(p => ({ name: p.name, type: p.type, required: p.required })),
+      props: props.map(p => ({ name: p.name, type: p.type as PropDefinition['type'], required: p.required, previewValue: '' })),
       order: registry.length + 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

@@ -6,6 +6,8 @@ import { callGemini } from '../../lib/gemini'
 import { buildIntakePrompt, applyIntakeResult } from '../../lib/intake-prompt'
 import * as ui from '../../styles/ui'
 import { cn } from '../../lib/utils'
+import Dialog from './Dialog'
+import SelectField from './SelectField'
 
 interface BriefingStepProps {
   briefing: Briefing
@@ -68,7 +70,7 @@ const TABS = ['Identidade & Contato', 'Serviço & Público', 'Autoridade & Prova
 
 const BRIEFING_TEMPLATES = [
   {
-    label: 'Médico', icon: '🩺',
+    label: 'Médico', icon: 'M19 8.5l-2-2.5-2 2.5M17 6v8M5 5h2.5a2 2 0 012 2v2a2 2 0 01-2 2H5V5zM5 11h3a2 2 0 012 2v2a2 2 0 01-2 2H5v-4z',
     data: {
       nomeCliente: 'Dr. João Silva', nomeMarca: 'Dr. João Silva', segmento: 'Saúde',
       tipo: 'servico' as const, servicoPrincipal: 'Clínica Médica Geral',
@@ -79,7 +81,7 @@ const BRIEFING_TEMPLATES = [
     },
   },
   {
-    label: 'Advogado', icon: '⚖️',
+    label: 'Advogado', icon: 'M3 6l9-4 9 4v6c0 5.55-3.84 10.74-9 12-5.16-1.26-9-6.45-9-12V6z',
     data: {
       nomeCliente: 'Dr. Carlos Mendes', nomeMarca: 'Mendes Advocacia', segmento: 'Jurídico',
       tipo: 'servico' as const, servicoPrincipal: 'Advocacia Cível e Trabalhista',
@@ -88,7 +90,7 @@ const BRIEFING_TEMPLATES = [
     },
   },
   {
-    label: 'Dentista', icon: '🦷',
+    label: 'Dentista', icon: 'M12 2c-2.76 0-5 2.24-5 5 0 2.4 1.7 4.4 4 4.87V20a1 1 0 002 0v-8.13c2.3-.47 4-2.47 4-4.87 0-2.76-2.24-5-5-5z',
     data: {
       nomeCliente: 'Dra. Ana Costa', nomeMarca: 'Clínica Odonto Costa', segmento: 'Odontologia',
       tipo: 'servico' as const, servicoPrincipal: 'Odontologia Estética e Geral',
@@ -97,7 +99,7 @@ const BRIEFING_TEMPLATES = [
     },
   },
   {
-    label: 'Estética', icon: '✨',
+    label: 'Estética', icon: 'M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z',
     data: {
       nomeCliente: 'Fernanda Lima', nomeMarca: 'Studio Bella', segmento: 'Beleza e Estética',
       tipo: 'servico' as const, servicoPrincipal: 'Estética Avançada e Tratamentos Corporais',
@@ -106,7 +108,7 @@ const BRIEFING_TEMPLATES = [
     },
   },
   {
-    label: 'Consultoria', icon: '📊',
+    label: 'Consultoria', icon: 'M18 20V10M12 20V4M6 20v-6',
     data: {
       nomeCliente: 'Ricardo Souza', nomeMarca: 'Souza Consultoria', segmento: 'Negócios',
       tipo: 'consultoria' as const, servicoPrincipal: 'Consultoria Empresarial e Estratégica',
@@ -115,7 +117,7 @@ const BRIEFING_TEMPLATES = [
     },
   },
   {
-    label: 'Restaurante', icon: '🍽️',
+    label: 'Restaurante', icon: 'M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3',
     data: {
       nomeCliente: 'Família Rossi', nomeMarca: 'Trattoria Rossi', segmento: 'Alimentação',
       tipo: 'servico' as const, servicoPrincipal: 'Culinária Italiana Artesanal',
@@ -129,6 +131,7 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
   const [tab, setTab] = useState(0)
   const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState('')
+  const [dialog, setDialog] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null)
 
   async function handleAnalyze() {
     if (!settings.geminiApiKey || !briefing.briefingBruto.trim()) return
@@ -153,16 +156,33 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
   }
 
   function applyTemplate(data: Partial<Briefing>) {
-    if (Object.values(briefing).some(v => v && v !== false && v !== 'servico' && v !== 'LocalBusiness')) {
-      if (!confirm('Substituir dados atuais pelo template?')) return
+    const hasData = Object.values(briefing).some(v => v && v !== false && v !== 'servico' && v !== 'LocalBusiness')
+    if (hasData) {
+      setDialog({
+        title: 'Aplicar template',
+        message: 'Substituir os dados atuais pelo template? Esta ação não pode ser desfeita.',
+        onConfirm: () => { onChange({ ...briefing, ...data }); setDialog(null) },
+      })
+    } else {
+      onChange({ ...briefing, ...data })
     }
-    onChange({ ...briefing, ...data })
   }
 
   const p = { briefing, onChange, filledByAI }
 
   return (
     <div className="space-y-4">
+      {dialog && (
+        <Dialog
+          open
+          title={dialog.title}
+          message={dialog.message}
+          confirmLabel="Substituir"
+          variant="danger"
+          onConfirm={dialog.onConfirm}
+          onCancel={() => setDialog(null)}
+        />
+      )}
       {/* Área de briefing bruto */}
       <div className={ui.cardBase + ' p-4 space-y-3'}>
         <div className="flex items-start justify-between gap-3">
@@ -187,7 +207,13 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
               disabled={analyzing || !briefing.briefingBruto.trim()}
               className={ui.btnPrimary + ' text-xs'}
             >
-              {analyzing ? '⏳ Analisando...' : '✨ Analisar com Gemini'}
+              <span className="flex items-center gap-1.5">
+              {analyzing ? (
+                <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.2"/><path d="M12 2a10 10 0 019.8 7.8" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>Analisando...</>
+              ) : (
+                <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Analisar com Gemini</>
+              )}
+            </span>
             </button>
           ) : (
             <p className="text-xs text-ink-secondary">
@@ -197,8 +223,9 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
           )}
 
           {filledByAI.length > 0 && (
-            <span className="text-xs text-ok">
-              ✓ {filledByAI.length} campos preenchidos pela IA
+            <span className="text-xs text-ok flex items-center gap-1">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              {filledByAI.length} campos preenchidos pela IA
             </span>
           )}
         </div>
@@ -227,14 +254,19 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
             onClick={() => applyTemplate(t.data)}
             className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-ink-secondary bg-raised hover:text-ink-primary hover:bg-surface transition-colors border border-transparent hover:border-white/10"
           >
-            <span>{t.icon}</span>
+            <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon}/></svg>
             <span>{t.label}</span>
           </button>
         ))}
         <button
-          onClick={() => { if (confirm('Limpar todos os dados?')) onChange({ ...briefing, briefingBruto: '' } as Briefing) }}
-          className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs text-ink-muted hover:text-fail transition-colors"
+          onClick={() => setDialog({
+            title: 'Limpar dados',
+            message: 'Tem certeza que deseja limpar todos os dados do briefing?',
+            onConfirm: () => { onChange({ ...briefing, briefingBruto: '' } as Briefing); setDialog(null) },
+          })}
+          className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-ink-muted hover:text-fail transition-colors"
         >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
           Limpar
         </button>
       </div>
@@ -269,18 +301,18 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
               <Input field="segmento" placeholder="Saúde, Beleza, Advocacia..." {...p} />
             </Field>
             <Field label="Tipo de Negócio">
-              <select
+              <SelectField
                 value={briefing.tipo}
-                onChange={e => onChange({ ...briefing, tipo: e.target.value as Briefing['tipo'] })}
-                className={ui.selectBase}
-              >
-                <option value="servico">Serviço</option>
-                <option value="mentoria">Mentoria</option>
-                <option value="consultoria">Consultoria</option>
-                <option value="produto">Produto</option>
-                <option value="saas">SaaS</option>
-                <option value="curso">Curso</option>
-              </select>
+                onChange={v => onChange({ ...briefing, tipo: v as Briefing['tipo'] })}
+                options={[
+                  { value: 'servico', label: 'Serviço' },
+                  { value: 'mentoria', label: 'Mentoria' },
+                  { value: 'consultoria', label: 'Consultoria' },
+                  { value: 'produto', label: 'Produto' },
+                  { value: 'saas', label: 'SaaS' },
+                  { value: 'curso', label: 'Curso' },
+                ]}
+              />
             </Field>
             <Field label="Proposta de Valor" className="col-span-2">
               <Textarea field="propostaValor" placeholder="O que você faz e para quem, em 1-2 frases" {...p} rows={2} />
@@ -495,18 +527,18 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
               <Input field="seoKeywords" placeholder="médico, consulta, clínica, são paulo" {...p} />
             </Field>
             <Field label="Schema.org — Tipo">
-              <select
+              <SelectField
                 value={briefing.schemaTipo}
-                onChange={e => onChange({ ...briefing, schemaTipo: e.target.value })}
-                className={ui.selectBase}
-              >
-                <option value="LocalBusiness">LocalBusiness (padrão)</option>
-                <option value="MedicalBusiness">MedicalBusiness</option>
-                <option value="LegalService">LegalService</option>
-                <option value="HealthAndBeautyBusiness">HealthAndBeautyBusiness</option>
-                <option value="FoodEstablishment">FoodEstablishment</option>
-                <option value="ProfessionalService">ProfessionalService</option>
-              </select>
+                onChange={v => onChange({ ...briefing, schemaTipo: v })}
+                options={[
+                  { value: 'LocalBusiness', label: 'LocalBusiness (padrão)' },
+                  { value: 'MedicalBusiness', label: 'MedicalBusiness' },
+                  { value: 'LegalService', label: 'LegalService' },
+                  { value: 'HealthAndBeautyBusiness', label: 'HealthAndBeautyBusiness' },
+                  { value: 'FoodEstablishment', label: 'FoodEstablishment' },
+                  { value: 'ProfessionalService', label: 'ProfessionalService' },
+                ]}
+              />
             </Field>
           </div>
         </div>

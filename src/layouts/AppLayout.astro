@@ -70,11 +70,28 @@ const icons: Record<string, string> = {
         })}
       </nav>
 
+      <!-- Builder queue -->
+      <div class="border-t border-border px-3 py-3" id="builder-queue-section">
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title !mt-0 !mb-0">Builder</span>
+          <a href="/builder" class="text-[10px] text-accent hover:underline leading-none">ver tudo →</a>
+        </div>
+        <div id="builder-queue-list" class="flex flex-col gap-1">
+          <p class="text-[11px] text-ink-muted italic" id="builder-queue-empty">Nenhum componente selecionado</p>
+        </div>
+      </div>
+
       <div class="p-4 border-t border-border">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between mb-3">
           <span class="text-[11px] text-ink-muted">Astroteca Studio</span>
           <span class="badge badge-default text-[10px]">v2.0</span>
         </div>
+        <button
+          id="logout-btn"
+          class="w-full py-1.5 rounded-lg text-xs text-ink-muted hover:text-fail hover:bg-fail/10 border border-transparent hover:border-fail/20 transition-all text-center"
+        >
+          Sair
+        </button>
       </div>
     </aside>
 
@@ -578,6 +595,49 @@ const icons: Record<string, string> = {
       btn.addEventListener('click', toggleMenu)
       overlay.addEventListener('click', toggleMenu)
     }
+
+    /* ── Logout ── */
+    const logoutBtn = document.getElementById('logout-btn')
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        await fetch('/api/auth', { method: 'DELETE' })
+        window.location.href = '/login'
+      })
+    }
+
+    /* ── Builder queue sidebar ── */
+    function renderBuilderQueue() {
+      const list = document.getElementById('builder-queue-list')
+      const empty = document.getElementById('builder-queue-empty')
+      if (!list) return
+      try {
+        const raw = localStorage.getItem('acs-builder-components')
+        const items = raw ? JSON.parse(raw) : []
+        if (!items.length) {
+          if (!empty) {
+            list.innerHTML = '<p class="text-[11px] text-ink-muted italic" id="builder-queue-empty">Nenhum componente selecionado</p>'
+          }
+          return
+        }
+        list.innerHTML = items.map((item) => {
+          const name = item?.meta?.name || item?.name || '?'
+          const category = item?.meta?.category || item?.category || ''
+          return `<div class="flex items-center gap-2 py-1 px-2 rounded-lg bg-raised/60 group">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent shrink-0"></span>
+            <span class="text-[11px] text-ink-primary truncate flex-1 leading-tight">${name}</span>
+            ${category ? `<span class="text-[9px] text-ink-muted shrink-0">${category}</span>` : ''}
+          </div>`
+        }).join('')
+      } catch {
+        // localStorage indisponível
+      }
+    }
+    renderBuilderQueue()
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'acs-builder-components') renderBuilderQueue()
+    })
+    // Atualiza quando a página ganha foco (navegação interna não dispara storage event)
+    window.addEventListener('focus', renderBuilderQueue)
 
     /* ── Cosmos mode (logo click) ── */
     const logo = document.getElementById('logo-star')

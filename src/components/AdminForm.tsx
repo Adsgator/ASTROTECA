@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ComponentMeta, PropDefinition, PropDraft, AppSettings } from '../types'
 import * as ui from '../styles/ui'
+import SelectField from './builder/SelectField'
 
 const CATEGORIES = [
   'Hero', 'Features', 'Pricing', 'Testimonials', 'CTA', 'Footer',
@@ -22,6 +23,7 @@ export default function AdminForm() {
   const [tags, setTags] = useState('')
   const [bestFor, setBestFor] = useState('')
   const [props, setProps] = useState<PropDraft[]>([])
+  const [screenshotUrl, setScreenshotUrl] = useState('')
   const [astroCode, setAstroCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'fail'; message: string } | null>(null)
@@ -90,6 +92,7 @@ export default function AdminForm() {
       bestFor: bestFor.split(',').map(t => t.trim()).filter(Boolean),
       props: propsMeta,
       copy: Object.keys(copy).length > 0 ? copy : undefined,
+      screenshotUrl: screenshotUrl.trim() || undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -137,6 +140,7 @@ export default function AdminForm() {
         bestFor: bestFor.split(',').map(t => t.trim()).filter(Boolean),
         props: propsMeta,
         copy: Object.keys(copy).length > 0 ? copy : undefined,
+        screenshotUrl: screenshotUrl.trim() || undefined,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -160,6 +164,7 @@ export default function AdminForm() {
       setBestFor('')
       setProps([])
       setAstroCode('')
+      setScreenshotUrl('')
     } catch (e) {
       setFeedback({ type: 'fail', message: e instanceof Error ? e.message : 'Erro desconhecido' })
     } finally {
@@ -199,9 +204,11 @@ export default function AdminForm() {
             />
           </Field>
           <Field label="Categoria">
-            <select className={ui.inputBase} value={category} onChange={e => setCategory(e.target.value)}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <SelectField
+              value={category}
+              onChange={v => setCategory(v)}
+              options={CATEGORIES.map(c => ({ value: c, label: c }))}
+            />
           </Field>
           <div className="col-span-2">
             <Field label="Descricao">
@@ -230,6 +237,17 @@ export default function AdminForm() {
               placeholder="Landing pages com imagem lateral"
             />
           </Field>
+          <div className="col-span-2">
+            <Field label="Screenshot URL (1280×720px)">
+              <input
+                className={ui.inputBase}
+                value={screenshotUrl}
+                onChange={e => setScreenshotUrl(e.target.value)}
+                placeholder="https://raw.githubusercontent.com/.../screenshot.png"
+                type="url"
+              />
+            </Field>
+          </div>
         </div>
 
         {name && (
@@ -258,13 +276,17 @@ export default function AdminForm() {
               <input className={ui.inputBase} value={prop.name} onChange={e => updateProp(i, 'name', e.target.value)} placeholder="titulo" />
             </Field>
             <Field label="Tipo">
-              <select className={ui.inputBase} value={prop.type} onChange={e => updateProp(i, 'type', e.target.value)}>
-                <option value="string">string</option>
-                <option value="number">number</option>
-                <option value="boolean">boolean</option>
-                <option value="string[]">string[]</option>
-                <option value="Record<string, string>">Record</option>
-              </select>
+              <SelectField
+                value={prop.type}
+                onChange={v => updateProp(i, 'type', v)}
+                options={[
+                  { value: 'string', label: 'string' },
+                  { value: 'number', label: 'number' },
+                  { value: 'boolean', label: 'boolean' },
+                  { value: 'string[]', label: 'string[]' },
+                  { value: 'Record<string, string>', label: 'Record' },
+                ]}
+              />
             </Field>
             <Field label="Obrig.">
               <input type="checkbox" checked={prop.required} onChange={e => updateProp(i, 'required', e.target.checked)} />

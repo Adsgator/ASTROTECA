@@ -24,8 +24,8 @@ export async function callGemini(opts: {
   if (!res.ok) {
     if (res.status === 401) throw new Error('Chave inválida — verifique a API key do Gemini')
     if (res.status === 404) throw new Error('Modelo indisponível — tente gemini-2.5-flash')
-    const body = await res.json().catch(() => ({}))
-    throw new Error((body as any)?.error?.message || `Erro ${res.status} ao chamar Gemini`)
+    const body = await res.json().catch(() => ({})) as { error?: { message?: string } }
+    throw new Error(body?.error?.message || `Erro ${res.status} ao chamar Gemini`)
   }
 
   const data = await res.json()

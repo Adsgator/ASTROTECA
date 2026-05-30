@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Registra uso de cada componente
     for (const componentId of componentIds) {
-      recordComponentUsage(componentId, repoUrl, projectName)
+      await recordComponentUsage(componentId, repoUrl, projectName)
     }
 
     return new Response(

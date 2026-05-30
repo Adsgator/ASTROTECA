@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import * as ui from '../styles/ui'
+import SelectField from './builder/SelectField'
 
 const CATEGORIES = [
   'Hero', 'Features', 'Services', 'Testimonials', 'Process',
@@ -139,7 +140,7 @@ export default function ExtractForm() {
               // file.path só existe em Electron — no browser só temos o nome
               // Tenta pegar o path completo via item.getAsString (não suportado)
               // Fallback: sugerir o nome e deixar o usuário completar o caminho
-              const fullPath = (file as any).path
+              const fullPath = (file as File & { path?: string }).path
               if (fullPath) {
                 setFilePath(fullPath)
                 setDropHint('')
@@ -242,14 +243,12 @@ export default function ExtractForm() {
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 space-y-1.5">
               <label className="block text-xs font-medium text-ink-secondary uppercase tracking-wider">Categoria</label>
-              <select
-                className={ui.inputBase}
+              <SelectField
                 value={category}
-                onChange={e => setCategory(e.target.value)}
+                onChange={v => setCategory(v)}
+                options={CATEGORIES.map(c => ({ value: c, label: c }))}
                 disabled={phase === 'extracting' || phase === 'done'}
-              >
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+              />
             </div>
             <div className="col-span-2 space-y-1.5">
               <label className="block text-xs font-medium text-ink-secondary uppercase tracking-wider">Descrição</label>

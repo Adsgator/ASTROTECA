@@ -69,13 +69,23 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
 
 // ─── Steps config ──────────────────────────────────────────────────────────────
 
-const STEPS: { key: BuilderStep; label: string; icon: string }[] = [
-  { key: 'briefing', label: 'Briefing', icon: '📋' },
-  { key: 'estrutura', label: 'Estrutura', icon: '🏗️' },
-  { key: 'arte', label: 'Arte', icon: '🎨' },
-  { key: 'componentes', label: 'Componentes', icon: '🧩' },
-  { key: 'preview', label: 'Preview', icon: '👁️' },
-  { key: 'gerar', label: 'Gerar', icon: '🚀' },
+// SVG paths for step icons
+const STEP_ICONS: Record<string, string> = {
+  briefing: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
+  estrutura: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+  arte: 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01',
+  componentes: 'M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z',
+  preview: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
+  gerar: 'M13 10V3L4 14h7v7l9-11h-7z',
+}
+
+const STEPS: { key: BuilderStep; label: string }[] = [
+  { key: 'briefing', label: 'Briefing' },
+  { key: 'estrutura', label: 'Estrutura' },
+  { key: 'arte', label: 'Arte' },
+  { key: 'componentes', label: 'Componentes' },
+  { key: 'preview', label: 'Preview' },
+  { key: 'gerar', label: 'Gerar' },
 ]
 
 // ─── Settings helper ───────────────────────────────────────────────────────────
@@ -266,7 +276,8 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
   if (typeof window !== 'undefined' && window.innerWidth < 768) {
     return (
       <div className="p-8 text-center">
-        <p className="text-lg font-semibold text-ink-primary">📱 Abra no desktop</p>
+        <svg className="w-10 h-10 mx-auto mb-3 text-ink-muted opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>
+        <p className="text-lg font-semibold text-ink-primary">Abra no desktop</p>
         <p className="text-sm text-ink-secondary mt-2">O Builder funciona melhor em telas maiores (768px+).</p>
       </div>
     )
@@ -287,7 +298,7 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
           />
           <div className="flex-1 min-w-0">
             <StepNav
-              steps={STEPS}
+              steps={STEPS.map(s => ({ ...s, iconPath: STEP_ICONS[s.key] }))}
               current={displayStep}
               validation={validation}
               onStep={goToStep}
@@ -376,7 +387,7 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
       </div>
 
       {/* Sidebar direita */}
-      <div className={cn(ui.cardBase, 'w-64 flex-shrink-0 overflow-hidden')}>
+      <div className={cn(ui.cardBase, 'w-96 flex-shrink-0 overflow-hidden')}>
         <BuilderSidebar
           tab={sidebarTab}
           onTabChange={t => setSidebarTab(t as typeof sidebarTab)}

@@ -139,8 +139,12 @@ export default function BuilderSidebar({
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-ink-muted mt-2">
-                {art.defaultTheme === 'dark' ? '🌙 Tema escuro' : '☀️ Tema claro'}
+              <p className="text-[10px] text-ink-muted mt-2 flex items-center gap-1">
+                {art.defaultTheme === 'dark' ? (
+                  <><svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>Tema escuro</>
+                ) : (
+                  <><svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>Tema claro</>
+                )}
               </p>
             </div>
 
@@ -163,8 +167,8 @@ export default function BuilderSidebar({
         {tab === 'componentes' && (
           <>
             {sortedSelected.length === 0 ? (
-              <div className="text-center py-8 text-ink-muted">
-                <p className="text-xl mb-1">🧩</p>
+              <div className="flex flex-col items-center py-8 text-ink-muted">
+                <svg className="w-8 h-8 mb-2 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
                 <p className="text-xs">Nenhum selecionado</p>
               </div>
             ) : (
@@ -210,8 +214,12 @@ export default function BuilderSidebar({
         {tab === 'documento' && (
           <div className="space-y-2">
             <div className="flex gap-1.5">
-              <button onClick={handleCopy} className={cn(ui.btnGhost, 'text-[11px] flex-1 py-1.5')}>
-                {copied ? '✓ Copiado!' : '📋 Copiar'}
+              <button onClick={handleCopy} className={cn(ui.btnGhost, 'text-[11px] flex-1 py-1.5 flex items-center justify-center gap-1.5')}>
+                {copied ? (
+                  <><svg className="w-3.5 h-3.5 text-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Copiado!</>
+                ) : (
+                  <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copiar</>
+                )}
               </button>
               <button onClick={handleDownload} className={cn(ui.btnGhost, 'text-[11px] flex-1 py-1.5')}>
                 ↓ Baixar .md

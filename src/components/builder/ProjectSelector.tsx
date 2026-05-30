@@ -63,7 +63,7 @@ export default function ProjectSelector({
       </button>
 
       {open && (
-        <div className={`${ui.cardBase} absolute top-full left-0 mt-1 w-72 z-50 overflow-hidden`}>
+        <div className={`${ui.cardBase} absolute top-full left-0 mt-1 w-72 z-[200] overflow-hidden`}>
           <div className="p-2 space-y-0.5 max-h-64 overflow-y-auto">
             {projects.length === 0 && (
               <p className="text-xs text-ink-muted px-2 py-3 text-center">Nenhum projeto ainda</p>

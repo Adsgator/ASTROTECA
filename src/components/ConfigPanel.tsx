@@ -4,6 +4,8 @@ import { validateGithubToken } from '../lib/github'
 import { callGemini } from '../lib/gemini'
 import { getProjects, exportAllData, importAllData } from '../lib/projects'
 import * as ui from '../styles/ui'
+import Dialog from './builder/Dialog'
+import SelectField from './builder/SelectField'
 
 const DEFAULT_SETTINGS: AppSettingsV2 = {
   githubToken: '',
@@ -34,6 +36,7 @@ export default function ConfigPanel() {
   const [testingGemini, setTestingGemini] = useState(false)
   const [geminiStatus, setGeminiStatus] = useState<{ ok: boolean; msg: string } | null>(null)
   const [importError, setImportError] = useState('')
+  const [alertDialog, setAlertDialog] = useState<string | null>(null)
 
   useEffect(() => {
     const saved = localStorage.getItem('acs-settings')
@@ -91,7 +94,7 @@ export default function ConfigPanel() {
         const json = JSON.parse(ev.target?.result as string)
         importAllData(json)
         setImportError('')
-        alert('Backup importado com sucesso! Recarregue a página.')
+        setAlertDialog('Backup importado com sucesso! Recarregue a página.')
       } catch {
         setImportError('Arquivo inválido ou corrompido')
       }
@@ -128,6 +131,14 @@ export default function ConfigPanel() {
 
   return (
     <div className="max-w-3xl flex flex-col gap-4 stagger">
+      {alertDialog && (
+        <Dialog
+          open
+          title="Backup importado"
+          message={alertDialog}
+          onConfirm={() => setAlertDialog(null)}
+        />
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Configuracoes</h1>
         <button onClick={handleSave} className={`${saved ? ui.btnSuccess : ui.btnPrimary} ${saved ? 'animate-scale-in' : ''}`}>
@@ -137,7 +148,10 @@ export default function ConfigPanel() {
 
       {(!settings.githubToken || !settings.githubOwner || !settings.registryUrl) && (
         <div className={`${ui.cardBase} p-4 bg-amber-50/10 border-l-2 border-amber-500`}>
-          <div className="text-sm text-amber-700 font-medium">⚠️ Configuração incompleta</div>
+          <div className="text-sm text-amber-700 font-medium flex items-center gap-1.5">
+              <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Configuração incompleta
+            </div>
           <div className="text-xs text-amber-600 mt-1">
             Você precisa configurar: {[
               !settings.githubToken && 'Token',
@@ -174,8 +188,16 @@ export default function ConfigPanel() {
               >
                 {validating ? 'Validando...' : 'Validar Token'}
               </button>
-              {tokenUser && <span className={`${ui.badgeBase} bg-ok/10 text-ok border border-ok/20 animate-scale-in`}>✓ {tokenUser}</span>}
-              {tokenError && <span className={`${ui.badgeBase} bg-fail/10 text-fail border border-fail/20 animate-scale-in`}>✗ {tokenError}</span>}
+              {tokenUser && (
+                <span className={`${ui.badgeBase} bg-ok/10 text-ok border border-ok/20 animate-scale-in flex items-center gap-1`}>
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{tokenUser}
+                </span>
+              )}
+              {tokenError && (
+                <span className={`${ui.badgeBase} bg-fail/10 text-fail border border-fail/20 animate-scale-in flex items-center gap-1`}>
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>{tokenError}
+                </span>
+              )}
             </div>
           </div>
           <Field label="Owner (usuario ou org)">
@@ -240,15 +262,15 @@ export default function ConfigPanel() {
             </div>
           </div>
           <Field label="Modelo">
-            <select
-              className={ui.selectBase}
+            <SelectField
               value={settings.geminiModel}
-              onChange={e => update('geminiModel', e.target.value as AppSettingsV2['geminiModel'])}
-            >
-              <option value="gemini-2.5-flash">Flash (recomendado)</option>
-              <option value="gemini-2.5-flash-lite">Flash Lite (fallback)</option>
-              <option value="gemini-2.5-pro">Pro (mais lento, mais preciso)</option>
-            </select>
+              onChange={v => update('geminiModel', v as AppSettingsV2['geminiModel'])}
+              options={[
+                { value: 'gemini-2.5-flash', label: 'Flash (recomendado)' },
+                { value: 'gemini-2.5-flash-lite', label: 'Flash Lite (fallback)' },
+                { value: 'gemini-2.5-pro', label: 'Pro (mais lento, mais preciso)' },
+              ]}
+            />
           </Field>
           <div className="flex flex-col justify-end">
             <button
@@ -260,8 +282,12 @@ export default function ConfigPanel() {
               {testingGemini ? 'Testando...' : 'Testar conexão'}
             </button>
             {geminiStatus && (
-              <span className={`mt-1 text-xs ${geminiStatus.ok ? 'text-ok' : 'text-fail'}`}>
-                {geminiStatus.ok ? '✓ ' : '✗ '}{geminiStatus.msg}
+              <span className={`mt-1 text-xs flex items-center gap-1 ${geminiStatus.ok ? 'text-ok' : 'text-fail'}`}>
+                {geminiStatus.ok
+                  ? <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  : <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                }
+                {geminiStatus.msg}
               </span>
             )}
           </div>
@@ -368,11 +394,11 @@ export default function ConfigPanel() {
           {getProjects().length} projeto{getProjects().length !== 1 ? 's' : ''} salvos
         </p>
         <div className="flex gap-2 flex-wrap">
-          <button onClick={handleExport} className={`${ui.btnOutline} text-xs`}>
-            ↓ Exportar Backup
+          <button onClick={handleExport} className={`${ui.btnOutline} text-xs flex items-center gap-1.5`}>
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar Backup
           </button>
-          <label className={`${ui.btnOutline} text-xs cursor-pointer`}>
-            ↑ Importar Backup
+          <label className={`${ui.btnOutline} text-xs cursor-pointer flex items-center gap-1.5`}>
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Importar Backup
             <input type="file" accept=".json" className="hidden" onChange={handleImport} />
           </label>
         </div>

@@ -22,10 +22,10 @@ export const POST: APIRoute = async ({ request }) => {
   if (result.usedComponentIds?.length) {
     try {
       for (const id of result.usedComponentIds) {
-        recordComponentUsage(id, result.repoUrl, clientName)
+        await recordComponentUsage(id, result.repoUrl, clientName)
       }
-    } catch (e) {
-      console.error('Erro ao registrar uso de componentes:', e)
+    } catch {
+      // analytics best-effort: não deve quebrar criação do projeto
     }
   }
 

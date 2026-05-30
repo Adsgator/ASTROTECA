@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro'
+import type { ComponentMeta } from '../../types'
 import { existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { toBase64 } from '../../lib/utils'
@@ -23,19 +24,22 @@ export const DELETE: APIRoute = async ({ request }) => {
     const { id } = await request.json() as { id: string }
     if (!id) return json({ error: 'ID obrigatório' }, 400)
 
-    const registry: any[] = JSON.parse(readFileSync(REGISTRY, 'utf8'))
+    const registry: ComponentMeta[] = JSON.parse(readFileSync(REGISTRY, 'utf8'))
     const component = registry.find(r => r.id === id)
     if (!component) return json({ error: `Componente "${id}" não encontrado` }, 404)
 
     const removed: string[] = []
+    const componentFile = component.componentFile
 
     // 1. Arquivo .astro
-    const compFile = join(LIB_COMPS, component.componentFile)
-    if (existsSync(compFile)) { rmSync(compFile); removed.push(component.componentFile) }
+    if (componentFile) {
+      const compFile = join(LIB_COMPS, componentFile)
+      if (existsSync(compFile)) { rmSync(compFile); removed.push(componentFile) }
 
-    // 2. .preview.astro
-    const previewSrc = join(LIB_COMPS, component.componentFile.replace('.astro', '.preview.astro'))
-    if (existsSync(previewSrc)) { rmSync(previewSrc); removed.push(previewSrc.replace(ROOT + '\\', '').replace(ROOT + '/', '')) }
+      // 2. .preview.astro
+      const previewSrc = join(LIB_COMPS, componentFile.replace('.astro', '.preview.astro'))
+      if (existsSync(previewSrc)) { rmSync(previewSrc); removed.push(previewSrc.replace(ROOT + '\\', '').replace(ROOT + '/', '')) }
+    }
 
     // 3. Preview page
     const previewPage = join(PREVIEW_DIR, `${component.id}.astro`)
@@ -84,8 +88,10 @@ export const DELETE: APIRoute = async ({ request }) => {
         })
       }
 
-      await ghDelete(`src/components/${component.componentFile}`)
-      await ghDelete(`src/components/${component.componentFile.replace('.astro', '.preview.astro')}`)
+      if (componentFile) {
+        await ghDelete(`src/components/${componentFile}`)
+        await ghDelete(`src/components/${componentFile.replace('.astro', '.preview.astro')}`)
+      }
       await ghUpsert('registry.json', JSON.stringify(newRegistry, null, 2) + '\n', `chore: remove ${id} from registry`)
     }
 

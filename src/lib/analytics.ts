@@ -1,8 +1,11 @@
 // src/lib/analytics.ts
-// Sistema de rastreamento de componentes extraídos e seu uso em projetos
+// Rastreamento de componentes extraídos e uso em projetos.
+// Leitura: public/data/analytics.json (funciona local e em Vercel via static).
+// Escrita: GitHub API — persiste em qualquer ambiente (local e serverless).
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { toBase64 } from './utils'
 
 export interface AnalyticsEntry {
   id: string
@@ -22,35 +25,64 @@ export interface AnalyticsData {
 }
 
 const ANALYTICS_PATH = resolve('public/data/analytics.json')
+const ANALYTICS_GITHUB_PATH = 'public/data/analytics.json'
 
 export function getAnalyticsPath(): string {
   return ANALYTICS_PATH
 }
 
-/** Carrega o arquivo de analytics, retorna {} se não existir */
+/** Carrega o arquivo de analytics do filesystem local (para leitura em SSR/dev) */
 export function loadAnalytics(): AnalyticsData {
-  if (!existsSync(ANALYTICS_PATH)) {
-    return {}
-  }
+  if (!existsSync(ANALYTICS_PATH)) return {}
   try {
-    const content = readFileSync(ANALYTICS_PATH, 'utf-8')
-    return JSON.parse(content)
+    return JSON.parse(readFileSync(ANALYTICS_PATH, 'utf-8'))
   } catch {
     return {}
   }
 }
 
-/** Salva analytics de volta ao arquivo */
-export function saveAnalytics(data: AnalyticsData): void {
-  writeFileSync(ANALYTICS_PATH, JSON.stringify(data, null, 2))
+/** Persiste analytics via GitHub API (funciona em local e serverless) */
+async function saveAnalyticsToGitHub(data: AnalyticsData): Promise<void> {
+  const token = process.env.GITHUB_TOKEN
+  const owner = process.env.GITHUB_OWNER
+  const repo  = process.env.COMPONENTS_REPO
+
+  if (!token || !owner || !repo) {
+    // Ambiente sem credenciais GitHub — silently skip (ex: preview/CI)
+    return
+  }
+
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${ANALYTICS_GITHUB_PATH}`
+  const ghHeaders = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  }
+
+  let sha: string | undefined
+  try {
+    const existing = await fetch(url, { headers: ghHeaders })
+    if (existing.ok) sha = (await existing.json()).sha
+  } catch {}
+
+  await fetch(url, {
+    method: 'PUT',
+    headers: ghHeaders,
+    body: JSON.stringify({
+      message: `chore: update analytics.json [${new Date().toISOString()}]`,
+      content: toBase64(JSON.stringify(data, null, 2)),
+      ...(sha ? { sha } : {}),
+    }),
+  })
 }
 
 /** Registra uma nova extração de componente */
-export function recordComponentExtraction(
+export async function recordComponentExtraction(
   componentId: string,
   componentName: string,
   category: string
-): void {
+): Promise<void> {
   const analytics = loadAnalytics()
 
   if (!analytics[componentId]) {
@@ -62,17 +94,16 @@ export function recordComponentExtraction(
       usedIn: [],
       totalProjects: 0,
     }
+    await saveAnalyticsToGitHub(analytics)
   }
-
-  saveAnalytics(analytics)
 }
 
 /** Registra o uso de um componente em um novo projeto */
-export function recordComponentUsage(
+export async function recordComponentUsage(
   componentId: string,
   repoUrl: string,
   projectName: string
-): void {
+): Promise<void> {
   const analytics = loadAnalytics()
 
   if (analytics[componentId]) {
@@ -82,7 +113,7 @@ export function recordComponentUsage(
       date: new Date().toISOString(),
     })
     analytics[componentId].totalProjects = analytics[componentId].usedIn.length
-    saveAnalytics(analytics)
+    await saveAnalyticsToGitHub(analytics)
   }
 }
 
@@ -91,8 +122,8 @@ export function getAnalyticsSummary(data: AnalyticsData) {
   const components = Object.values(data)
   const totalComponents = components.length
   const totalProjects = components.reduce((sum, c) => sum + c.totalProjects, 0)
-  const mostUsed = components.sort((a, b) => b.totalProjects - a.totalProjects).slice(0, 5)
-  const recentExtractions = components.sort(
+  const mostUsed = [...components].sort((a, b) => b.totalProjects - a.totalProjects).slice(0, 5)
+  const recentExtractions = [...components].sort(
     (a, b) => new Date(b.extractedAt).getTime() - new Date(a.extractedAt).getTime()
   ).slice(0, 5)
 

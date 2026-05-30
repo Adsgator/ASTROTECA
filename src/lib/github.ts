@@ -25,6 +25,9 @@ function apiUrl(path: string) {
  * para evitar cache do CDN do GitHub.
  * Ex: https://raw.githubusercontent.com/owner/repo/branch/registry.json
  *  → https://api.github.com/repos/owner/repo/contents/registry.json?ref=branch
+ *
+ * Se a URL já for api.github.com ou não seguir o padrão raw.githubusercontent.com,
+ * retorna sem modificação (comportamento intencional para URLs customizadas).
  */
 function toApiUrl(url: string): string {
   const match = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/)
