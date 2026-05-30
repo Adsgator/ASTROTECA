@@ -3,13 +3,15 @@ import type { ComponentMeta, PropDefinition } from '../../types'
 import {
   existsSync, readFileSync, writeFileSync, mkdirSync,
 } from 'node:fs'
-import { resolve, join, basename, dirname } from 'node:path'
+import { resolve, join, basename, dirname, sep } from 'node:path'
 import { execSync } from 'node:child_process'
 import { toBase64 } from '../../lib/utils'
 
 const ROOT = resolve(process.cwd())
 
 // ── helpers (espelho do script CLI) ──────────────────────────────────────────
+// TODO: importar toPascal e toKebab de '../../lib/utils' quando o bundler
+//       suportar esse import no contexto de API route sem restrições de runtime.
 
 const toPascal = (s: string) =>
   s.replace(/(^\w|-\w|_\w)/g, m => m.replace(/[-_]/, '').toUpperCase())
@@ -222,6 +224,11 @@ export const POST: APIRoute = async ({ request }) => {
     // "Copiar como caminho" no Windows adiciona aspas — remove
     const cleanPath = filePath.trim().replace(/^["']|["']$/g, '')
     const resolvedPath = resolve(cleanPath)
+
+    // Proteção contra path traversal — rejeita caminhos fora do diretório do projeto
+    if (!resolvedPath.startsWith(ROOT + sep) && resolvedPath !== ROOT) {
+      return json({ error: 'Acesso negado: caminho fora do projeto' }, 403)
+    }
 
     if (!existsSync(resolvedPath)) {
       return json({ error: `Arquivo não encontrado: ${resolvedPath}` }, 400)

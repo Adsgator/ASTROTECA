@@ -86,8 +86,9 @@ export async function updateRegistry(
   })
 
   if (!res.ok) {
-    const err = await res.json()
-    throw new Error(err.message || 'Erro ao atualizar registry')
+    const err = await res.json().catch(() => ({}))
+    console.error('[github] updateRegistry falhou:', err.message ?? res.status)
+    throw new Error('Erro ao atualizar registry')
   }
 }
 
@@ -126,8 +127,9 @@ export async function publishComponent(
     })
 
     if (!res.ok) {
-      const err = await res.json()
-      throw new Error(err.message || `Erro ao criar ${path}`)
+      const err = await res.json().catch(() => ({}))
+      console.error(`[github] upsertFile falhou em ${path}:`, err.message ?? res.status)
+      throw new Error(`Erro ao publicar arquivo no GitHub`)
     }
   }
 
@@ -161,7 +163,12 @@ async function fetchComponentFile(
   if (!res.ok) return null
   const data = await res.json()
   if (!data.content) return null
-  return atob(data.content.replace(/\n/g, ''))
+  try {
+    return atob(data.content.replace(/\n/g, ''))
+  } catch {
+    console.error(`[github] falha ao decodificar conteúdo de ${filePath}`)
+    return null
+  }
 }
 
 /** Commita um arquivo no repositório destino, criando ou atualizando */

@@ -36,3 +36,15 @@ export function toBase64(str: string): string {
 export function wait(ms: number): Promise<void> {
   return new Promise(r => setTimeout(r, ms))
 }
+
+export function toPascal(s: string): string {
+  return s.replace(/(^\w|-\w|_\w)/g, m => m.replace(/[-_]/, '').toUpperCase())
+}
+
+export function toKebab(s: string): string {
+  return s.replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+           .replace(/([a-z])([A-Z])/g, '$1-$2')
+           .replace(/([a-zA-Z])(\d)/g, '$1-$2')
+           .replace(/[\s_]+/g, '-')
+           .toLowerCase()
+}

@@ -1,6 +1,6 @@
 // src/lib/analytics.ts
 // Rastreamento de componentes extraídos e uso em projetos.
-// Leitura: public/data/analytics.json (funciona local e em Vercel via static).
+// Leitura: public/data/analytics.json (funciona local e em Vercel via static asset).
 // Escrita: GitHub API — persiste em qualquer ambiente (local e serverless).
 
 import { existsSync, readFileSync } from 'node:fs'

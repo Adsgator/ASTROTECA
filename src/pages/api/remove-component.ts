@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 import type { ComponentMeta } from '../../types'
 import { existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
-import { resolve, join } from 'node:path'
+import { resolve, join, relative } from 'node:path'
 import { toBase64 } from '../../lib/utils'
 
 const ROOT       = resolve(process.cwd())
@@ -31,6 +31,11 @@ export const DELETE: APIRoute = async ({ request }) => {
     const removed: string[] = []
     const componentFile = component.componentFile
 
+    // Proteção contra path traversal no componentFile vindo do registry
+    if (componentFile && (componentFile.includes('..') || relative('', componentFile).startsWith('..') || !componentFile.endsWith('.astro'))) {
+      return json({ error: 'Caminho de componente inválido' }, 400)
+    }
+
     // 1. Arquivo .astro
     if (componentFile) {
       const compFile = join(LIB_COMPS, componentFile)
@@ -38,7 +43,7 @@ export const DELETE: APIRoute = async ({ request }) => {
 
       // 2. .preview.astro
       const previewSrc = join(LIB_COMPS, componentFile.replace('.astro', '.preview.astro'))
-      if (existsSync(previewSrc)) { rmSync(previewSrc); removed.push(previewSrc.replace(ROOT + '\\', '').replace(ROOT + '/', '')) }
+      if (existsSync(previewSrc)) { rmSync(previewSrc); removed.push(relative(ROOT, previewSrc).replace(/\\/g, '/')) }
     }
 
     // 3. Preview page

@@ -226,7 +226,8 @@ Antes de entregar, valide:
 function renderTemplate(template: string, vars: Record<string, string>): string {
   let result = template
   for (const [key, value] of Object.entries(vars)) {
-    result = result.replace(new RegExp(`{{${key}}}`, 'g'), value)
+    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    result = result.replace(new RegExp(`\\{\\{${escapedKey}\\}\\}`, 'g'), value)
   }
   // Remove blocos condicionais vazios: {{#key}}...{{/key}}
   result = result.replace(/\{\{#\w+\}\}[\s\S]*?\{\{\/\w+\}\}/g, match => {
