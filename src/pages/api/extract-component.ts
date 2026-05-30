@@ -42,12 +42,55 @@ function inferCategory(name: string): string {
 }
 
 function sanitize(code: string): string {
-  code = code.replace(/^import\s+\w+\s+from\s+['"](?:\.{1,2}\/)*(?:@\/)?assets\/[^'"]+['"];?\s*$/gm, '')
+  // 1. Remove imports de assets — detecta quais variáveis foram removidas
+  const assetImportPatterns = [
+    /^import\s+\{[^}]*\}\s+from\s+['"][^'"]*\/assets[^'"]*['"];?\s*$/gm,
+    /^import\s+(\w+)\s+from\s+['"][^'"]*\/assets\/[^'"]*['"];?\s*$/gm,
+    /^import\s+(\w+)\s+from\s+['"](?:\.{1,2}\/)*(?:@|~)?\/?\s*assets\/[^'"]*['"];?\s*$/gm,
+  ]
+
+  const removedAssetVars: string[] = []
+  for (const pattern of assetImportPatterns) {
+    code = code.replace(pattern, (match) => {
+      const namedMatch = match.match(/import\s+\{([^}]+)\}/)
+      const defaultMatch = match.match(/import\s+(\w+)\s+from/)
+      if (namedMatch?.[1]) {
+        namedMatch[1].split(',')
+          .map(s => s.trim().split(/\s+as\s+/).pop())
+          .filter((v): v is string => Boolean(v))
+          .forEach(v => removedAssetVars.push(v))
+      } else if (defaultMatch?.[1]) {
+        removedAssetVars.push(defaultMatch[1])
+      }
+      return ''
+    })
+  }
+
+  // 2. Remove referências às variáveis de asset removidas em estruturas de dados
+  for (const v of removedAssetVars) {
+    const escapedV = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    // Match: "    image: leticiaImg," ou "    image: leticiaImg" (com ou sem vírgula, com indentação)
+    const linePattern = new RegExp(String.raw`^\s*\w+:\s*` + escapedV + String.raw`\s*,?\s*$`, 'gm')
+    code = code.replace(linePattern, '')
+  }
+
+  // 3. Remove referências restantes em expressões (JSX/template)
+  for (const v of removedAssetVars) {
+    const escapedV = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    // Em JSX/template: {leticiaImg} → {null}
+    const exprPattern = new RegExp(String.raw`\{` + escapedV + String.raw`\}`, 'g')
+    code = code.replace(exprPattern, '{null}')
+  }
+
+  // 4. Replace Image components
   code = code.replace(/<Image\s[^/]*src=\{[^}]+\}[^/]*\/>/gs, '<img src="/preview-assets/placeholder-hero.svg" alt="imagem" />')
+
+  // 5. Sanitize sensitive data
   code = code.replace(/https:\/\/wa\.me\/[^\s'"]+/g, 'https://wa.me/5500000000000')
   code = code.replace(/\(\d{2}\)\s?9?\d{4}[-\s]?\d{4}/g, '(00) 00000-0000')
   code = code.replace(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/g, '00.000.000/0000-00')
   code = code.replace(/href="https:\/\/(www\.)?(instagram|tiktok|facebook|youtube|linkedin)\.com\/[^"]+"/g, 'href="#"')
+
   return code
 }
 

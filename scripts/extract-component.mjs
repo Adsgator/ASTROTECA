@@ -245,10 +245,22 @@ function sanitizeForLibrary(code) {
     })
   }
 
-  // Remove referências às variáveis de asset removidas
+  // Remove referências às variáveis de asset removidas em estruturas de dados
   for (const v of removedAssetVars) {
-    code = code.replace(new RegExp(`(\\w+):\\s*${v}\\s*,`, 'g'), '')
-    code = code.replace(new RegExp(`\\w+=\\{${v}\\}`, 'g'), '')
+    // Escape special chars no nome da variável para uso em RegExp
+    const escapedV = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    // Match: "    image: leticiaImg," ou "    image: leticiaImg" (com ou sem vírgula, com indentação)
+    // Usa String.raw para evitar problemas com escapes em template strings
+    const linePattern = new RegExp(String.raw`^\s*\w+:\s*` + escapedV + String.raw`\s*,?\s*$`, 'gm')
+    code = code.replace(linePattern, '')
+  }
+
+  // Remove referências restantes em expressões
+  for (const v of removedAssetVars) {
+    const escapedV = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    // Em JSX/template: {leticiaImg} → {null}
+    const exprPattern = new RegExp(String.raw`\{` + escapedV + String.raw`\}`, 'g')
+    code = code.replace(exprPattern, '{null}')
   }
 
   // Remove Image/Picture components que usavam assets locais
