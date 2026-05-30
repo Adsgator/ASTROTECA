@@ -6,6 +6,7 @@ import type { ComponentMeta } from '../../types'
 import { generateDocument } from '../../lib/export-document'
 import * as ui from '../../styles/ui'
 import { cn } from '../../lib/utils'
+import PromptBlock from './PromptBlock'
 
 interface GenerateStepProps {
   state: BuilderState
@@ -245,6 +246,29 @@ export default function GenerateStep({
           ))}
         </div>
       </div>
+
+      {/* Comando para o Claude */}
+      {state.outputPath === 'library' && (
+        <PromptBlock
+          label="Comando para o Claude Code (IDE)"
+          prompt={`Estou te enviando o MANIFESTO.md deste projeto. Siga o documento passo a passo:\n\n1. Atualize tailwind.config.js com as cores da seção "Direção de Arte"\n2. Atualize src/styles/global.css com as fontes indicadas\n3. Atualize src/layouts/Layout.astro com SEO (title, meta description, keywords), GTM e Schema.org\n4. Para cada seção habilitada, substitua os textos placeholder pela copy do documento\n5. Configure o tema padrão: ${state.art.defaultTheme === 'dark' ? 'escuro (classe "dark" no <html>)' : 'claro'}\n6. Não altere estrutura HTML, classes Tailwind ou lógica JavaScript — apenas dados e configurações do cliente\n7. Rode npm run build ao final para validar`}
+          hint="Copie este comando e cole no Claude Code junto com o MANIFESTO.md. Os componentes da biblioteca já estão no repositório."
+        />
+      )}
+      {state.outputPath === 'manual' && (
+        <PromptBlock
+          label="Comando para o Claude Chat ou Claude Code"
+          prompt={`Estou te enviando o MANIFESTO.md de um projeto de landing page Astro. O repositório contém apenas o template base (sem componentes prontos).\n\nSiga o documento para construir o site completo:\n\n1. Atualize tailwind.config.js com as cores da "Direção de Arte"\n2. Atualize global.css com as fontes\n3. Atualize Layout.astro com SEO, GTM e Schema.org\n4. Crie cada seção habilitada como componente Astro em src/components/, usando a copy do documento\n5. Use os tokens Tailwind do design system (bg-primary, text-text-main, font-serif, etc.) — nunca valores literais\n6. Configure tema padrão: ${state.art.defaultTheme === 'dark' ? 'escuro' : 'claro'}\n7. Garanta responsividade mobile (375px) e tablet (768px)\n8. Rode npm run build ao final`}
+          hint="Copie este comando e cole no Claude junto com o MANIFESTO.md. O Claude vai criar os componentes do zero seguindo o briefing."
+        />
+      )}
+      {state.outputPath === 'hybrid' && (
+        <PromptBlock
+          label="Comando para o Claude Chat ou Claude Code"
+          prompt={`Estou te enviando o MANIFESTO.md de um projeto de landing page. Siga o documento para adaptar um projeto Astro:\n\n1. Atualize tailwind.config.js com as cores da "Direção de Arte"\n2. Atualize global.css com as fontes indicadas\n3. Atualize Layout.astro com SEO (title, meta description, keywords), GTM e Schema.org\n4. Crie ou adapte cada seção habilitada usando a copy do documento\n5. Use tokens Tailwind do design system — nunca valores literais de cor ou fonte\n6. Configure tema padrão: ${state.art.defaultTheme === 'dark' ? 'escuro (classe "dark" no <html>)' : 'claro'}\n7. Teste responsividade e rode npm run build`}
+          hint="Copie este comando, cole no Claude e envie junto com o arquivo MANIFESTO.md baixado."
+        />
+      )}
 
       {/* Botões de ação */}
       <div className="flex gap-2">

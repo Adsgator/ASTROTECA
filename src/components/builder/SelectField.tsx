@@ -1,7 +1,7 @@
 // src/components/builder/SelectField.tsx
 // Dropdown customizado no design Astroteca — substitui <select> nativo
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type CSSProperties } from 'react'
 import { cn } from '../../lib/utils'
 
 interface Option {
@@ -27,11 +27,23 @@ export default function SelectField({
   disabled,
 }: SelectFieldProps) {
   const [open, setOpen] = useState(false)
+  const [dropdownStyle, setDropdownStyle] = useState<CSSProperties>({})
   const ref = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const selected = options.find(o => o.value === value)
 
   useEffect(() => {
     if (!open) return
+    const btn = buttonRef.current
+    if (btn) {
+      const rect = btn.getBoundingClientRect()
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+      })
+    }
     function onOutside(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
@@ -51,6 +63,7 @@ export default function SelectField({
   return (
     <div ref={ref} className={cn('relative', className)}>
       <button
+        ref={buttonRef}
         type="button"
         disabled={disabled}
         onClick={() => setOpen(v => !v)}
@@ -71,7 +84,7 @@ export default function SelectField({
       </button>
 
       {open && (
-        <div className="absolute z-[200] top-full mt-1 w-full rounded-xl border border-white/[0.08] bg-surface/95 backdrop-blur-xl shadow-2xl overflow-hidden animate-scale-in">
+        <div className="z-[9999] rounded-xl border border-white/[0.08] bg-surface/95 backdrop-blur-xl shadow-2xl overflow-hidden animate-scale-in" style={dropdownStyle}>
           <div className="max-h-56 overflow-y-auto py-1">
             {options.map(opt => (
               <button

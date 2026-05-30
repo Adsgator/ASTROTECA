@@ -10,6 +10,7 @@ import {
 } from '../../lib/structure-document'
 import * as ui from '../../styles/ui'
 import { cn } from '../../lib/utils'
+import PromptBlock from './PromptBlock'
 
 interface StructureStepProps {
   sections: PageSection[]
@@ -229,6 +230,12 @@ export default function StructureStep({ sections, briefing, onChange, settings }
             </button>
           </div>
         </div>
+
+        <PromptBlock
+          label="Comando para o Claude Chat"
+          prompt={`Estou te enviando o documento de briefing de uma landing page. Leia o documento inteiro e siga as instruções na ordem:\n\n1. Execute o PASSO A (Análise de Intenção) — mapeie as 3 dores do público\n2. Execute o PASSO B (SEO) — crie title, meta description e keywords\n3. Execute o PASSO C (Estrutura e Copy) — crie a copy completa de cada seção\n\nRetorne TUDO no formato especificado no documento, entre os delimitadores ===INICIO-OUTPUT=== e ===FIM-OUTPUT===. Não invente depoimentos, avaliações ou dados que não estejam no briefing.`}
+          hint="Copie este comando, cole no Claude Chat e envie junto com o documento baixado."
+        />
 
         {importSuccess && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ok/10 border border-ok/20">
