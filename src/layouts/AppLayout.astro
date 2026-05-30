@@ -41,6 +41,8 @@ const icons: Record<string, string> = {
   <title>{title}</title>
 </head>
 <body>
+  <canvas id="space-bg" aria-hidden="true"></canvas>
+
   <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
   </button>
@@ -49,7 +51,7 @@ const icons: Record<string, string> = {
   <div class="app-shell">
     <aside class="app-sidebar" id="app-sidebar">
       <div class="p-5 border-b border-border flex justify-center">
-        <img src="/logo_astroteca_branca.svg" alt="Astroteca" class="h-20 w-auto animate-float" />
+        <img src="/logo_astroteca_branca.svg" alt="Astroteca" id="logo-star" class="h-20 w-auto animate-float" title="Contemplar o cosmos" />
       </div>
 
       <nav class="flex-1 p-3 flex flex-col gap-0.5">
@@ -84,6 +86,487 @@ const icons: Record<string, string> = {
   </div>
 
   <script is:inline>
+  (function () {
+    const canvas = document.getElementById('space-bg')
+    const ctx = canvas.getContext('2d')
+    let W, H
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       CAMERA — drift lentíssimo pelo espaço, como uma sonda à deriva
+       ═══════════════════════════════════════════════════════════════════════ */
+    const cam = { x: 0, y: 0, vx: 0.04, vy: 0.015 }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       STELLAR SPECTRAL TYPES — cores reais de estrelas por temperatura
+       O (azul quente) → B → A → F → G (sol) → K → M (vermelha fria)
+       ═══════════════════════════════════════════════════════════════════════ */
+    const spectral = [
+      [155, 176, 255], // O — azul profundo (raras, ~2%)
+      [170, 191, 255], // B — azul claro
+      [202, 215, 255], // A — branco-azulado (Sirius)
+      [248, 247, 255], // F — branco puro
+      [255, 244, 232], // G — branco-amarelado (Sol)
+      [255, 222, 180], // K — laranja suave
+      [255, 189, 130], // M — vermelho-alaranjado
+    ]
+    const spectralWeights = [2, 5, 12, 20, 25, 22, 14] // distribuição realista
+    function pickSpectral() {
+      let total = 0
+      for (const w of spectralWeights) total += w
+      let r = Math.random() * total
+      for (let i = 0; i < spectral.length; i++) {
+        r -= spectralWeights[i]
+        if (r <= 0) return spectral[i]
+      }
+      return spectral[4]
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       NEBULA — offscreen canvas com múltiplas camadas de gás e poeira
+       ═══════════════════════════════════════════════════════════════════════ */
+    let nebulaBuf
+    function buildNebula() {
+      nebulaBuf = document.createElement('canvas')
+      nebulaBuf.width = W + 200
+      nebulaBuf.height = H + 200
+      const nc = nebulaBuf.getContext('2d')
+
+      // Camada 1 — nuvens de gás difuso (azul/roxo/rosa, bem espalhadas)
+      const gasBlobs = [
+        { cx: 0.70, cy: 0.15, rx: 0.42, ry: 0.35, col: [65,45,140],  a: 0.065 },
+        { cx: 0.12, cy: 0.78, rx: 0.32, ry: 0.30, col: [35,65,180],  a: 0.050 },
+        { cx: 0.48, cy: 0.42, rx: 0.60, ry: 0.24, col: [95,45,155],  a: 0.032 },
+        { cx: 0.90, cy: 0.80, rx: 0.24, ry: 0.22, col: [50,35,120],  a: 0.042 },
+        { cx: 0.05, cy: 0.20, rx: 0.20, ry: 0.20, col: [55,80,175],  a: 0.038 },
+        { cx: 0.35, cy: 0.88, rx: 0.28, ry: 0.18, col: [120,40,90],  a: 0.030 }, // toque rosado
+        { cx: 0.80, cy: 0.50, rx: 0.18, ry: 0.25, col: [40,60,160],  a: 0.035 },
+      ]
+
+      const bW = nebulaBuf.width, bH = nebulaBuf.height
+      for (const b of gasBlobs) {
+        const cx = b.cx * bW, cy = b.cy * bH
+        const rx = b.rx * bW, ry = b.ry * bH
+        const maxR = Math.max(rx, ry)
+        const g = nc.createRadialGradient(0, 0, 0, 0, 0, maxR)
+        g.addColorStop(0,    `rgba(${b.col[0]},${b.col[1]},${b.col[2]},${b.a})`)
+        g.addColorStop(0.25, `rgba(${b.col[0]},${b.col[1]},${b.col[2]},${b.a * 0.6})`)
+        g.addColorStop(0.55, `rgba(${b.col[0]},${b.col[1]},${b.col[2]},${b.a * 0.2})`)
+        g.addColorStop(1,    `rgba(${b.col[0]},${b.col[1]},${b.col[2]},0)`)
+        nc.save()
+        nc.translate(cx, cy)
+        nc.scale(rx / maxR, ry / maxR)
+        nc.fillStyle = g
+        nc.fillRect(-maxR, -maxR, maxR * 2, maxR * 2)
+        nc.restore()
+      }
+
+      // Camada 2 — poeira escura (dark nebula patches)
+      const dustPatches = [
+        { cx: 0.55, cy: 0.35, rx: 0.15, ry: 0.10, a: 0.12 },
+        { cx: 0.25, cy: 0.60, rx: 0.12, ry: 0.08, a: 0.08 },
+        { cx: 0.78, cy: 0.28, rx: 0.10, ry: 0.14, a: 0.09 },
+        { cx: 0.40, cy: 0.70, rx: 0.08, ry: 0.06, a: 0.07 },
+      ]
+      for (const d of dustPatches) {
+        const cx = d.cx * bW, cy = d.cy * bH
+        const rx = d.rx * bW, ry = d.ry * bH
+        const maxR = Math.max(rx, ry)
+        const g = nc.createRadialGradient(0, 0, 0, 0, 0, maxR)
+        g.addColorStop(0,   `rgba(3,3,8,${d.a})`)
+        g.addColorStop(0.5, `rgba(3,3,8,${d.a * 0.5})`)
+        g.addColorStop(1,   'rgba(3,3,8,0)')
+        nc.save()
+        nc.translate(cx, cy)
+        nc.scale(rx / maxR, ry / maxR)
+        nc.fillStyle = g
+        nc.fillRect(-maxR, -maxR, maxR * 2, maxR * 2)
+        nc.restore()
+      }
+
+      // Camada 3 — via láctea: faixa diagonal aquecida
+      nc.save()
+      nc.translate(bW * 0.5, bH * 0.5)
+      nc.rotate(-0.35)
+      const bandG = nc.createLinearGradient(0, -bH * 0.6, 0, bH * 0.6)
+      bandG.addColorStop(0,    'rgba(0,0,0,0)')
+      bandG.addColorStop(0.30, 'rgba(80,55,30,0.025)')
+      bandG.addColorStop(0.42, 'rgba(140,95,55,0.050)')
+      bandG.addColorStop(0.50, 'rgba(180,120,70,0.065)')
+      bandG.addColorStop(0.58, 'rgba(140,95,55,0.050)')
+      bandG.addColorStop(0.70, 'rgba(80,55,30,0.025)')
+      bandG.addColorStop(1,    'rgba(0,0,0,0)')
+      nc.fillStyle = bandG
+      nc.fillRect(-bW, -bH * 0.6, bW * 2, bH * 1.2)
+      nc.restore()
+
+      // Camada 4 — emission nebula quente (pontual, bem sutil)
+      const emitG = nc.createRadialGradient(bW * 0.62, bH * 0.22, 0, bW * 0.62, bH * 0.22, bW * 0.12)
+      emitG.addColorStop(0,   'rgba(200,80,100,0.045)')
+      emitG.addColorStop(0.4, 'rgba(200,80,100,0.020)')
+      emitG.addColorStop(1,   'rgba(200,80,100,0)')
+      nc.fillStyle = emitG
+      nc.fillRect(0, 0, bW, bH)
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       COSMIC DUST — partículas microscópicas que driftam lentamente
+       ═══════════════════════════════════════════════════════════════════════ */
+    let dustParticles = []
+    function initDust() {
+      dustParticles = []
+      for (let i = 0; i < 120; i++) {
+        dustParticles.push({
+          x: Math.random() * (W + 400) - 200,
+          y: Math.random() * (H + 400) - 200,
+          r: Math.random() * 0.8 + 0.2,
+          alpha: Math.random() * 0.08 + 0.02,
+          drift: Math.random() * 0.15 + 0.05,
+          angle: Math.random() * Math.PI * 2,
+        })
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       DISTANT GALAXIES — formas elípticas suaves, muito distantes
+       ═══════════════════════════════════════════════════════════════════════ */
+    let galaxies = []
+    function initGalaxies() {
+      galaxies = []
+      const count = 3 + Math.floor(Math.random() * 3)
+      for (let i = 0; i < count; i++) {
+        galaxies.push({
+          x: Math.random() * (W + 200) - 100,
+          y: Math.random() * (H + 200) - 100,
+          rx: Math.random() * 18 + 8,
+          ry: Math.random() * 6 + 3,
+          angle: Math.random() * Math.PI,
+          alpha: Math.random() * 0.12 + 0.05,
+          col: pickSpectral(),
+          coreAlpha: Math.random() * 0.2 + 0.1,
+        })
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       STARS — distribuição multi-camada com parallax por profundidade
+       ═══════════════════════════════════════════════════════════════════════ */
+    let stars = []
+    function initStars() {
+      stars = []
+      const margin = 250 // extra para drift da câmera
+
+      // Layer 0 — poeira estelar de fundo (milhares de pontinhos microscópicos)
+      for (let i = 0; i < 1200; i++) {
+        const c = pickSpectral()
+        stars.push({
+          x: Math.random() * (W + margin * 2) - margin,
+          y: Math.random() * (H + margin * 2) - margin,
+          r: Math.random() * 0.45 + 0.08,
+          baseAlpha: Math.random() * 0.25 + 0.03,
+          twinkleAmp: Math.random() * 0.08,
+          twinkleSpeed: Math.random() * 0.004 + 0.001,
+          twinklePhase: Math.random() * Math.PI * 2,
+          color: c, glow: false, depth: 0.15,
+        })
+      }
+
+      // Layer 1 — faixa galáctica mais densa
+      for (let i = 0; i < 600; i++) {
+        const t = Math.random()
+        const bx = t * (W + margin) + (Math.random() - 0.5) * W * 0.35 - margin * 0.5
+        const by = (H * 0.62 - t * H * 0.52) + (Math.random() - 0.5) * H * 0.30
+        const c = Math.random() > 0.55 ? [255, 238, 195] : pickSpectral()
+        stars.push({
+          x: bx, y: by,
+          r: Math.random() * 0.7 + 0.12,
+          baseAlpha: Math.random() * 0.45 + 0.08,
+          twinkleAmp: Math.random() * 0.18,
+          twinkleSpeed: Math.random() * 0.007 + 0.002,
+          twinklePhase: Math.random() * Math.PI * 2,
+          color: c, glow: false, depth: 0.3,
+        })
+      }
+
+      // Layer 2 — estrelas intermediárias
+      for (let i = 0; i < 250; i++) {
+        const c = pickSpectral()
+        stars.push({
+          x: Math.random() * (W + margin * 2) - margin,
+          y: Math.random() * (H + margin * 2) - margin,
+          r: Math.random() * 0.9 + 0.35,
+          baseAlpha: Math.random() * 0.45 + 0.18,
+          twinkleAmp: Math.random() * 0.25,
+          twinkleSpeed: Math.random() * 0.014 + 0.004,
+          twinklePhase: Math.random() * Math.PI * 2,
+          color: c, glow: false, depth: 0.5,
+        })
+      }
+
+      // Layer 3 — estrelas um pouco mais brilhantes com halo sutil
+      for (let i = 0; i < 40; i++) {
+        const c = pickSpectral()
+        stars.push({
+          x: Math.random() * (W + margin * 2) - margin,
+          y: Math.random() * (H + margin * 2) - margin,
+          r: Math.random() * 0.8 + 0.5,
+          baseAlpha: Math.random() * 0.25 + 0.40,
+          twinkleAmp: Math.random() * 0.25,
+          twinkleSpeed: Math.random() * 0.020 + 0.008,
+          twinklePhase: Math.random() * Math.PI * 2,
+          color: c, glow: true, depth: 0.7,
+          glowR: Math.random() * 5 + 3,
+          spikes: Math.random() > 0.75,
+          spikeLen: Math.random() * 6 + 4,
+        })
+      }
+
+      // Planetas distantes (3–4 orbes com cor e glow suave)
+      const planetDefs = [
+        { col: [90,120,220], gr: 8, r: 1.1 },   // gigante gasoso azul
+        { col: [210,170,100], gr: 7, r: 0.9 },   // rochoso dourado
+        { col: [100,190,170], gr: 6, r: 0.8 },   // mundo oceânico
+      ]
+      for (const pd of planetDefs) {
+        stars.push({
+          x: Math.random() * W * 0.85 + W * 0.07,
+          y: Math.random() * H * 0.80 + H * 0.05,
+          r: pd.r, baseAlpha: 0.50, twinkleAmp: 0.06,
+          twinkleSpeed: Math.random() * 0.003 + 0.001,
+          twinklePhase: Math.random() * Math.PI * 2,
+          color: pd.col, glow: true, depth: 0.6,
+          glowR: pd.gr, planet: true,
+        })
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       SHOOTING STARS — cometas com cauda e fragmentos
+       ═══════════════════════════════════════════════════════════════════════ */
+    let shootingStars = [], nextShoot = 0
+    function scheduleNextShoot() {
+      nextShoot = performance.now() + Math.random() * 8000 + 5000
+    }
+    function spawnShootingStar() {
+      const angle = (Math.random() * 40 + 12) * Math.PI / 180
+      const speed = Math.random() * 4 + 5
+      const x0 = Math.random() * W * 0.7 + W * 0.05
+      const y0 = Math.random() * H * 0.35
+      shootingStars.push({
+        x: x0, y: y0,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        tail: [],
+        maxTail: Math.floor((Math.random() * 100 + 70) / speed),
+        life: 1.0,
+        decay: Math.random() * 0.008 + 0.006,
+        width: Math.random() * 0.6 + 0.8,
+        // fragmentos
+        frags: Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => ({
+          ox: 0, oy: 0,
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: (Math.random() - 0.5) * 0.8,
+          life: 1, decay: Math.random() * 0.04 + 0.02,
+          spawned: false, spawnAt: Math.random() * 0.4 + 0.3,
+        })),
+      })
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       DRAW — difraction spikes helper
+       ═══════════════════════════════════════════════════════════════════════ */
+    function drawSpikes(x, y, len, alpha, color) {
+      const [r, g, b] = color
+      ctx.save()
+      ctx.globalAlpha = alpha * 0.25
+      ctx.strokeStyle = `rgb(${r},${g},${b})`
+      ctx.lineWidth = 0.4
+      ctx.beginPath()
+      ctx.moveTo(x - len, y); ctx.lineTo(x + len, y)
+      ctx.moveTo(x, y - len); ctx.lineTo(x, y + len)
+      ctx.stroke()
+      ctx.restore()
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       RESIZE
+       ═══════════════════════════════════════════════════════════════════════ */
+    function resize() {
+      W = canvas.width = window.innerWidth
+      H = canvas.height = window.innerHeight
+      buildNebula()
+      initStars()
+      initDust()
+      initGalaxies()
+      shootingStars = []
+      scheduleNextShoot()
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       DRAW LOOP — tudo junto, 60fps
+       ═══════════════════════════════════════════════════════════════════════ */
+    function draw(now) {
+      requestAnimationFrame(draw)
+
+      // camera drift
+      cam.x += cam.vx
+      cam.y += cam.vy
+
+      // 1) Background escuro — o vazio do espaço
+      ctx.fillStyle = '#040409'
+      ctx.fillRect(0, 0, W, H)
+
+      // 2) Nebula layer (com parallax pela câmera)
+      const nebOx = -(cam.x * 0.08) % 200
+      const nebOy = -(cam.y * 0.08) % 200
+      ctx.drawImage(nebulaBuf, nebOx - 100, nebOy - 100)
+
+      // 3) Cosmic dust (partículas minúsculas driftando)
+      for (const d of dustParticles) {
+        d.angle += 0.0003
+        const dx = d.x - cam.x * 0.12 + Math.sin(d.angle) * 0.3
+        const dy = d.y - cam.y * 0.12 + Math.cos(d.angle) * 0.3
+        const sx = ((dx % (W + 400)) + W + 400) % (W + 400) - 200
+        const sy = ((dy % (H + 400)) + H + 400) % (H + 400) - 200
+        ctx.beginPath()
+        ctx.arc(sx, sy, d.r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(180,180,220,${d.alpha})`
+        ctx.fill()
+      }
+
+      // 4) Distant galaxies
+      for (const gal of galaxies) {
+        const px = gal.x - cam.x * 0.2
+        const py = gal.y - cam.y * 0.2
+        ctx.save()
+        ctx.translate(px, py)
+        ctx.rotate(gal.angle)
+        // Core glow
+        const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, gal.rx)
+        cg.addColorStop(0,   `rgba(${gal.col[0]},${gal.col[1]},${gal.col[2]},${gal.coreAlpha})`)
+        cg.addColorStop(0.3, `rgba(${gal.col[0]},${gal.col[1]},${gal.col[2]},${gal.alpha * 0.5})`)
+        cg.addColorStop(1,   `rgba(${gal.col[0]},${gal.col[1]},${gal.col[2]},0)`)
+        ctx.scale(1, gal.ry / gal.rx) // achata para elipse
+        ctx.fillStyle = cg
+        ctx.fillRect(-gal.rx, -gal.rx, gal.rx * 2, gal.rx * 2)
+        ctx.restore()
+      }
+
+      // 5) Stars — com parallax por profundidade
+      for (const s of stars) {
+        s.twinklePhase += s.twinkleSpeed
+        const twinkle = Math.sin(s.twinklePhase) * s.twinkleAmp
+        const alpha = Math.max(0, Math.min(1, s.baseAlpha + twinkle))
+        const [r, g, b] = s.color
+
+        const px = s.x - cam.x * s.depth
+        const py = s.y - cam.y * s.depth
+
+        // Glow halo
+        if (s.glow) {
+          const glowR = s.planet
+            ? s.glowR * (0.92 + Math.sin(s.twinklePhase * 0.4) * 0.08)
+            : s.glowR * (0.95 + twinkle * 0.15)
+          const gr = ctx.createRadialGradient(px, py, 0, px, py, glowR)
+          const ca = s.planet ? 0.45 : 0.30
+          gr.addColorStop(0,   `rgba(${r},${g},${b},${alpha * ca})`)
+          gr.addColorStop(0.3, `rgba(${r},${g},${b},${alpha * ca * 0.35})`)
+          gr.addColorStop(0.6, `rgba(${r},${g},${b},${alpha * ca * 0.08})`)
+          gr.addColorStop(1,   `rgba(${r},${g},${b},0)`)
+          ctx.fillStyle = gr
+          ctx.fillRect(px - glowR, py - glowR, glowR * 2, glowR * 2)
+        }
+
+        // Diffraction spikes (estrelas brilhantes)
+        if (s.spikes) {
+          const sLen = s.spikeLen || s.glowR * 1.2
+          drawSpikes(px, py, sLen * (0.85 + twinkle * 0.5), alpha, s.color)
+        }
+
+        // Core da estrela
+        ctx.beginPath()
+        ctx.arc(px, py, s.r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`
+        ctx.fill()
+      }
+
+      // 6) Shooting stars + fragmentos
+      if (now >= nextShoot && shootingStars.length < 2) {
+        spawnShootingStar()
+        scheduleNextShoot()
+      }
+
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const s = shootingStars[i]
+        s.tail.push({ x: s.x, y: s.y })
+        if (s.tail.length > s.maxTail) s.tail.shift()
+        s.x += s.vx
+        s.y += s.vy
+        s.life -= s.decay
+
+        if (s.life <= 0 || s.x > W + 80 || s.y > H + 80) {
+          shootingStars.splice(i, 1)
+          continue
+        }
+
+        // Cauda principal — gradiente fino e luminoso
+        if (s.tail.length > 2) {
+          ctx.save()
+          ctx.beginPath()
+          ctx.moveTo(s.tail[0].x, s.tail[0].y)
+          for (let t = 1; t < s.tail.length; t++) ctx.lineTo(s.tail[t].x, s.tail[t].y)
+          const grad = ctx.createLinearGradient(s.tail[0].x, s.tail[0].y, s.x, s.y)
+          grad.addColorStop(0,   'rgba(255,255,255,0)')
+          grad.addColorStop(0.4, `rgba(180,200,255,${s.life * 0.25})`)
+          grad.addColorStop(0.8, `rgba(220,235,255,${s.life * 0.55})`)
+          grad.addColorStop(1,   `rgba(255,255,255,${s.life * 0.9})`)
+          ctx.strokeStyle = grad
+          ctx.lineWidth = s.width
+          ctx.lineCap = 'round'
+          ctx.stroke()
+
+          // Segundo traço mais largo e difuso (atmosfera)
+          ctx.globalAlpha = 0.15 * s.life
+          ctx.lineWidth = s.width * 4
+          ctx.stroke()
+          ctx.restore()
+        }
+
+        // Head glow — ponto mais brilhante
+        const hg = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 6)
+        hg.addColorStop(0,   `rgba(255,255,255,${s.life})`)
+        hg.addColorStop(0.3, `rgba(200,220,255,${s.life * 0.5})`)
+        hg.addColorStop(1,   'rgba(200,220,255,0)')
+        ctx.fillStyle = hg
+        ctx.fillRect(s.x - 6, s.y - 6, 12, 12)
+
+        // Fragmentos
+        for (const f of s.frags) {
+          if (!f.spawned && s.life < f.spawnAt) {
+            f.spawned = true
+            f.ox = s.x
+            f.oy = s.y
+          }
+          if (f.spawned && f.life > 0) {
+            f.ox += s.vx * 0.4 + f.vx
+            f.oy += s.vy * 0.4 + f.vy
+            f.life -= f.decay
+            ctx.beginPath()
+            ctx.arc(f.ox, f.oy, 0.5, 0, Math.PI * 2)
+            ctx.fillStyle = `rgba(255,220,180,${f.life * 0.7})`
+            ctx.fill()
+          }
+        }
+      }
+    }
+
+    window.addEventListener('resize', resize)
+    resize()
+    requestAnimationFrame(draw)
+  })()
+  </script>
+
+  <script is:inline>
+    /* ── Mobile menu ── */
     const btn = document.getElementById('mobile-menu-btn')
     const sidebar = document.getElementById('app-sidebar')
     const overlay = document.getElementById('mobile-overlay')
@@ -95,6 +578,23 @@ const icons: Record<string, string> = {
       btn.addEventListener('click', toggleMenu)
       overlay.addEventListener('click', toggleMenu)
     }
+
+    /* ── Cosmos mode (logo click) ── */
+    const logo = document.getElementById('logo-star')
+    let cosmosActive = false
+    if (logo) {
+      logo.addEventListener('click', (e) => {
+        e.stopPropagation()
+        cosmosActive = true
+        document.body.classList.add('cosmos-mode')
+      })
+    }
+    document.addEventListener('click', () => {
+      if (cosmosActive) {
+        cosmosActive = false
+        document.body.classList.remove('cosmos-mode')
+      }
+    })
   </script>
 </body>
 </html>
