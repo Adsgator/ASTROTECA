@@ -7,7 +7,7 @@ const registryUrl = import.meta.env.PUBLIC_REGISTRY_URL || ''
 
 <AppLayout title="Biblioteca - Astroteca">
   <ComponentBrowser
-    client:load
+    client:only="react"
     initialComponents={[]}
     registryUrl={registryUrl}
     initialError=""
