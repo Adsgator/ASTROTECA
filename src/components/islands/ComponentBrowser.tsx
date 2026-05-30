@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
-import type { ComponentMeta, SelectedComponent } from '../types'
-import * as ui from '../styles/ui'
+import type { ComponentMeta, SelectedComponent } from '../../types'
+import * as ui from '../../styles/ui'
 
 interface Props {
   initialComponents: ComponentMeta[]
