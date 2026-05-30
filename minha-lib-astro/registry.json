@@ -478,13 +478,13 @@
     "order": 70
   },
   {
-    "id": "avaliacoes-google-4550",
-    "name": "AvaliacoesGoogle4550",
+    "id": "avaliacoes-google-1261",
+    "name": "AvaliacoesGoogle1261",
     "category": "Testimonials",
-    "description": "Avaliações teste",
-    "previewPath": "/preview/avaliacoes-google-4550",
+    "description": "teste ava",
+    "previewPath": "/preview/avaliacoes-google-1261",
     "screenshot": "",
-    "componentFile": "Testimonials/AvaliacoesGoogle4550.astro",
+    "componentFile": "Testimonials/AvaliacoesGoogle1261.astro",
     "tags": [
       "review"
     ],
@@ -493,7 +493,7 @@
     ],
     "props": [],
     "order": 12,
-    "createdAt": "2026-05-28T17:44:46.868Z",
-    "updatedAt": "2026-05-28T17:44:46.868Z"
+    "createdAt": "2026-05-30T00:47:31.306Z",
+    "updatedAt": "2026-05-30T00:47:31.306Z"
   }
 ]
