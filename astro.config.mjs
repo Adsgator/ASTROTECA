@@ -57,4 +57,7 @@ export default defineConfig({
   vite: {
     plugins: [previewCssPlugin()],
   },
+  security: {
+    checkOrigin: false,
+  },
 })
