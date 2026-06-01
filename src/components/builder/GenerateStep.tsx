@@ -63,6 +63,9 @@ export default function GenerateStep({
 }: GenerateStepProps) {
   const [copied, setCopied] = useState(false)
   const [docCopied, setDocCopied] = useState(false)
+  const [manifestOpen, setManifestOpen] = useState(false)
+  const [manifestCopied, setManifestCopied] = useState(false)
+  const [fetchingManifest, setFetchingManifest] = useState(false)
 
   const enabledSections = state.sections.filter(s => s.enabled)
   const art = state.art
@@ -130,8 +133,68 @@ export default function GenerateStep({
     })
   }
 
+  async function copyManifestFromGitHub(repoUrl: string) {
+    setFetchingManifest(true)
+    try {
+      // repoUrl: https://github.com/owner/repo
+      const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/)
+      if (!match) throw new Error('URL inválida')
+      const [, owner, repo] = match
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/MANIFESTO.md`
+      const headers: Record<string, string> = { Accept: 'application/vnd.github.v3.raw' }
+      if (settings.githubToken) headers['Authorization'] = `token ${settings.githubToken}`
+      const res = await fetch(apiUrl, { headers })
+      if (!res.ok) throw new Error(`GitHub retornou ${res.status}`)
+      const text = await res.text()
+      await navigator.clipboard.writeText(text)
+      setManifestCopied(true)
+      setTimeout(() => setManifestCopied(false), 3000)
+    } catch (e) {
+      // fallback: copia o gerado localmente
+      copyDoc()
+    } finally {
+      setFetchingManifest(false)
+    }
+  }
+
+  const manifestContent = generateDocument(state, settings)
+
   return (
     <div className="space-y-5">
+      {/* Modal de preview do manifesto */}
+      {manifestOpen && (
+        <div className="fixed inset-0 z-[500] flex items-stretch justify-end" onClick={() => setManifestOpen(false)}>
+          <div
+            className="w-full max-w-2xl bg-[#111] border-l border-white/10 flex flex-col shadow-2xl animate-scale-in"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
+              <div>
+                <p className="text-sm font-semibold text-ink-primary">MANIFESTO.md</p>
+                <p className="text-[11px] text-ink-muted mt-0.5">Revise antes de criar o projeto</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={copyDoc}
+                  className={cn(ui.btnOutline, 'text-xs flex items-center gap-1.5', docCopied && 'text-ok border-ok/30')}
+                >
+                  {docCopied ? (
+                    <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Copiado!</>
+                  ) : (
+                    <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copiar</>
+                  )}
+                </button>
+                <button onClick={() => setManifestOpen(false)} className="p-1.5 rounded text-ink-muted hover:text-ink-primary">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+            <pre className="flex-1 overflow-y-auto p-5 text-[11px] text-ink-secondary font-mono leading-relaxed whitespace-pre-wrap break-words">
+              {manifestContent}
+            </pre>
+          </div>
+        </div>
+      )}
       {/* Resumo do projeto */}
       <div className="grid grid-cols-4 gap-3">
         <div className={cn(ui.cardBase, 'p-3')}>
@@ -253,6 +316,15 @@ export default function GenerateStep({
       )}
 
       {/* Botões de ação */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => setManifestOpen(true)}
+          className={cn(ui.btnOutline, 'flex items-center gap-1.5 text-sm')}
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm4 18H6V4h7v5h5z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Revisar manifesto
+        </button>
+      </div>
       <div className="flex gap-2">
         {state.outputPath === 'library' && (
           <button
@@ -378,18 +450,33 @@ export default function GenerateStep({
           {/* Próximos passos */}
           <div className={cn(ui.cardBase, 'p-4')}>
             <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider mb-3">Próximos passos</p>
-            <ol className="space-y-2.5">
-              <li className="flex gap-2.5 text-xs text-ink-secondary">
+            <ol className="space-y-3">
+              <li className="flex items-start gap-2.5">
                 <span className="w-4 h-4 rounded-full bg-accent/20 text-accent font-semibold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
-                <span>Baixe o ZIP acima e extraia na sua pasta de projetos</span>
+                <div className="flex-1">
+                  <p className="text-xs text-ink-secondary mb-1.5">Copie o MANIFESTO.md do repositório</p>
+                  <button
+                    onClick={() => copyManifestFromGitHub(result.repoUrl)}
+                    disabled={fetchingManifest}
+                    className={cn(ui.btnOutline, 'text-xs flex items-center gap-1.5', manifestCopied && 'text-ok border-ok/30')}
+                  >
+                    {fetchingManifest ? (
+                      <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.2"/><path d="M12 2a10 10 0 019.8 7.8" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>Buscando...</>
+                    ) : manifestCopied ? (
+                      <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Copiado!</>
+                    ) : (
+                      <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copiar MANIFESTO.md</>
+                    )}
+                  </button>
+                </div>
               </li>
-              <li className="flex gap-2.5 text-xs text-ink-secondary">
+              <li className="flex items-start gap-2.5">
                 <span className="w-4 h-4 rounded-full bg-accent/20 text-accent font-semibold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
-                <span>Abra a pasta no Claude Code: <code className="bg-raised px-1 rounded text-[11px]">claude</code> na raiz</span>
+                <p className="text-xs text-ink-secondary">Baixe o ZIP acima e extraia na sua pasta de projetos</p>
               </li>
-              <li className="flex gap-2.5 text-xs text-ink-secondary">
+              <li className="flex items-start gap-2.5">
                 <span className="w-4 h-4 rounded-full bg-accent/20 text-accent font-semibold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
-                <span>Copie o comando acima e cole no Claude Code junto com o MANIFESTO.md</span>
+                <p className="text-xs text-ink-secondary">Abra a pasta no Claude Code (<code className="bg-raised px-1 rounded text-[11px]">claude</code>) e cole o MANIFESTO.md junto com o comando acima</p>
               </li>
             </ol>
           </div>

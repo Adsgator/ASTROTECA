@@ -337,19 +337,29 @@ export default function ExtractForm() {
 
       {/* ── Botão extrair ── */}
       {(phase === 'ready' || phase === 'extracting') && (
-        <button
-          className={`${ui.btnPrimary} py-3 text-base`}
-          onClick={extract}
-          disabled={phase === 'extracting' || !description.trim()}
-          title={!description.trim() ? 'Descrição é obrigatória' : ''}
-        >
+        <div className="space-y-3">
+          <div className="rounded-xl border border-white/[0.06] bg-raised/30 px-4 py-3 text-xs text-ink-muted flex items-start gap-2">
+            <svg className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>
+              Ao clicar em "Extrair e publicar", o componente será sanitizado (tokens limpos, imports normalizados),
+              commitado na biblioteca <code className="bg-raised px-1 rounded">minha-lib-astro</code> e ficará
+              disponível no Builder imediatamente. A preview é gerada automaticamente e o uso é registrado no analytics.
+            </span>
+          </div>
+          <button
+            className={`${ui.btnPrimary} w-full py-3 text-base`}
+            onClick={extract}
+            disabled={phase === 'extracting' || !description.trim()}
+            title={!description.trim() ? 'Descrição é obrigatória' : ''}
+          >
           {phase === 'extracting' ? (
             <span className="flex items-center justify-center gap-2">
               <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".25"/><path d="M21 12a9 9 0 00-9-9"/></svg>
               Extraindo e publicando...
             </span>
           ) : 'Extrair e publicar no GitHub'}
-        </button>
+          </button>
+        </div>
       )}
     </div>
   )
