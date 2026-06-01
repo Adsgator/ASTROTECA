@@ -31,7 +31,9 @@ REGRAS OBRIGATÓRIAS:
 - Se um campo não tem informação no briefing, deixe como string vazia "" — NUNCA invente dados, nomes ou valores
 - Para servico1/2/3Titulo: preencha apenas se o briefing listar serviços concretos com nome próprio
 - Para passo1/2/3Titulo: preencha apenas se o briefing descrever etapas de processo concretas
-- Para diferencial1/2/3Titulo: preencha apenas se o briefing mencionar diferenciais específicos`
+- Para diferencial1/2/3Titulo: preencha apenas se o briefing mencionar diferenciais específicos
+- Para copy (fraseImpacto, propostaValor, servicosDescricao): NUNCA use linguagem genérica como "excelência", "qualidade superior", "melhor da região" — prefira números concretos, garantias específicas e benefícios reais
+- Para depoimento1/2/3Texto: extraia textos literais do briefing se disponíveis; nunca invente`
 
   const user = `Analise o briefing abaixo e retorne o JSON com TODOS os campos listados.
 
@@ -175,7 +177,7 @@ faq (se há FAQ/objeções), google-reviews (se há nota Google), instagram (se 
 export function applyIntakeResult(
   current: Briefing,
   json: string,
-  currentArt?: Partial<ArtDirectionV2>
+  _currentArt?: Partial<ArtDirectionV2>
 ): IntakeResult {
   // Tenta extrair JSON de possíveis code blocks
   let clean = json.trim()

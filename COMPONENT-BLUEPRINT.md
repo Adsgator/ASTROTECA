@@ -159,9 +159,10 @@ O `_base-project` ja inclui estas classes prontas:
 .section-py-lg      /* py maior */
 
 /* Botoes */
-.btn-primary        /* bg-primary, texto branco, hover, sombra */
-.btn-ghost          /* transparente, borda primary */
-.btn-secondary-gold /* gradiente dourado com shimmer */
+.btn-primary        /* bg-primary hover:bg-primary-dark, shadow-primary-sm hover:shadow-primary-md, ease-smooth duration-350, hover:-translate-y-0.5 */
+.btn-ghost          /* border-primary text-primary hover:bg-primary hover:text-white, ease-smooth duration-350 */
+.btn-secondary-gold /* bg-secondary-gradient text-dark, shadow-secondary-sm hover:shadow-secondary-md, hover:-translate-y-0.5 */
+.btn-wa             /* bg-wa hover:opacity-90 text-white, shadow-sm hover:shadow-float, ease-smooth duration-350 — sempre com icone WhatsApp e target="_blank" rel="noopener noreferrer" */
 
 /* Tipografia */
 .label-tag          /* text-label uppercase tracking-widest text-secondary */
@@ -269,6 +270,24 @@ label: "Por que nos escolher"
 3. **Prova social** — numeros, badges, logos
 4. **CTA claro** — botao primario com acao especifica
 5. **Conteudo de suporte** — features, depoimentos, FAQ
+
+### Cru vs Alto Padrao
+
+Se qualquer item da coluna esquerda aparecer no componente, ele nao esta pronto.
+
+| Elemento | Cru ❌ | Alto padrao ✅ |
+|----------|--------|----------------|
+| Cor hardcodada | `bg-blue-500`, `text-[#333]` | `bg-primary`, `text-text-main` |
+| Sombra generica | `shadow-md`, `shadow-lg` | `shadow-card` + `hover:shadow-card-hover` |
+| Hover de botao | `hover:opacity-80` | `hover:bg-primary-dark hover:shadow-primary-md ease-smooth duration-350` |
+| Tipografia heading | `font-bold text-2xl` | `font-serif text-display-lg leading-tight` |
+| Entrada no scroll | elemento estatico | `animate-fade-up` ou `data-animate` |
+| Espacamento vertical | `py-12 md:py-24` manual | `py-section` via token |
+| Fundos das secoes | branco em todas | alterna `bg-surface` e `bg-surface-alt` |
+| Labels e rotulos | texto normal | `text-label uppercase tracking-widest text-text-soft` |
+| Hover de card | sem interacao | `card-hover` (translate + shadow) + `ease-smooth duration-350` |
+| Gradiente/destaque | ausente | `bg-secondary-gradient` em badges e highlights |
+| Imagens | `<img>` nativo, sem dimensoes | `<Image />` do Astro, `width` e `height` explicitos |
 
 ### Detalhes Premium (que diferenciam R$500 de R$5.000+)
 - Micro-espacamento generoso entre secoes
