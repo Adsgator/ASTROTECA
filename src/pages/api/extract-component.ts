@@ -23,7 +23,9 @@ const toKebab = (s: string) =>
    .replace(/[\s_]+/g, '-')
    .toLowerCase()
 
-const randomId = () => String(Math.floor(1000 + Math.random() * 9000))
+/** Hash determinístico baseado no nome — extrair o mesmo componente 2x gera o mesmo ID */
+const deterministicId = (name: string) =>
+  String((name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 9000) + 1000)
 
 const UI_COMPONENTS = /^(button|btn|icon|badge|tag|chip|card|modal|dialog|tooltip|popover|dropdown|input|textarea|select|checkbox|radio|toggle|switch|form|label|avatar|spinner|loader|alert|toast|banner|divider|separator|breadcrumb|pagination|tab|accordion|collapse|drawer|sidebar|nav|navbar|menu|link|image|img|picture|video|embed)s?(\d+)?$/i
 
@@ -255,7 +257,7 @@ export const POST: APIRoute = async ({ request }) => {
     // Fase 2: extrair de verdade
     const { category, description, tags, bestFor, chosenChildren } = body
     const baseName = toPascal(basename(resolvedPath, '.astro'))
-    const uid = randomId()
+    const uid = deterministicId(baseName)
     const name = `${baseName}${uid}`
     const id = toKebab(name)
 
@@ -274,7 +276,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     for (const child of chosen) {
       const childBase = toPascal(basename(child.absolutePath, '.astro'))
-      const childName = `${childBase}${randomId()}`
+      const childName = `${childBase}${deterministicId(childBase)}`
       const childCat  = inferCategory(child.importName)
       const childDir  = join(ROOT, 'minha-lib-astro', 'src', 'components', childCat)
       if (!existsSync(childDir)) mkdirSync(childDir, { recursive: true })
@@ -427,22 +429,26 @@ export const POST: APIRoute = async ({ request }) => {
 
     // ── Sincroniza git local ──────────────────────────────────────────────────
     const LIB_ROOT = join(ROOT, 'minha-lib-astro')
+    const gitWarnings: string[] = []
     try {
-      // Traz os commits criados pela API para o local
       execSync('git pull --no-edit', { cwd: LIB_ROOT, stdio: 'pipe' })
-    } catch { /* ignora se não houver nada para puxar */ }
+    } catch (e) {
+      gitWarnings.push(`git pull da lib falhou: ${e instanceof Error ? e.message : String(e)}`)
+    }
     try {
-      // Commita preview page + referência do submodule no Astroteca
       execSync(
         `git add minha-lib-astro src/pages/preview/ && git diff --cached --quiet || git commit -m "feat: extract ${id} + update submodule ref" && git push`,
         { cwd: ROOT, stdio: 'pipe', shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh' }
       )
-    } catch { /* log silencioso — não impede retorno de sucesso */ }
+    } catch (e) {
+      gitWarnings.push(`git commit/push do root falhou: ${e instanceof Error ? e.message : String(e)}`)
+    }
 
     return json({
       success: true,
       name, id, category,
       children: rewrites.map(r => ({ childName: r.childName, childCategory: r.childCategory })),
+      ...(gitWarnings.length > 0 && { gitWarnings }),
     })
 
   } catch (e) {

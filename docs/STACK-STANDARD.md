@@ -16,7 +16,7 @@
 | TypeScript | 5.x | Tipagem (strict mode obrigatório) |
 | Vite | 6.x | Build (embutido no Astro) |
 | Biome | 1.9.x | Linting + formatação (substitui ESLint + Prettier) |
-| pnpm | 9.x | Gerenciador de pacotes |
+| npm | 10.x | Gerenciador de pacotes |
 
 ### Estilo e Animação
 
@@ -46,8 +46,18 @@
 
 ### Componentes
 
-- Biblioteca interna: `minha-lib-astro` (GitHub ou npm privado)
-- Referenciada via `"minha-lib-astro": "github:seuuser/minha-lib-astro#v1.x.x"`
+- Biblioteca interna: `minha-lib-astro` (repo GitHub da Adsgator)
+- Referenciada via `"@adsgator/minha-lib-astro": "github:xXSirius/minha-lib-astro#main"`
+- **Nota**: componentes são **copiados como arquivos locais** pelo Builder (não importados como pacote npm em runtime). A referência acima serve para install em desenvolvimento da biblioteca.
+
+### Inteligência Artificial no fluxo
+
+| Papel | Ferramenta | Onde age |
+|---|---|---|
+| Preencher briefing | Gemini 2.5 (via Astroteca) | Dentro do studio, na etapa de Briefing |
+| Implementar o projeto | Claude Code | No repositório do cliente, lendo o manifesto |
+
+O Gemini 2.5 é chamado pela Astroteca para transformar texto livre em campos estruturados (copy, cores, fontes). Claude Code recebe o `manifesto.md` gerado e implementa o site completo.
 
 ---
 
@@ -547,7 +557,7 @@ name = "projeto-cliente"
 compatibility_date = "2024-01-01"
 
 [build]
-command = "pnpm build"
+command = "npm run build"
 publish = "dist"
 
 [build.environment_variables]
@@ -588,21 +598,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with: { version: 9 }
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+          cache: npm
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm check          # TypeScript + Biome
-      - run: pnpm build
+      - run: npm ci
+      - run: npm run check        # TypeScript + Biome
+      - run: npm run build
 
       # Lighthouse CI (opcional mas recomendado)
       - name: Lighthouse CI
-        run: pnpm lhci autorun
+        run: npm run lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 ```

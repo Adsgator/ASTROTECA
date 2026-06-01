@@ -7,19 +7,34 @@ export async function callGemini(opts: {
   model: GeminiModel
   systemPrompt: string
   userPrompt: string
+  timeoutMs?: number
 }): Promise<string> {
-  const { apiKey, model, systemPrompt, userPrompt } = opts
+  const { apiKey, model, systemPrompt, userPrompt, timeoutMs = 30_000 } = opts
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: systemPrompt + '\n\n' + userPrompt }] }],
-      }),
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+
+  let res: Response
+  try {
+    res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt + '\n\n' + userPrompt }] }],
+        }),
+        signal: controller.signal,
+      }
+    )
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error('Gemini demorou demais para responder (timeout de 30s). Tente novamente.')
     }
-  )
+    throw err
+  } finally {
+    clearTimeout(timer)
+  }
 
   if (!res.ok) {
     if (res.status === 401) throw new Error('Chave inválida — verifique a API key do Gemini')

@@ -179,7 +179,13 @@ export interface Briefing {
   googleBusiness: string; googleNota: string; googleQtd: string
   // Tab 2: Serviço & Público
   servicoPrincipal: string; servicosDescricao: string
+  servico1Titulo: string; servico1Descricao: string
+  servico2Titulo: string; servico2Descricao: string
+  servico3Titulo: string; servico3Descricao: string
   comoFunciona: string; resultadoEsperado: string; prazoResultado: string
+  passo1Titulo: string; passo1Descricao: string
+  passo2Titulo: string; passo2Descricao: string
+  passo3Titulo: string; passo3Descricao: string
   precoExibir: boolean
   precoPlano1Nome: string; precoPlano1Valor: string; precoPlano1Descricao: string
   precoPlano2Nome: string; precoPlano2Valor: string; precoPlano2Descricao: string
@@ -189,6 +195,9 @@ export interface Briefing {
   objecoes: string
   // Tab 3: Autoridade & Prova
   diferencial: string; fraseImpacto: string; historia: string
+  diferencial1Titulo: string; diferencial1Descricao: string
+  diferencial2Titulo: string; diferencial2Descricao: string
+  diferencial3Titulo: string; diferencial3Descricao: string
   depoimento1Nome: string; depoimento1Texto: string; depoimento1Resultado: string
   depoimento2Nome: string; depoimento2Texto: string; depoimento2Resultado: string
   depoimento3Nome: string; depoimento3Texto: string; depoimento3Resultado: string

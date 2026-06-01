@@ -190,24 +190,45 @@ async function commitFile(
 /** Gera o index.astro com imports e uso dos componentes na ordem selecionada */
 function generateIndexAstro(
   clientName: string,
-  componentNames: string[]
+  components: import('../types').ComponentMeta[]
 ): string {
-  const imports = componentNames
-    .map(name => `import ${name} from '../components/${name}/${name}.astro'`)
+  const importName = (c: import('../types').ComponentMeta) =>
+    c.name.replace(/\d+$/, '')
+
+  const imports = components
+    .map(c => {
+      const file = c.componentFile || `${c.category}/${c.name}.astro`
+      return `import ${importName(c)} from '../components/sections/${file}'`
+    })
     .join('\n')
 
-  const usages = componentNames.map(name => `  <${name} />`).join('\n')
+  const headerComp = components.find(c => c.category === 'Header')
+  const footerComp = components.find(c => c.category === 'Footer')
+  const sectionComps = components.filter(c => c.category !== 'Header' && c.category !== 'Footer')
+
+  const headerLine = headerComp
+    ? `  <${importName(headerComp)} />`
+    : '  {/* TODO: adicione Header da biblioteca */}'
+  const footerLine = footerComp
+    ? `  <${importName(footerComp)} />`
+    : '  {/* TODO: adicione Footer da biblioteca */}'
+  const sectionLines = sectionComps
+    .map(c => `    {/* ${c.description || c.name} */}\n    <${importName(c)} />`)
+    .join('\n')
 
   return `---
-import Layout from '../layouts/Layout.astro'
+import BaseLayout from '../layouts/BaseLayout.astro'
 ${imports}
 ---
 
-<Layout title="${clientName}">
-  <main>
-${usages}
+<BaseLayout title="${clientName}">
+${headerLine}
+  <main id="main-content">
+    {/* Hero deve ter id="hero-section" para o botão WhatsApp funcionar */}
+${sectionLines}
   </main>
-</Layout>
+${footerLine}
+</BaseLayout>
 `
 }
 
@@ -257,24 +278,25 @@ export async function createProjectFromTemplate(
 
     // 4. Copia os componentes selecionados + gera index.astro
     if (selectedComponents && selectedComponents.length > 0 && componentsRepo) {
-      const copiedNames: string[] = []
+      const copiedComponents: import('../types').ComponentMeta[] = []
 
       for (const meta of selectedComponents) {
-        const srcPath = `src/components/${meta.name}/${meta.name}.astro`
+        const file = meta.componentFile || `${meta.category}/${meta.name}.astro`
+        const srcPath = `src/components/${file}`
         const content = await fetchComponentFile(githubToken, githubOwner, componentsRepo, srcPath)
         if (content) {
           await commitFile(
             githubToken, githubOwner, repoName,
-            srcPath, content,
+            `src/components/sections/${file}`, content,
             `feat: add component ${meta.name}`
           )
-          copiedNames.push(meta.name)
+          copiedComponents.push(meta)
           usedComponentIds.push(meta.id)
         }
       }
 
-      if (copiedNames.length > 0) {
-        const indexAstro = generateIndexAstro(clientName, copiedNames)
+      if (copiedComponents.length > 0) {
+        const indexAstro = generateIndexAstro(clientName, copiedComponents)
         await commitFile(
           githubToken, githubOwner, repoName,
           'src/pages/index.astro', indexAstro,

@@ -175,16 +175,28 @@ export function prefillCopyFromBriefing(section: PageSection, briefing: Briefing
     case 'servicos':
       copy.titulo = copy.titulo || briefing.servicoPrincipal || 'Nossos Serviços'
       copy.subtitulo = copy.subtitulo || briefing.servicosDescricao
+      copy.servico1Titulo = copy.servico1Titulo || briefing.servico1Titulo
+      copy.servico1Texto = copy.servico1Texto || briefing.servico1Descricao
+      copy.servico2Titulo = copy.servico2Titulo || briefing.servico2Titulo
+      copy.servico2Texto = copy.servico2Texto || briefing.servico2Descricao
+      copy.servico3Titulo = copy.servico3Titulo || briefing.servico3Titulo
+      copy.servico3Texto = copy.servico3Texto || briefing.servico3Descricao
       break
 
     case 'como-funciona':
       copy.titulo = copy.titulo || 'Como Funciona'
       copy.subtitulo = copy.subtitulo || briefing.comoFunciona
+      copy.passo1 = copy.passo1 || briefing.passo1Titulo
+      copy.passo2 = copy.passo2 || briefing.passo2Titulo
+      copy.passo3 = copy.passo3 || briefing.passo3Titulo
       break
 
     case 'diferenciais':
       copy.titulo = copy.titulo || 'Por que nos escolher'
       copy.subtitulo = copy.subtitulo || briefing.diferencial
+      copy.diferencial1 = copy.diferencial1 || briefing.diferencial1Titulo
+      copy.diferencial2 = copy.diferencial2 || briefing.diferencial2Titulo
+      copy.diferencial3 = copy.diferencial3 || briefing.diferencial3Titulo
       break
 
     case 'depoimentos':
@@ -203,8 +215,19 @@ export function prefillCopyFromBriefing(section: PageSection, briefing: Briefing
       copy.ctaUrl = copy.ctaUrl || (briefing.whatsapp ? `https://wa.me/${briefing.whatsapp}` : '#contato')
       break
 
+    case 'instagram':
+      copy.titulo = copy.titulo || 'Nos siga no Instagram'
+      copy.ctaTexto = copy.ctaTexto || `@${briefing.instagram.replace(/^@/, '').replace('https://instagram.com/', '').replace('https://www.instagram.com/', '')}`
+      break
+
+    case 'localizacao':
+      copy.titulo = copy.titulo || 'Onde Estamos'
+      copy.endereco = copy.endereco || briefing.googleBusiness
+      break
+
     case 'footer':
       copy.copyright = copy.copyright || `© ${new Date().getFullYear()} ${briefing.nomeMarca || briefing.nomeCliente}. Todos os direitos reservados.`
+      copy.politicaUrl = copy.politicaUrl || '/politica-de-privacidade'
       break
   }
 

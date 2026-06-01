@@ -1,6 +1,11 @@
 // src/lib/color-utils.ts
 
+function isValidHex(hex: string): boolean {
+  return /^#[0-9A-Fa-f]{6}$/.test(hex)
+}
+
 export function hexToHsl(hex: string): { h: number; s: number; l: number } {
+  if (!isValidHex(hex)) return { h: 0, s: 0, l: 50 }
   const clean = hex.replace('#', '')
   const r = parseInt(clean.slice(0, 2), 16) / 255
   const g = parseInt(clean.slice(2, 4), 16) / 255
@@ -53,6 +58,11 @@ export function hslToHex(h: number, s: number, l: number): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`
 }
 
+/** Returns the original hex if invalid, avoiding NaN in dark palette generation */
+export function safeHex(hex: string, fallback = '#888888'): string {
+  return isValidHex(hex) ? hex : fallback
+}
+
 export function generateDarkPalette(light: {
   colorBackground: string
   colorSurface: string
@@ -70,9 +80,9 @@ export function generateDarkPalette(light: {
   darkColorTextMuted: string
   darkColorBorder: string
 } {
-  const bg = hexToHsl(light.colorBackground)
-  const text = hexToHsl(light.colorText)
-  const border = hexToHsl(light.colorBorder)
+  const bg = hexToHsl(safeHex(light.colorBackground))
+  const text = hexToHsl(safeHex(light.colorText))
+  const border = hexToHsl(safeHex(light.colorBorder))
 
   // Background: se claro (L > 80), gera escuro. Senão mantém.
   const darkBgL = bg.l > 80 ? 7 : Math.min(bg.l, 12)

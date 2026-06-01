@@ -1,11 +1,13 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro'
 import ComponentBrowser from '../components/islands/ComponentBrowser'
+import OnboardingPanel from '../components/islands/OnboardingPanel'
 
 const registryUrl = import.meta.env.PUBLIC_REGISTRY_URL || ''
 ---
 
 <AppLayout title="Biblioteca - Astroteca">
+  <OnboardingPanel client:load />
   <ComponentBrowser
     client:only="react"
     initialComponents={[]}

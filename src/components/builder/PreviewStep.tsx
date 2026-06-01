@@ -19,7 +19,7 @@ export default function PreviewStep({ selected, art, sections = [] }: PreviewSte
   // Componentes ordenados por posição
   const sortedComponents = [...selected].sort((a, b) => a.position - b.position)
 
-  // Monta URL do preview com art direction como query params
+  // Monta URL do preview com art direction (light + dark) como query params
   function buildPreviewUrl(compId: string): string {
     const params = new URLSearchParams({
       primary: art.colorPrimary,
@@ -29,6 +29,13 @@ export default function PreviewStep({ selected, art, sections = [] }: PreviewSte
       text: art.colorText,
       fontHeading: art.fontHeading,
       fontBody: art.fontBody,
+      // dark mode
+      darkBg: art.darkColorBackground || '',
+      darkSurface: art.darkColorSurface || '',
+      darkText: art.darkColorText || '',
+      darkTextSoft: art.darkColorTextSoft || '',
+      darkBorder: art.darkColorBorder || '',
+      defaultTheme: art.defaultTheme || 'light',
     })
     return `/preview/${compId}?${params.toString()}`
   }

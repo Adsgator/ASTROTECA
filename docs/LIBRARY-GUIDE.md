@@ -551,7 +551,7 @@ git add .
 git commit -m "chore: init from base project"
 
 # Instala dependências (inclui minha-lib-astro)
-pnpm install
+npm install
 
 # Cria novo repo no GitHub e faz push
 gh repo create projeto-acme --private --push --source=.
@@ -742,7 +742,8 @@ Executar nesta ordem. Não pular etapas.
 - [ ] 7. Verificar que todas as imagens têm `width` e `height` explícitos
 - [ ] 8. Adicionar imagens placeholder onde as reais ainda não chegaram
 - [ ] 9. Configurar variáveis de ambiente no `.env` (e documentar no `.env.example`)
-- [ ] 10. Rodar `pnpm check` — resolver todos os erros TypeScript e Biome
+- [ ] 10. Rodar `npm run check` — resolver todos os erros TypeScript e Biome
+
 - [ ] 11. Rodar Lighthouse localmente — garantir ≥ 95 nas 4 métricas
 - [ ] 12. Testar formulário ponta a ponta (email chegando)
 - [ ] 13. Testar em mobile (iOS Safari e Android Chrome)
@@ -762,6 +763,19 @@ Executar nesta ordem. Não pular etapas.
 
 ---
 
+## Papel das IAs no sistema
+
+O sistema usa **dois modelos de IA** com papéis distintos:
+
+| IA | Onde age | O que faz |
+|---|---|---|
+| **Gemini 2.5** | Dentro da Astroteca (studio) | Transforma texto livre do briefing em campos estruturados: copy, cores, fontes, seções |
+| **Claude Code** | No repositório do cliente | Lê o `manifesto.md` gerado e implementa o site (componentes, tokens, SEO, animações) |
+
+Você nunca escreve código. O fluxo é: **você descreve → Gemini estrutura → Claude Code implementa**.
+
+---
+
 ## Parte 6: O Workflow Completo
 
 ### 6.1 Do briefing ao primeiro deploy
@@ -771,7 +785,7 @@ SEMANA 1 — ANTES DE ABRIR O EDITOR
 
 1. Reunião de intake com o cliente (30–60 min)
    ↓
-2. IA preenche os campos do manifesto a partir das notas da reunião
+2. Gemini 2.5 (via Astroteca) preenche os campos do manifesto a partir das notas
    ↓
 3. Você revisa e escreve a copy final
    (headlines, subheadlines, CTAs, depoimentos, FAQ)
@@ -787,7 +801,7 @@ HORA DO CÓDIGO
    $ npx degit github:seuuser/_base-project projeto-acme
    ↓
 7. Instalar dependências (inclui minha-lib-astro)
-   $ cd projeto-acme && pnpm install
+   $ cd projeto-acme && npm install  # instala deps (inclui @adsgator/minha-lib-astro)
    ↓
 8. Criar o manifesto.md na raiz (preencher com o que foi preparado)
    ↓
@@ -820,7 +834,7 @@ começando pelo tokens.css e site.config.ts."
 especificado na seção 6 do manifesto.md. Use Resend com React Email."
 
 # Para revisar o que foi feito
-"Rode pnpm check e corrija todos os erros de TypeScript e Biome.
+"Rode `npm run check` e corrija todos os erros de TypeScript e Biome.
 Não altere nenhuma lógica — apenas a tipagem."
 
 # Para ajustes visuais
@@ -896,17 +910,17 @@ Manter um CHANGELOG na raiz da biblioteca:
 // package.json do projeto de cliente
 {
   "dependencies": {
-    "minha-lib-astro": "github:seuuser/minha-lib-astro#v1.2.0"
+    "@adsgator/minha-lib-astro": "github:xXSirius/minha-lib-astro#main"
   }
 }
 ```
 
 ```bash
 # Para atualizar um projeto específico
-pnpm update minha-lib-astro
+npm update @adsgator/minha-lib-astro
 
 # Para verificar qual versão está instalada
-pnpm list minha-lib-astro
+npm list @adsgator/minha-lib-astro
 ```
 
 ---
@@ -914,28 +928,24 @@ pnpm list minha-lib-astro
 ## Referência Rápida — Comandos do Dia a Dia
 
 ```bash
-# Novo projeto de cliente
-npx degit github:seuuser/_base-project nome-do-projeto
-cd nome-do-projeto && pnpm install
+# Novo projeto de cliente (via Astroteca Builder → passo Gerar)
+# O Builder clona _base-project e cria o repo no GitHub automaticamente.
+# Para trabalhar localmente:
+git clone https://github.com/Adsgator/nome-do-projeto.git
+cd nome-do-projeto && npm install
 
-# Adicionar novo componente à biblioteca
-cd minha-lib-astro
-# ... criar componente ...
-git tag v1.x.x && git push --tags
-
-# Atualizar biblioteca num projeto
-cd projeto-cliente
-pnpm update minha-lib-astro
+# Extrair componente de um projeto para a biblioteca (via Astroteca)
+npm run extract caminho/do/componente.astro
 
 # Verificar qualidade do código
-pnpm check          # TypeScript + Biome
+npm run check          # astro check + Biome
 
 # Build local
-pnpm build && pnpm preview
+npm run build && npm run preview
 
 # Lighthouse local
-pnpm lhci autorun
+npm run lhci autorun
 
-# Abrir Claude Code no projeto
-claude              # na raiz do projeto, lê CLAUDE.md automaticamente
+# Abrir Claude Code no projeto (lê CLAUDE.md automaticamente)
+claude
 ```

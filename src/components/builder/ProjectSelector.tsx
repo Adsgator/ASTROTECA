@@ -23,6 +23,7 @@ export default function ProjectSelector({
   const [open, setOpen] = useState(false)
   const [newName, setNewName] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [deleteInput, setDeleteInput] = useState('')
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -47,7 +48,13 @@ export default function ProjectSelector({
   function handleDelete(id: string) {
     onDelete(id)
     setConfirmDeleteId(null)
+    setDeleteInput('')
     if (projects.length <= 1) setOpen(false)
+  }
+
+  function startDelete(id: string) {
+    setConfirmDeleteId(id)
+    setDeleteInput('')
   }
 
   return (
@@ -87,20 +94,36 @@ export default function ProjectSelector({
                 </div>
 
                 {confirmDeleteId === project.id ? (
-                  <div className="flex items-center gap-1.5 animate-scale-in flex-shrink-0">
-                    <span className="text-[10px] text-fail">Deletar?</span>
-                    <button
-                      onClick={() => handleDelete(project.id)}
-                      className="text-[10px] text-fail font-bold hover:underline"
-                    >Sim</button>
-                    <button
-                      onClick={() => setConfirmDeleteId(null)}
-                      className="text-[10px] text-ink-secondary hover:underline"
-                    >Não</button>
+                  <div className="flex flex-col gap-1 animate-scale-in flex-shrink-0 min-w-0 w-full mt-1">
+                    <p className="text-[10px] text-fail">Digite <strong>DELETAR</strong> para confirmar:</p>
+                    <div className="flex gap-1">
+                      <input
+                        autoFocus
+                        type="text"
+                        value={deleteInput}
+                        onChange={e => setDeleteInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && deleteInput === 'DELETAR') handleDelete(project.id)
+                          if (e.key === 'Escape') { setConfirmDeleteId(null); setDeleteInput('') }
+                        }}
+                        onClick={e => e.stopPropagation()}
+                        className="flex-1 bg-raised border border-fail/30 rounded px-2 py-0.5 text-[10px] text-ink-primary outline-none focus:border-fail/60 min-w-0"
+                        placeholder="DELETAR"
+                      />
+                      <button
+                        onClick={e => { e.stopPropagation(); if (deleteInput === 'DELETAR') handleDelete(project.id) }}
+                        disabled={deleteInput !== 'DELETAR'}
+                        className="text-[10px] text-fail font-bold hover:underline disabled:opacity-30 flex-shrink-0"
+                      >OK</button>
+                      <button
+                        onClick={e => { e.stopPropagation(); setConfirmDeleteId(null); setDeleteInput('') }}
+                        className="text-[10px] text-ink-secondary hover:underline flex-shrink-0"
+                      >×</button>
+                    </div>
                   </div>
                 ) : (
                   <button
-                    onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(project.id) }}
+                    onClick={(e) => { e.stopPropagation(); startDelete(project.id) }}
                     className="text-ink-muted hover:text-fail transition-colors flex-shrink-0 p-0.5"
                     title="Deletar projeto"
                   >

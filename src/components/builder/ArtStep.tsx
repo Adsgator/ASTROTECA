@@ -138,7 +138,7 @@ function ColorPreview({ art, nomeCliente }: { art: ArtDirectionV2; nomeCliente: 
 }
 
 export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studioName = 'Astroteca' }: ArtStepProps) {
-  const [darkExpanded, setDarkExpanded] = useState(false)
+  const [darkExpanded, setDarkExpanded] = useState(true)
   const [shared, setShared] = useState(false)
   const [showPreview, setShowPreview] = useState(true)
 

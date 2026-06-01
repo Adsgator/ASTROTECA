@@ -1,18 +1,29 @@
 // src/lib/manifest.ts
 
-import type { ProjectConfig, ArtDirection, SelectedComponent, AppSettings } from '../types'
+import type { ProjectConfig, ArtDirectionV2, SelectedComponent, AppSettings } from '../types'
 
-export const DEFAULT_TEMPLATE = `> **Como usar:** Cole este arquivo em uma nova conversa com o Claude junto com o prompt abaixo.
+export const DEFAULT_TEMPLATE = `> **Como usar:** Abra o Claude Code na raiz do projeto clonado e cole o prompt abaixo seguido do conteúdo deste arquivo.
 
-**Prompt sugerido:**
+**Prompt para o Claude Code:**
 \`\`\`
-Você está adaptando um projeto Astro para o cliente {{clientName}} (nicho: {{niche}}).
-Siga este MANIFEST.md passo a passo:
-1. Atualize tailwind.config.js com as cores da seção 3
-2. Atualize global.css com as fontes da seção 4
-3. Atualize Layout.astro com SEO (seção 5), GTM/WhatsApp (seção 6), Schema.org (seção 7)
-4. Para cada componente da seção 8, substitua os textos placeholder pelos valores de "Copy / Textos"
-5. Não altere estrutura HTML, classes Tailwind, ou lógica JavaScript — apenas dados do cliente
+Você está implementando o site do cliente {{clientName}} (nicho: {{niche}}).
+Leia este manifesto do início ao fim antes de começar. Depois siga passo a passo:
+
+1. Preencha \`src/styles/tokens.css\` com as cores e fontes da seção 3 (apenas os valores — os nomes são fixos)
+2. Atualize o \`<link>\` de fonte serifada no \`BaseLayout.astro\` conforme seção 4
+3. Preencha \`src/pages/index.astro\` com os imports dos componentes e a ordem das seções (seção 8)
+4. Para cada componente da seção 8, substitua os textos placeholder pela copy indicada
+5. Preencha \`.env\` com WhatsApp, GTM e domínio (seção 6) — o template já lê essas vars
+6. Preencha o \`defaultSchema\` no \`BaseLayout.astro\` com os dados do Schema.org (seção 7)
+7. Preencha os ~30 TODOs em \`politica-de-privacidade.astro\` e \`termos-de-uso.astro\` com dados reais do cliente
+8. Garanta que Hero tem \`id="hero-section"\`, Footer tem \`id="footer"\`, main tem \`id="main-content"\`
+9. Rode \`npm run build\` para validar — corrija qualquer erro antes de considerar pronto
+
+Regras:
+- NUNCA hardcode cor, fonte ou tamanho — sempre \`var(--t-*)\` ou classes utilitárias Tailwind
+- Dark mode: classe \`.dark\` no \`<html>\` — tokens redefinidos em \`.dark { ... }\` no tokens.css
+- \`<Image />\` do Astro, nunca \`<img>\` nativo
+- Sem \`any\` no TypeScript
 \`\`\`
 
 ---
@@ -50,116 +61,104 @@ Siga este MANIFEST.md passo a passo:
 
 ---
 
-## 3. Cores — tailwind.config.js
+## 3. Cores — \`src/styles/tokens.css\`
 
-Substitua **apenas os valores** mantendo os nomes dos tokens:
+Preencha os **valores** (apenas os valores — os nomes são fixos e não mudam entre projetos):
 
-\`\`\`js
-colors: {
-  primary:        '{{colorPrimary}}',
-  'primary-dark': '{{colorPrimaryDark}}',
-  secondary:      '{{colorSecondary}}',
-  complement:     '#f9f395',      // ajuste se necessário
-  background:     '{{colorBackground}}',
-  surface:        '{{colorSurface}}',
-  'surface-alt':  '{{colorSurfaceAlt}}',
-  dark:           '{{colorDark}}',
-  'text-main':    '{{colorText}}',
-  'text-soft':    '{{colorTextSoft}}',
-  'text-muted':   '{{colorTextMuted}}',
-  border:         '{{colorBorder}}',
-  wa:             '#25D366',
-},
+\`\`\`css
+:root {
+  --t-primary:      {{colorPrimary}};    /* botões principais, links, destaques */
+  --t-primary-dark: {{colorPrimaryDark}};/* hover de botões, variantes escuras */
+  --t-secondary:    {{colorSecondary}};  /* acentos, badges, CTA dourado */
+  --t-background:   {{colorBackground}};
+  --t-surface:      {{colorSurface}};    /* seções alternadas, cards */
+  --t-surface-alt:  {{colorSurfaceAlt}};
+  --t-dark:         {{colorDark}};       /* footer, blocos escuros */
+  --t-text-main:    {{colorText}};       /* texto corrido do corpo */
+  --t-text-soft:    {{colorTextSoft}};   /* subtítulos, labels */
+  --t-text-muted:   {{colorTextMuted}}; /* metadados, timestamps, placeholders */
+  --t-border:       {{colorBorder}};
+  --t-font-serif:   "{{fontHeading}}", Georgia, ui-serif, serif;
+  --t-font-sans:    "{{fontBody}}", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Paleta dark — Claude preenche com variantes escuras das mesmas cores */
+.dark {
+  --t-background:   /* bg escuro derivado de {{colorBackground}} */;
+  --t-surface:      /* surface escuro */;
+  --t-surface-alt:  /* surface-alt escuro */;
+  --t-dark:         /* versão mais escura ainda */;
+  --t-border:       /* borda sutil no escuro */;
+  --t-text-main:    /* texto claro no escuro */;
+  --t-text-soft:    /* texto suave no escuro */;
+  --t-text-muted:   /* texto muted no escuro */;
+}
 \`\`\`
-
-Atualize também as sombras coloridas para refletir a cor primária e secundária:
-\`\`\`js
-'primary-sm':   '0 4px 14px {{colorPrimary}}40',
-'primary-md':   '0 8px 24px {{colorPrimary}}4d',
-'secondary-sm': '0 4px 15px {{colorSecondary}}40',
-'secondary-md': '0 8px 25px {{colorSecondary}}59',
-\`\`\`
-
----
 
 ## 3.1 Direção Artística
 
 | Campo | Valor |
 |-------|-------|
 | Tom / Mood | {{mood}} |
+| Tema padrão | {{defaultTheme}} |
 | Referências visuais | {{references}} |
 | Notas adicionais | {{notes}} |
 
 ---
 
-## 4. Tipografia — global.css
+## 4. Tipografia — \`BaseLayout.astro\`
 
-### Fonte serif (headings) — carregada via Google Fonts no Layout.astro
+### Fonte serifada (títulos): **{{fontHeading}}**
 
-Fonte: **{{fontHeading}}**
-
-No \`Layout.astro\`, substitua a URL do Google Fonts:
+No \`BaseLayout.astro\`, substitua o \`<link rel="preload">\` de fonte:
 \`\`\`html
 <link rel="preload"
   href="https://fonts.googleapis.com/css2?family={{fontHeadingEncoded}}&display=swap"
   as="style" onload="this.onload=null;this.rel='stylesheet'" />
 \`\`\`
 
-No \`tailwind.config.js\`:
-\`\`\`js
-fontFamily: {
-  serif: ['"{{fontHeading}}"', 'Georgia', 'ui-serif', 'serif'],
-  sans:  ['"{{fontBody}}"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-},
-\`\`\`
+### Fonte sans (corpo): **{{fontBody}}**
 
-### Fonte sans (corpo) — carregada via @fontsource no global.css
-
-Fonte: **{{fontBody}}**
-
-No \`global.css\`, substitua os imports @fontsource:
+No \`global.css\`, substitua os imports:
 \`\`\`css
 @import '@fontsource/{{fontBodySlug}}/300.css';
 @import '@fontsource/{{fontBodySlug}}/400.css';
 @import '@fontsource/{{fontBodySlug}}/500.css';
 \`\`\`
-(instale com: \`npm install @fontsource/{{fontBodySlug}}\`)
+(instale: \`npm install @fontsource/{{fontBodySlug}}\`)
 
 ---
 
-## 5. SEO — Layout.astro
+## 5. SEO — \`BaseLayout.astro\`
 
-Substitua os defaults no frontmatter do \`Layout.astro\`:
+Substitua os defaults no frontmatter:
 
 \`\`\`astro
 title = '{{seoTitle}}'
 description = '{{seoDescription}}'
 keywords = '{{seoKeywords}}'
-ogTitle = '{{seoTitle}}'
-ogDescription = '{{seoDescription}}'
 canonical = '{{siteUrl}}'
 \`\`\`
 
 ---
 
-## 6. GTM e WhatsApp — Layout.astro
+## 6. GTM e WhatsApp — \`.env\`
 
-No \`Layout.astro\`:
-\`\`\`astro
-const GTM_ID = '{{gtmId}}'
+Preencha o arquivo \`.env\` na raiz do projeto:
+\`\`\`env
+PUBLIC_SITE_URL={{siteUrl}}
+PUBLIC_GTM_ID={{gtmId}}
+PUBLIC_WA_NUMBER={{whatsapp}}
+PUBLIC_WA_MESSAGE={{whatsappMessage}}
 \`\`\`
 
-No \`WhatsAppFloat.astro\` (ou equivalente), configure o número:
-\`\`\`astro
-const WA_NUMBER = '{{whatsapp}}'  // só números, com código do país
-const WA_MESSAGE = encodeURIComponent('{{whatsappMessage}}')
-\`\`\`
+O \`BaseLayout.astro\` e o \`WhatsAppFloat.astro\` já leem essas variáveis automaticamente. Não hardcode no código.
 
 ---
 
-## 7. Schema.org — Layout.astro
+## 7. Schema.org — \`BaseLayout.astro\`
 
-Substitua o \`defaultSchema\` no \`Layout.astro\`:
+Substitua o \`defaultSchema\`:
 
 \`\`\`js
 const defaultSchema = {
@@ -183,21 +182,46 @@ const defaultSchema = {
 
 ---
 
-## 8. Componentes — index.astro
+## 8. Componentes — \`src/pages/index.astro\`
 
-Os componentes já foram copiados para \`src/components/\`. O \`src/pages/index.astro\` já foi gerado com os imports e a ordem correta.
+Os componentes já foram copiados para \`src/components/sections/\`. O \`index.astro\` já tem os imports e a ordem.
 
-Seções disponíveis (na ordem da página):
+### Estrutura padrão de componente Adsgator
+
+\`\`\`astro
+---
+interface Props { title: string; description: string }
+const { title, description } = Astro.props
+---
+<section id="nome-secao" class="section-py">
+  <div class="container-wide">
+    <h2 class="font-serif text-display-md text-text-main">{title}</h2>
+    <p class="text-body-lg text-text-soft">{description}</p>
+  </div>
+</section>
+\`\`\`
+
+Tokens de layout: \`section-py\`, \`container-wide\`, \`container-content\`, \`font-serif\`,
+\`text-display-xl/lg/md/sm\`, \`text-body-lg/md/sm\`, \`text-text-main/soft/muted\`,
+\`bg-primary\`, \`bg-surface\`, \`bg-dark\`, \`shadow-card\`, \`shadow-float\`.
+
+### IDs obrigatórios
+
+- Hero deve ter \`id="hero-section"\` (WhatsAppFloat depende disso)
+- Footer deve ter \`id="footer"\`
+- Cada seção com \`id\` igual ao item de menu correspondente
+
+### Seções disponíveis (na ordem da página):
 
 {{components}}
 
-Para cada seção, substitua o copy placeholder pelos textos reais do cliente conforme indicado abaixo. Mantenha o estilo e tom adequado ao nicho ({{niche}}) e objetivo ({{pageGoal}}).
+Para cada seção, substitua o copy placeholder pelos textos reais. Mantenha o tom adequado ao nicho ({{niche}}) e objetivo ({{pageGoal}}).
 
 ---
 
 ## 9. Imagens
 
-Substitua as imagens placeholder em \`/public/\` pelos arquivos reais. Formatos recomendados:
+Substitua as imagens placeholder em \`/public/\` pelos arquivos reais:
 - Hero: \`hero.webp\` (1920×1080 px)
 - Sobre: \`sobre.webp\` (800×600 px)
 - OG image: \`og-image.webp\` (1200×630 px)
@@ -207,16 +231,22 @@ Substitua as imagens placeholder em \`/public/\` pelos arquivos reais. Formatos 
 
 ## 10. Checklist Final
 
-Antes de entregar, valide:
-- [ ] \`npm run dev\` sem erros no terminal
+Marque cada item conforme implementar:
+
 - [ ] \`npm run build\` sem erros de TypeScript/Astro
-- [ ] Responsividade: mobile (375px), tablet (768px), desktop (1280px)
-- [ ] Links de CTA funcionando (WhatsApp, formulário, etc.)
+- [ ] Responsividade mobile (375px): texto hero ≥ 20px, botões ≥ 44px altura, padding lateral ≥ 20px
+- [ ] Hero com \`id="hero-section"\`; Footer com \`id="footer"\`; main com \`id="main-content"\`
+- [ ] Header: esconde ao rolar para baixo; link ativo por IntersectionObserver
+- [ ] WhatsApp flutuante: some quando Hero ou Footer estão visíveis; número real no \`.env\`
+- [ ] Dark mode: toggle no Footer; persiste localStorage; sem flash na primeira carga
+- [ ] Dark mode: todos os backgrounds e textos mudam ao ativar o toggle
+- [ ] \`politica-de-privacidade.astro\` e \`termos-de-uso.astro\`: TODOs preenchidos com dados reais
+- [ ] SEO: title, description, OG, canonical, Schema.org JSON-LD
+- [ ] Sitemap gerado (\`/sitemap-index.xml\` acessível)
+- [ ] Links de CTA funcionando (WhatsApp, formulário, âncoras)
 - [ ] Smooth scroll funcionando entre seções
 - [ ] GTM disparando (verifique no GTM Preview Mode)
-- [ ] Meta tags corretas no \`<head>\`
-- [ ] Imagens otimizadas e sem 404
-- [ ] Schema.org válido (teste em schema.org/validator)
+- [ ] Imagens sem 404; \`alt\` em todas as \`<Image />\`
 
 ---
 
@@ -282,7 +312,7 @@ function fontToGoogleEncoded(font: string): string {
 
 export function generateManifest(
   project: ProjectConfig,
-  artDirection: ArtDirection,
+  artDirection: ArtDirectionV2,
   components: SelectedComponent[],
   settings: AppSettings
 ): string {
@@ -305,7 +335,7 @@ export function generateManifest(
     hours:             project.hours || 'Mo-Fr 09:00-18:00',
     instagram:         project.instagram || '',
     facebook:          project.facebook || '',
-    gtmId:             project.gtmId || 'GTM-XXXXXXX',
+    gtmId:             project.gtmId || '',
     schemaType:        project.schemaType || 'LocalBusiness',
     // SEO
     seoTitle:          project.seoTitle || project.clientName,
@@ -330,6 +360,7 @@ export function generateManifest(
     fontBodySlug:         fontToSlug(artDirection.fontBody),
     // Direção artística
     mood:                 artDirection.mood || '—',
+    defaultTheme:         artDirection.defaultTheme || 'light',
     references:           artDirection.references || '—',
     notes:                artDirection.notes || '—',
     // Componentes

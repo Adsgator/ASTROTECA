@@ -163,10 +163,11 @@ export default function ConfigPanel() {
       )}
 
       <div className={`${ui.cardBase} p-5`}>
-        <h2 className="text-lg font-semibold mb-4">GitHub</h2>
+        <h2 className="text-lg font-semibold mb-1">GitHub</h2>
+        <p className="text-xs text-ink-muted mb-4">Necessário para criar repositórios de clientes e sincronizar a biblioteca de componentes.</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
-            <Field label="Token de Acesso">
+            <Field label="Token de Acesso (Classic)">
               <input
                 className={ui.inputBase}
                 type="password"
@@ -179,7 +180,18 @@ export default function ConfigPanel() {
                 placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
               />
             </Field>
-            <div className="flex gap-2 mt-2">
+            <div className="flex items-center gap-3 mt-1.5 mb-2">
+              <a
+                href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=Astroteca+Studio"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-accent hover:underline"
+              >
+                Criar token no GitHub →
+              </a>
+              <span className="text-[10px] text-ink-muted">Permissões necessárias: <code className="bg-raised px-1 rounded">repo</code> e <code className="bg-raised px-1 rounded">workflow</code></span>
+            </div>
+            <div className="flex gap-2">
               <button
                 className={`${ui.btnOutline} py-1 px-3 text-xs`}
                 onClick={handleValidateToken}
@@ -208,31 +220,41 @@ export default function ConfigPanel() {
               placeholder="seuusuario"
             />
           </Field>
-          <Field label="Repo de Componentes">
-            <input
-              className={ui.inputBase}
-              value={settings.componentsRepo}
-              onChange={e => update('componentsRepo', e.target.value)}
-              placeholder="minha-lib-astro"
-            />
-          </Field>
-          <Field label="Repo Base (template)">
-            <input
-              className={ui.inputBase}
-              value={settings.baseProjectRepo}
-              onChange={e => update('baseProjectRepo', e.target.value)}
-              placeholder="_base-project"
-            />
-          </Field>
+          <div>
+            <Field label="Repo de Componentes">
+              <input
+                className={ui.inputBase}
+                value={settings.componentsRepo}
+                onChange={e => update('componentsRepo', e.target.value)}
+                placeholder="minha-lib-astro"
+              />
+            </Field>
+            <p className="text-[10px] text-ink-muted mt-1">Biblioteca de componentes Astro (ex: minha-lib-astro). Os componentes são copiados daqui para o projeto do cliente.</p>
+          </div>
+          <div>
+            <Field label="Repo Base (template)">
+              <input
+                className={ui.inputBase}
+                value={settings.baseProjectRepo}
+                onChange={e => update('baseProjectRepo', e.target.value)}
+                placeholder="_base-project"
+              />
+            </Field>
+            <p className="text-[10px] text-ink-muted mt-1">Template clonado a cada novo projeto de cliente (ex: _base-project). Contém BaseLayout, tokens, páginas legais.</p>
+          </div>
           <div className="col-span-2">
             <Field label="URL do Registry">
               <input
                 className={ui.inputBase}
                 value={settings.registryUrl}
                 onChange={e => update('registryUrl', e.target.value)}
-                placeholder="https://raw.githubusercontent.com/.../registry.json"
+                placeholder="https://raw.githubusercontent.com/owner/minha-lib-astro/main/registry.json"
               />
             </Field>
+            <p className="text-[10px] text-ink-muted mt-1">
+              URL raw do GitHub para o <code className="bg-raised px-0.5 rounded">registry.json</code> da biblioteca. Formato:{' '}
+              <code className="bg-raised px-0.5 rounded">https://raw.githubusercontent.com/[owner]/[repo]/main/registry.json</code>
+            </p>
           </div>
         </div>
       </div>

@@ -49,14 +49,7 @@ const OUTPUT_PATHS = [
   },
 ]
 
-// Etapas de progresso para feedback ao criar
-const CREATE_STEPS = [
-  'Criando repositório no GitHub...',
-  'Aguardando inicialização do repositório...',
-  'Copiando componentes da biblioteca...',
-  'Commitando MANIFESTO.md...',
-  'Finalizando...',
-]
+// Etapas falsas removidas — apenas spinner genérico durante criação
 
 export default function GenerateStep({
   state,
@@ -68,7 +61,6 @@ export default function GenerateStep({
   error,
   onOutputPathChange,
 }: GenerateStepProps) {
-  const [createStep, setCreateStep] = useState(0)
   const [copied, setCopied] = useState(false)
   const [docCopied, setDocCopied] = useState(false)
 
@@ -102,18 +94,8 @@ export default function GenerateStep({
   const visibleChecks = checks.filter(c => !c.onlyPath || c.onlyPath.includes(state.outputPath))
   const canGenerate = visibleChecks.every(c => c.ok)
 
-  // Simula progresso visual durante criação
   async function handleCreate() {
-    setCreateStep(0)
-    const interval = setInterval(() => {
-      setCreateStep(prev => {
-        if (prev >= CREATE_STEPS.length - 2) { clearInterval(interval); return prev }
-        return prev + 1
-      })
-    }, 1800)
     await onCreateProject()
-    clearInterval(interval)
-    setCreateStep(CREATE_STEPS.length - 1)
   }
 
   function downloadDoc() {
@@ -250,23 +232,23 @@ export default function GenerateStep({
       {/* Comando para o Claude */}
       {state.outputPath === 'library' && (
         <PromptBlock
-          label="Comando para o Claude Code (IDE)"
-          prompt={`Estou te enviando o MANIFESTO.md deste projeto. Siga o documento passo a passo:\n\n1. Atualize tailwind.config.js com as cores da seção "Direção de Arte"\n2. Atualize src/styles/global.css com as fontes indicadas\n3. Atualize src/layouts/Layout.astro com SEO (title, meta description, keywords), GTM e Schema.org\n4. Para cada seção habilitada, substitua os textos placeholder pela copy do documento\n5. Configure o tema padrão: ${state.art.defaultTheme === 'dark' ? 'escuro (classe "dark" no <html>)' : 'claro'}\n6. Não altere estrutura HTML, classes Tailwind ou lógica JavaScript — apenas dados e configurações do cliente\n7. Rode npm run build ao final para validar`}
-          hint="Copie este comando e cole no Claude Code junto com o MANIFESTO.md. Os componentes da biblioteca já estão no repositório."
+          label="Comando para o Claude Code (cole na IDE junto com o MANIFESTO.md)"
+          prompt={`Você está implementando o site do cliente a partir do MANIFESTO.md anexo. Leia o manifesto do início ao fim antes de começar.\n\nContexto do projeto:\n- Stack: Astro 5 + Tailwind v4 (CSS-first, sem tailwind.config.js)\n- Tokens em src/styles/tokens.css — NUNCA hardcode cor ou fonte, sempre var(--t-*) ou classes Tailwind\n- Componentes da biblioteca já copiados em src/components/sections/\n- Dark mode: classe .dark no <html> — tokens redefinidos em .dark{} no tokens.css\n- Tema padrão: ${state.art.defaultTheme === 'dark' ? 'dark (adicione classe "dark" no <html> do BaseLayout.astro)' : 'light'}\n\nSiga o manifesto passo a passo:\n1. Preencha src/styles/tokens.css com as cores e fontes da seção 3\n2. Atualize o <link> de fonte no BaseLayout.astro (seção 4)\n3. Monte src/pages/index.astro com os imports e ordem dos componentes (seção 8)\n4. Para cada componente, substitua o copy placeholder pelos textos da seção 8\n5. Preencha .env com WhatsApp, GTM e domínio (seção 6) — não coloque no código\n6. Preencha defaultSchema no BaseLayout.astro (seção 7)\n7. Preencha TODOs em politica-de-privacidade.astro e termos-de-uso.astro\n8. Garanta: Hero id="hero-section", Footer id="footer", main id="main-content"\n9. Rode npm run build — corrija qualquer erro`}
+          hint="Os componentes já estão em src/components/sections/. Cole este prompt no Claude Code junto com o MANIFESTO.md."
         />
       )}
       {state.outputPath === 'manual' && (
         <PromptBlock
-          label="Comando para o Claude Chat ou Claude Code"
-          prompt={`Estou te enviando o MANIFESTO.md de um projeto de landing page Astro. O repositório contém apenas o template base (sem componentes prontos).\n\nSiga o documento para construir o site completo:\n\n1. Atualize tailwind.config.js com as cores da "Direção de Arte"\n2. Atualize global.css com as fontes\n3. Atualize Layout.astro com SEO, GTM e Schema.org\n4. Crie cada seção habilitada como componente Astro em src/components/, usando a copy do documento\n5. Use os tokens Tailwind do design system (bg-primary, text-text-main, font-serif, etc.) — nunca valores literais\n6. Configure tema padrão: ${state.art.defaultTheme === 'dark' ? 'escuro' : 'claro'}\n7. Garanta responsividade mobile (375px) e tablet (768px)\n8. Rode npm run build ao final`}
-          hint="Copie este comando e cole no Claude junto com o MANIFESTO.md. O Claude vai criar os componentes do zero seguindo o briefing."
+          label="Comando para o Claude Code (cole na IDE junto com o MANIFESTO.md)"
+          prompt={`Você está construindo um site do zero a partir do MANIFESTO.md anexo. Leia o manifesto do início ao fim antes de começar.\n\nContexto do projeto:\n- Stack: Astro 5 + Tailwind v4 (CSS-first, sem tailwind.config.js)\n- Tokens em src/styles/tokens.css — NUNCA hardcode cor ou fonte, sempre var(--t-*) ou classes Tailwind\n- Dark mode: classe .dark no <html> — tokens redefinidos em .dark{} no tokens.css\n- Tema padrão: ${state.art.defaultTheme === 'dark' ? 'dark (adicione classe "dark" no <html> do BaseLayout.astro)' : 'light'}\n\nEstruturas obrigatórias dos componentes:\n- Cada seção: <section id="nome-secao" class="section-py"><div class="container-wide">...</div></section>\n- Tokens de layout: section-py, container-wide, container-content\n- Tipografia: font-serif (títulos), font-sans (corpo), text-display-md, text-body-lg, text-text-main, text-text-soft\n- Nunca <img> nativo — sempre <Image /> de astro:assets\n\nSiga o manifesto passo a passo:\n1. Preencha src/styles/tokens.css com as cores e fontes da seção 3\n2. Atualize o <link> de fonte no BaseLayout.astro (seção 4)\n3. Crie cada seção como componente .astro em src/components/sections/\n4. Monte src/pages/index.astro com todos os componentes\n5. Preencha .env com WhatsApp, GTM e domínio (seção 6)\n6. Preencha defaultSchema no BaseLayout.astro (seção 7)\n7. Preencha TODOs em politica-de-privacidade.astro e termos-de-uso.astro\n8. Garanta: Hero id="hero-section", Footer id="footer", main id="main-content"\n9. Rode npm run build — corrija qualquer erro`}
+          hint="O repositório tem apenas o template base. Cole este prompt no Claude Code junto com o MANIFESTO.md para que o Claude crie todos os componentes."
         />
       )}
       {state.outputPath === 'hybrid' && (
         <PromptBlock
-          label="Comando para o Claude Chat ou Claude Code"
-          prompt={`Estou te enviando o MANIFESTO.md de um projeto de landing page. Siga o documento para adaptar um projeto Astro:\n\n1. Atualize tailwind.config.js com as cores da "Direção de Arte"\n2. Atualize global.css com as fontes indicadas\n3. Atualize Layout.astro com SEO (title, meta description, keywords), GTM e Schema.org\n4. Crie ou adapte cada seção habilitada usando a copy do documento\n5. Use tokens Tailwind do design system — nunca valores literais de cor ou fonte\n6. Configure tema padrão: ${state.art.defaultTheme === 'dark' ? 'escuro (classe "dark" no <html>)' : 'claro'}\n7. Teste responsividade e rode npm run build`}
-          hint="Copie este comando, cole no Claude e envie junto com o arquivo MANIFESTO.md baixado."
+          label="Comando para o Claude Code (cole junto com o MANIFESTO.md baixado)"
+          prompt={`Você está adaptando um projeto Astro a partir do MANIFESTO.md anexo. Leia do início ao fim antes de começar.\n\nContexto:\n- Stack: Astro 5 + Tailwind v4 (CSS-first, sem tailwind.config.js)\n- Tokens em src/styles/tokens.css — NUNCA hardcode cor ou fonte, sempre var(--t-*) ou classes Tailwind\n- Dark mode: classe .dark no <html>, tokens redefinidos em .dark{} no tokens.css\n- Tema padrão: ${state.art.defaultTheme === 'dark' ? 'dark (adicione classe "dark" no <html> do BaseLayout.astro)' : 'light'}\n\nSiga o manifesto passo a passo:\n1. Preencha src/styles/tokens.css com as cores e fontes da seção 3\n2. Atualize o <link> de fonte no BaseLayout.astro (seção 4)\n3. Crie ou adapte cada seção em src/components/sections/\n4. Monte src/pages/index.astro com todos os componentes na ordem correta\n5. Preencha .env com WhatsApp, GTM e domínio (seção 6)\n6. Preencha defaultSchema no BaseLayout.astro (seção 7)\n7. Garanta: Hero id="hero-section", Footer id="footer", main id="main-content"\n8. Rode npm run build — corrija qualquer erro`}
+          hint="Baixe o MANIFESTO.md, clone o repositório base e cole este prompt no Claude Code com o arquivo anexado."
         />
       )}
 
@@ -337,47 +319,22 @@ export default function GenerateStep({
 
       {/* Progresso de criação */}
       {creating && (
-        <div className={cn(ui.cardBase, 'p-5')}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin flex-shrink-0" />
-            <p className="text-sm font-medium text-ink-primary">{CREATE_STEPS[createStep]}</p>
-          </div>
-          {/* Barra de progresso */}
-          <div className="h-1.5 bg-raised rounded-full overflow-hidden">
-            <div
-              className="h-full bg-accent rounded-full transition-all duration-700"
-              style={{ width: `${((createStep + 1) / CREATE_STEPS.length) * 100}%` }}
-            />
-          </div>
-          <div className="mt-3 space-y-1.5">
-            {CREATE_STEPS.map((step, i) => (
-              <div key={i} className={cn('flex items-center gap-2 text-xs transition-colors', i <= createStep ? 'text-ink-primary' : 'text-ink-muted')}>
-                <svg className={cn('w-3.5 h-3.5 flex-shrink-0', i < createStep ? 'text-ok' : i === createStep ? 'text-accent' : 'text-ink-muted')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  {i < createStep ? (
-                    <polyline points="20 6 9 17 4 12" />
-                  ) : i === createStep ? (
-                    <circle cx="12" cy="12" r="9" />
-                  ) : (
-                    <circle cx="12" cy="12" r="9" strokeOpacity="0.3" />
-                  )}
-                </svg>
-                {step}
-              </div>
-            ))}
-          </div>
+        <div className={cn(ui.cardBase, 'p-5 flex items-center gap-3')}>
+          <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin flex-shrink-0" />
+          <p className="text-sm text-ink-primary">Criando projeto no GitHub...</p>
         </div>
       )}
 
       {/* Resultado de sucesso */}
       {result && result.success && (
-        <div className={cn(ui.cardBase, 'p-5 border-ok/30 bg-ok/5')}>
-          <div className="flex items-center gap-2 mb-3">
-            <svg className="w-5 h-5 text-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <p className="text-sm font-semibold text-ok">Projeto criado com sucesso!</p>
-          </div>
+        <div className="space-y-3">
+          <div className={cn(ui.cardBase, 'p-5 border-ok/30 bg-ok/5')}>
+            <div className="flex items-center gap-2 mb-3">
+              <svg className="w-5 h-5 text-ok flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <p className="text-sm font-semibold text-ok">Projeto criado no GitHub!</p>
+            </div>
 
-          <div className="space-y-2 mb-4">
-            <div className="flex items-center gap-2 bg-raised/50 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 bg-raised/50 rounded-lg px-3 py-2 mb-4">
               <span className="text-[11px] text-ink-muted flex-shrink-0">URL</span>
               <span className="text-xs text-ink-secondary flex-1 truncate font-mono">{result.repoUrl}</span>
               <button
@@ -391,24 +348,50 @@ export default function GenerateStep({
                 )}
               </button>
             </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <a
+                href={`${result.repoUrl}/archive/refs/heads/main.zip`}
+                className={cn(ui.btnPrimary, 'text-xs flex items-center gap-1.5')}
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Baixar ZIP
+              </a>
+              <a
+                href={result.repoUrl}
+                target="_blank"
+                rel="noopener"
+                className={cn(ui.btnOutline, 'text-xs flex items-center gap-1.5')}
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Ver no GitHub
+              </a>
+              {result.vscodeUrl && (
+                <a href={result.vscodeUrl} className={cn(ui.btnGhost, 'text-xs flex items-center gap-1.5')}>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                  Abrir no VS Code <span className="text-ink-muted">(opcional)</span>
+                </a>
+              )}
+            </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
-            <a
-              href={result.repoUrl}
-              target="_blank"
-              rel="noopener"
-              className={cn(ui.btnOutline, 'text-xs flex items-center gap-1.5')}
-            >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              Ver no GitHub
-            </a>
-            {result.vscodeUrl && (
-              <a href={result.vscodeUrl} className={cn(ui.btnGhost, 'text-xs flex items-center gap-1.5')}>
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                Abrir no VS Code
-              </a>
-            )}
+          {/* Próximos passos */}
+          <div className={cn(ui.cardBase, 'p-4')}>
+            <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider mb-3">Próximos passos</p>
+            <ol className="space-y-2.5">
+              <li className="flex gap-2.5 text-xs text-ink-secondary">
+                <span className="w-4 h-4 rounded-full bg-accent/20 text-accent font-semibold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                <span>Baixe o ZIP acima e extraia na sua pasta de projetos</span>
+              </li>
+              <li className="flex gap-2.5 text-xs text-ink-secondary">
+                <span className="w-4 h-4 rounded-full bg-accent/20 text-accent font-semibold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                <span>Abra a pasta no Claude Code: <code className="bg-raised px-1 rounded text-[11px]">claude</code> na raiz</span>
+              </li>
+              <li className="flex gap-2.5 text-xs text-ink-secondary">
+                <span className="w-4 h-4 rounded-full bg-accent/20 text-accent font-semibold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                <span>Copie o comando acima e cole no Claude Code junto com o MANIFESTO.md</span>
+              </li>
+            </ol>
           </div>
         </div>
       )}

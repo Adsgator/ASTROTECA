@@ -101,6 +101,15 @@ const STEPS: { key: BuilderStep; label: string }[] = [
   { key: 'gerar', label: 'Gerar' },
 ]
 
+const STEP_HINTS: Record<BuilderStep, string> = {
+  briefing:    'Descreva o cliente em texto livre e clique em "Analisar com Gemini" — os campos serão preenchidos automaticamente.',
+  estrutura:   'Ative as seções que o site vai ter e arraste para reordenar. O copy de cada seção pode ser ajustado depois.',
+  arte:        'Escolha um preset de cores ou defina manualmente. O preview à direita atualiza ao vivo.',
+  componentes: 'Selecione os componentes da biblioteca para cada seção. Seções sem componente serão criadas pelo Claude Code.',
+  preview:     'Visualize como os componentes ficam juntos com as cores e fontes escolhidas.',
+  gerar:       'Copie o comando abaixo e cole no Claude Code junto com o MANIFESTO.md após criar o projeto.',
+}
+
 // ─── Settings helper ───────────────────────────────────────────────────────────
 
 function loadSettings(): AppSettingsV2 {
@@ -316,6 +325,9 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
             transitioning && 'transitioning',
           )}
         >
+          {/* Dica contextual do step */}
+          <p className="text-xs text-ink-muted mb-3 leading-relaxed">{STEP_HINTS[displayStep]}</p>
+
           {displayStep === 'briefing' && (
             <BriefingStep
               briefing={state.briefing}

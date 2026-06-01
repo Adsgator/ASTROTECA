@@ -27,7 +27,11 @@ REGRAS OBRIGATÓRIAS:
 - Extraia números de telefone no formato: 5511999999999 (sem formatação)
 - Preserve nomes próprios com acentuação correta
 - Para art.colorPrimary e demais cores: sugira paleta coerente com o segmento e tom de comunicação
-- Para suggestedSectionTypes: inclua apenas seções justificadas pelo briefing`
+- Para suggestedSectionTypes: inclua apenas seções justificadas pelo briefing
+- Se um campo não tem informação no briefing, deixe como string vazia "" — NUNCA invente dados, nomes ou valores
+- Para servico1/2/3Titulo: preencha apenas se o briefing listar serviços concretos com nome próprio
+- Para passo1/2/3Titulo: preencha apenas se o briefing descrever etapas de processo concretas
+- Para diferencial1/2/3Titulo: preencha apenas se o briefing mencionar diferenciais específicos`
 
   const user = `Analise o briefing abaixo e retorne o JSON com TODOS os campos listados.
 
@@ -61,7 +65,19 @@ ESTRUTURA DO JSON (retorne exatamente estes campos):
     "googleQtd": "",
     "servicoPrincipal": "",
     "servicosDescricao": "",
+    "servico1Titulo": "",
+    "servico1Descricao": "",
+    "servico2Titulo": "",
+    "servico2Descricao": "",
+    "servico3Titulo": "",
+    "servico3Descricao": "",
     "comoFunciona": "",
+    "passo1Titulo": "",
+    "passo1Descricao": "",
+    "passo2Titulo": "",
+    "passo2Descricao": "",
+    "passo3Titulo": "",
+    "passo3Descricao": "",
     "resultadoEsperado": "",
     "prazoResultado": "",
     "precoExibir": false,
@@ -80,6 +96,12 @@ ESTRUTURA DO JSON (retorne exatamente estes campos):
     "avatarProfissao": "",
     "objecoes": "",
     "diferencial": "",
+    "diferencial1Titulo": "",
+    "diferencial1Descricao": "",
+    "diferencial2Titulo": "",
+    "diferencial2Descricao": "",
+    "diferencial3Titulo": "",
+    "diferencial3Descricao": "",
     "fraseImpacto": "",
     "historia": "",
     "depoimento1Nome": "",
