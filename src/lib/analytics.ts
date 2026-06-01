@@ -27,10 +27,6 @@ export interface AnalyticsData {
 const ANALYTICS_PATH = resolve('public/data/analytics.json')
 const ANALYTICS_GITHUB_PATH = 'public/data/analytics.json'
 
-export function getAnalyticsPath(): string {
-  return ANALYTICS_PATH
-}
-
 /** Carrega o arquivo de analytics do filesystem local (para leitura em SSR/dev) */
 export function loadAnalytics(): AnalyticsData {
   if (!existsSync(ANALYTICS_PATH)) return {}
@@ -136,13 +132,14 @@ export function getAnalyticsSummary(data: AnalyticsData) {
   }
 }
 
-/** Formata data para exibição (pt-BR) */
-export function formatDate(isoString: string): string {
+/** Formata data para exibição (pt-BR, horário de Brasília UTC-3) */
+export function formatDateFull(isoString: string): string {
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'America/Sao_Paulo',
   }).format(new Date(isoString))
 }

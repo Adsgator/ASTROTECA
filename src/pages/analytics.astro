@@ -3,7 +3,7 @@
 // Dashboard de analytics — componentes extraídos e seu uso
 
 import AppLayout from '../layouts/AppLayout.astro'
-import { loadAnalytics, getAnalyticsSummary, formatDate } from '../lib/analytics'
+import { loadAnalytics, getAnalyticsSummary, formatDateFull } from '../lib/analytics'
 
 const analyticsData = loadAnalytics()
 const summary = getAnalyticsSummary(analyticsData)
@@ -88,7 +88,7 @@ const summary = getAnalyticsSummary(analyticsData)
                   <p class="font-medium text-ink-primary">{comp.name}</p>
                   <p class="text-xs text-ink-secondary">{comp.category}</p>
                 </div>
-                <p class="text-xs text-ink-secondary whitespace-nowrap ml-4">{formatDate(comp.extractedAt)}</p>
+                <p class="text-xs text-ink-secondary whitespace-nowrap ml-4">{formatDateFull(comp.extractedAt)}</p>
               </div>
             ))}
           </div>
@@ -125,7 +125,7 @@ const summary = getAnalyticsSummary(analyticsData)
                         {comp.totalProjects}
                       </span>
                     </td>
-                    <td class="py-3 px-4 text-ink-secondary text-xs">{formatDate(comp.extractedAt)}</td>
+                    <td class="py-3 px-4 text-ink-secondary text-xs">{formatDateFull(comp.extractedAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -145,7 +145,7 @@ const summary = getAnalyticsSummary(analyticsData)
                 <p class="text-xs text-ink-secondary mb-2">
                   <span class="px-2 py-1 bg-accent/15 text-accent rounded inline-block">{comp.category}</span>
                 </p>
-                <p class="text-xs text-ink-secondary">{formatDate(comp.extractedAt)}</p>
+                <p class="text-xs text-ink-secondary">{formatDateFull(comp.extractedAt)}</p>
               </div>
             ))}
           </div>
@@ -169,7 +169,7 @@ const summary = getAnalyticsSummary(analyticsData)
                         {comp.usedIn.map((usage) => (
                           <li class="text-sm text-ink-secondary flex justify-between items-center">
                             <code class="bg-border px-2 py-1 rounded text-xs font-mono text-accent">{usage.projectName}</code>
-                            <span class="text-xs text-ink-muted">{formatDate(usage.date)}</span>
+                            <span class="text-xs text-ink-muted">{formatDateFull(usage.date)}</span>
                           </li>
                         ))}
                       </ul>
