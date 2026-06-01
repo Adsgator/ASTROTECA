@@ -43,6 +43,48 @@ Tokens de layout/tipografia: `font-serif` (títulos), `font-sans` (corpo), `text
 
 ---
 
+## Padrões de código prontos — use, não reinvente
+
+O `global.css` já tem classes utilitárias prontas. **Sempre use elas** em vez de remontar estilo do zero.
+Reinventar botão/card com classes soltas é a principal causa de inconsistência entre projetos.
+
+### Estrutura padrão de seção
+
+Toda seção de conteúdo segue este esqueleto. Alterne `bg-surface` ↔ `bg-background` (ou `bg-surface-alt`)
+entre seções vizinhas para criar ritmo visual:
+
+```astro
+<section id="servicos" class="section-py bg-surface">
+  <div class="container-wide">
+    <span class="label-tag block mb-3">Rótulo da seção</span>
+    <h2 class="font-serif text-display-lg text-text-main mb-4">Título</h2>
+    <p class="text-body-lg text-text-soft max-w-prose mb-12" data-animate>Subtítulo</p>
+    <!-- conteúdo -->
+  </div>
+</section>
+```
+
+### Botões — classes prontas (não escreva o estilo na mão)
+
+| Quando usar | Classe | Observação |
+|---|---|---|
+| CTA principal | `class="btn-primary"` | sombra + hover + easing já embutidos |
+| Ação secundária | `class="btn-ghost"` | contorno, sem preenchimento |
+| CTA de destaque | `class="btn-secondary-gold"` | gradiente dourado com shimmer |
+| WhatsApp inline | `class="inline-flex items-center gap-2 bg-wa text-white font-sans font-medium px-7 py-3.5 rounded"` + `target="_blank" rel="noopener noreferrer"` | não existe classe `.btn-wa`; use o token `bg-wa` e sempre o ícone |
+
+O botão WhatsApp **flutuante** já existe (`WhatsAppFloat.astro`) — não recrie. O caso acima é só para CTA de WhatsApp dentro de uma seção.
+
+### Outras classes prontas
+
+`.card-hover` (translate + shadow no hover), `.label-tag` (rótulo uppercase), `.badge` / `.badge-secondary` (pills),
+`.blockquote-premium` (citação com aspa decorativa), `.stat-number` / `.stat-label` (números grandes serif),
+`.divider-ornament` (divisor com linha), `.link-underline` (underline animado), `.img-hover` (zoom sutil na imagem).
+
+Padrão de card: `class="bg-background rounded-xl p-8 border border-border shadow-card card-hover"`.
+
+---
+
 ## Dark mode
 
 - A classe `.dark` é aplicada ao `<html>` pelo script anti-flash no `<head>` do `BaseLayout.astro`.
@@ -94,6 +136,23 @@ Tokens de layout/tipografia: `font-serif` (títulos), `font-sans` (corpo), `text
 ### Páginas legais
 - `politica-de-privacidade.astro` e `termos-de-uso.astro` já existem. Preencha TODOS os `TODO`
   com os dados reais do cliente (nome/razão social, CNPJ, e-mail, domínio, provedor de hospedagem).
+
+---
+
+## Sinais de entrega incompleta — revise antes de dar por pronto
+
+Se qualquer item abaixo for verdadeiro, o site **não** está pronto:
+
+- Botão WhatsApp flutuante não some sobre o Hero ou o Footer → falta `id="hero-section"` / `id="footer"`.
+- Algum link de menu aponta para `#` em vez de uma seção real (`#servicos`, `#contato`…).
+- Menu mobile fecha só no botão X, mas não ao clicar fora ou num link.
+- Trocar o tema (dark/light) deixa algum texto ou fundo com cor que **não muda** → cor hardcodada, troque por token.
+- `politica-de-privacidade.astro` ou `termos-de-uso.astro` ainda têm `TODO` ou dados de placeholder.
+- Alguma imagem usa `<img>` nativo, ou `<Image />` sem `width`/`height` (causa CLS).
+- Todas as seções têm o mesmo fundo (sem alternância `bg-surface` ↔ `bg-background`).
+- Botão estilizado com classes soltas em vez de `.btn-primary` / `.btn-ghost` / `.btn-secondary-gold`.
+- `.env` com `PUBLIC_WA_NUMBER`, `PUBLIC_WA_MESSAGE`, `PUBLIC_GTM_ID`, `PUBLIC_SITE_URL` vazios.
+- `npm run check` ou `npm run build` com erro ou warning.
 
 ---
 
