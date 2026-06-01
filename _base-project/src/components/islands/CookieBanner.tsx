@@ -6,21 +6,14 @@
 //   3. Recusar → salva em localStorage + dispara gtag consent update "denied"
 //   4. Em visitas seguintes, lê localStorage e aplica o consentimento silenciosamente
 //
-// Props:
-//   gtmId — ID do GTM (passado pelo Layout, usado para fins de identificação)
-//
 // Deve ser usado com client:idle no Layout.
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
-interface Props {
-  gtmId: string;
-}
-
 type ConsentState = 'pending' | 'accepted' | 'rejected';
 
-export default function CookieBanner({ gtmId }: Props) {
+export default function CookieBanner() {
   const [consent, setConsent] = useState<ConsentState>('pending');
   const prefersReduced = useReducedMotion();
 

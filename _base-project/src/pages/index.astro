@@ -10,26 +10,27 @@
 //
 // TODO: importe Header, Footer e as seções da biblioteca Astroteca conforme o projeto.
 
-import Layout from '../layouts/Layout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 
 // TODO: descomente e ajuste conforme os componentes disponíveis
-// import Header from '../components/global/Header.astro';
+// import Header from '../components/sections/Header.astro';
 // import Hero from '../components/sections/Hero.astro';
-// import Footer from '../components/global/Footer.astro';
+// import Footer from '../components/sections/Footer.astro';
 ---
 
-<Layout>
+<BaseLayout>
   {/* TODO: adicione Header vindo da biblioteca Astroteca */}
   {/* <Header /> */}
 
-  <main id="main" tabindex="-1">
-    {/* TODO: adicione as seções da página aqui */}
+  <main id="main-content" tabindex="-1">
+    {/* TODO: adicione as seções da página aqui.
+        O Hero deve ter id="hero-section" para o botão WhatsApp funcionar. */}
     {/* <Hero /> */}
   </main>
 
-  {/* TODO: adicione Footer vindo da biblioteca Astroteca */}
+  {/* TODO: adicione Footer vindo da biblioteca Astroteca (id="footer") */}
   {/* <Footer /> */}
-</Layout>
+</BaseLayout>
 
 <script is:inline>
   // Rastreamento de cliques WhatsApp via dataLayer (GTM)

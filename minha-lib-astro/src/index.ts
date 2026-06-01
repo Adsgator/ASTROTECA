@@ -1,10 +1,5 @@
-// Export all components
-export * from './components/Header/index'
-export * from './components/Hero/index'
-export * from './components/Features/index'
-export * from './components/Testimonials/index'
-export * from './components/Pricing/index'
-export * from './components/CTA/index'
-export * from './components/Footer/index'
-export * from './components/FAQ/index'
-export * from './components/Contact/index'
+// Biblioteca de componentes Astroteca.
+// Pós-reset: contém apenas os componentes estruturais obrigatórios.
+// Componentes de seção (Hero, Features, etc.) nascem conforme projetos reais.
+export * from "./components/Header/index";
+export * from "./components/Footer/index";

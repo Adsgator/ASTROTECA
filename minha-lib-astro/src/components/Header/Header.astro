@@ -1,0 +1,319 @@
+---
+// Header.astro — Navbar da biblioteca Astroteca
+//
+// Comportamentos obrigatórios (vanilla JS, sem React):
+//   - Esconde ao rolar para baixo, reaparece ao rolar para cima
+//   - Link ativo destacado conforme a seção visível (IntersectionObserver)
+//   - Menu mobile fullscreen, fecha ao clicar em link ou no backdrop
+//
+// O <header> tem id="site-header" (usado pelo CSS de scroll).
+// Os links devem apontar para seções reais (#id) — nunca para "#".
+//
+// Tokens: usa var(--token) via classes utilitárias do Tailwind v4 do
+// projeto cliente (bg-surface, text-text-strong, etc.) + estilos
+// escopados abaixo para o que não tem utilitário direto.
+
+interface NavLink {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  logo: string;
+  logoHref?: string;
+  links?: NavLink[];
+  ctaLabel?: string;
+  ctaHref?: string;
+}
+
+const {
+  logo,
+  logoHref = "/",
+  links = [],
+  ctaLabel,
+  ctaHref = "#contato",
+} = Astro.props;
+---
+
+<header id="site-header" data-site-header>
+  <div class="header__inner">
+    <a href={logoHref} class="header__logo">{logo}</a>
+
+    {links.length > 0 && (
+      <nav class="header__nav" aria-label="Navegação principal">
+        {links.map((link) => (
+          <a href={link.href} class="header__link" data-nav-link={link.href}>
+            {link.label}
+          </a>
+        ))}
+      </nav>
+    )}
+
+    <div class="header__actions">
+      {ctaLabel && (
+        <a href={ctaHref} class="header__cta">{ctaLabel}</a>
+      )}
+
+      {links.length > 0 && (
+        <button
+          type="button"
+          class="header__burger"
+          aria-label="Abrir menu"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+          data-menu-toggle
+        >
+          <span></span><span></span><span></span>
+        </button>
+      )}
+    </div>
+  </div>
+
+  {links.length > 0 && (
+    <div id="mobile-menu" class="header__mobile" data-mobile-menu hidden>
+      <button type="button" class="header__mobile-backdrop" aria-label="Fechar menu" data-menu-close></button>
+      <nav class="header__mobile-nav" aria-label="Navegação mobile">
+        {links.map((link) => (
+          <a href={link.href} class="header__mobile-link" data-menu-close>
+            {link.label}
+          </a>
+        ))}
+        {ctaLabel && (
+          <a href={ctaHref} class="header__cta header__cta--mobile" data-menu-close>{ctaLabel}</a>
+        )}
+      </nav>
+    </div>
+  )}
+</header>
+
+<style>
+  #site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 50;
+    height: var(--header-height);
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    transform: translateY(0);
+    transition: transform var(--transition-base);
+  }
+  #site-header[data-hidden] {
+    transform: translateY(-100%);
+  }
+
+  .header__inner {
+    max-width: var(--container-max);
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .header__logo {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--color-text-strong);
+    flex-shrink: 0;
+  }
+
+  .header__nav {
+    display: none;
+    align-items: center;
+    gap: 1.75rem;
+  }
+  .header__link {
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    color: var(--color-text-base);
+    transition: color var(--transition-fast);
+    position: relative;
+  }
+  .header__link:hover { color: var(--color-text-strong); }
+  .header__link[data-active] { color: var(--color-brand); }
+  .header__link[data-active]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+    height: 2px;
+    background-color: var(--color-brand);
+  }
+
+  .header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .header__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-brand);
+    color: var(--color-brand-text);
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--text-small);
+    padding: 0.625rem 1.5rem;
+    border-radius: var(--radius-button);
+    transition: background-color var(--transition-fast);
+  }
+  .header__cta:hover { background-color: var(--color-brand-hover); }
+
+  .header__burger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .header__burger span {
+    display: block;
+    width: 1.25rem;
+    height: 2px;
+    background-color: var(--color-text-strong);
+    transition: transform var(--transition-base), opacity var(--transition-fast);
+  }
+  .header__burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .header__burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  .header__burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .header__mobile {
+    position: fixed;
+    inset: 0;
+    z-index: 49;
+  }
+  .header__mobile[hidden] { display: none; }
+  .header__mobile-backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: oklch(0% 0 0 / 0.4);
+    border: none;
+    cursor: pointer;
+  }
+  .header__mobile-nav {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: min(80vw, 320px);
+    background-color: var(--color-surface);
+    padding: calc(var(--header-height) + 1.5rem) 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: var(--shadow-hover);
+  }
+  .header__mobile-link {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    color: var(--color-text-base);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .header__cta--mobile {
+    margin-top: 1rem;
+    width: 100%;
+  }
+
+  @media (min-width: 768px) {
+    .header__nav { display: flex; }
+    .header__burger { display: none; }
+  }
+</style>
+
+<script>
+  // ── Scroll direction: esconde ao descer, mostra ao subir ──
+  const header = document.querySelector<HTMLElement>("[data-site-header]");
+  if (header) {
+    let lastY = window.scrollY;
+    window.addEventListener(
+      "scroll",
+      () => {
+        const y = window.scrollY;
+        // Sempre visível perto do topo
+        if (y < 80) {
+          header.removeAttribute("data-hidden");
+        } else if (y > lastY) {
+          header.setAttribute("data-hidden", "");
+        } else {
+          header.removeAttribute("data-hidden");
+        }
+        lastY = y;
+      },
+      { passive: true },
+    );
+  }
+
+  // ── Link ativo conforme seção visível ──
+  const navLinks = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>("[data-nav-link]"),
+  );
+  const sections = navLinks
+    .map((a) => {
+      const id = a.getAttribute("data-nav-link") ?? "";
+      return id.startsWith("#") ? document.querySelector(id) : null;
+    })
+    .filter((el): el is Element => el !== null);
+
+  if (sections.length > 0) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const id = `#${entry.target.id}`;
+          for (const link of navLinks) {
+            link.toggleAttribute(
+              "data-active",
+              link.getAttribute("data-nav-link") === id,
+            );
+          }
+        }
+      },
+      { rootMargin: "-40% 0px -55% 0px" },
+    );
+    for (const section of sections) observer.observe(section);
+  }
+
+  // ── Menu mobile ──
+  const toggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const menu = document.querySelector<HTMLElement>("[data-mobile-menu]");
+
+  function closeMenu() {
+    if (!toggle || !menu) return;
+    toggle.setAttribute("aria-expanded", "false");
+    menu.hidden = true;
+    document.body.style.overflow = "";
+  }
+  function openMenu() {
+    if (!toggle || !menu) return;
+    toggle.setAttribute("aria-expanded", "true");
+    menu.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+
+  if (toggle && menu) {
+    toggle.addEventListener("click", () => {
+      if (menu.hidden) openMenu();
+      else closeMenu();
+    });
+    for (const el of menu.querySelectorAll("[data-menu-close]")) {
+      el.addEventListener("click", closeMenu);
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+  }
+</script>

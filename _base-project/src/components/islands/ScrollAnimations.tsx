@@ -31,7 +31,7 @@ export default function ScrollAnimations() {
   useEffect(() => {
     // Importação dinâmica para evitar SSR — Lenis e GSAP são client-only
     (async () => {
-      const { default: Lenis } = await import('@studio-freight/lenis');
+      const { default: Lenis } = await import('lenis');
       const gsap = (await import('gsap')).default;
       const { default: ScrollTrigger } = await import('gsap/ScrollTrigger');
 

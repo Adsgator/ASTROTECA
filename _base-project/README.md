@@ -42,41 +42,40 @@ O arquivo `MANIFESTO-TEMPLATE.md` é o ponto de partida de cada projeto. Fluxo:
    - SEO e Schema.org
    - Lista de imagens disponíveis
 3. Envie o `MANIFESTO.md` ao Claude com a instrução: "Configure o projeto a partir deste manifesto"
-4. O Claude vai atualizar `tailwind.config.js`, `.env`, fontes e montar `src/pages/index.astro`
+4. O Claude vai preencher `src/styles/tokens.css`, `.env`, fontes e montar `src/pages/index.astro`
 
 ---
 
-## 3. Tokens do tailwind.config.js que precisam ser trocados por projeto
+## 3. Tokens de `src/styles/tokens.css` que precisam ser trocados por projeto
 
-Ao personalizar um projeto, altere apenas os **valores** — nunca os nomes dos tokens. Isso garante que todos os componentes da biblioteca continuem funcionando sem ajuste.
+Tailwind v4 (CSS-first, sem `tailwind.config.js`). Os valores vivem em `src/styles/tokens.css`
+como CSS custom properties (`--t-*`) e são registrados como utilitários no `@theme` de
+`global.css`. Ao personalizar, altere apenas os **valores** — nunca os nomes dos tokens.
 
-### Cores obrigatórias
-| Token | O que é |
-|---|---|
-| `primary` | Cor principal da marca |
-| `primary-dark` | Variante escura (hover, destaques) |
-| `secondary` | Acento / CTA (ex: dourado, coral) |
-| `complement` | Tom complementar para gradientes |
-| `background` | Fundo geral da página |
-| `surface` | Fundo de seções alternadas |
-| `surface-alt` | Fundo de seções ainda mais contrastadas |
-| `text-main` | Texto principal |
-| `text-soft` | Texto secundário |
-| `text-muted` | Placeholder, legenda |
-| `border` | Bordas e divisores |
+### Cores obrigatórias (em `tokens.css`)
+| Token | Classe | O que é |
+|---|---|---|
+| `--t-primary` | `bg-primary` | Cor principal da marca |
+| `--t-primary-dark` | `bg-primary-dark` | Variante escura (hover) |
+| `--t-secondary` | `bg-secondary` | Acento / CTA |
+| `--t-complement` | — | Tom complementar para gradientes |
+| `--t-background` | `bg-background` | Fundo geral |
+| `--t-surface` | `bg-surface` | Seções alternadas, cards |
+| `--t-surface-alt` | `bg-surface-alt` | Seções mais contrastadas |
+| `--t-dark` | `bg-dark` | Footer, blocos escuros |
+| `--t-text-main` | `text-text-main` | Texto principal |
+| `--t-text-soft` | `text-text-soft` | Texto secundário |
+| `--t-text-muted` | `text-text-muted` | Placeholder, legenda |
+| `--t-border` | `border-border` | Bordas e divisores |
 
-> `wa` (#25D366) é fixo — não altere.
+> `--t-wa` (#25D366) é o verde do WhatsApp — geralmente não altere.
 
-### Sombras coloridas
-As sombras `primary-sm`, `primary-md`, `secondary-sm` e `secondary-md` usam RGBA hardcoded das cores padrão. Ao trocar `primary` ou `secondary`, atualize também os valores RGBA correspondentes nas sombras.
+Dark mode: redefina os mesmos tokens dentro de `.dark` em `tokens.css`.
 
 ### Tipografia
-| Token | Onde trocar |
-|---|---|
-| `fontFamily.serif` | Fonte de títulos (Google Fonts ou @fontsource) |
-| `fontFamily.sans` | Fonte de corpo |
-
-Lembre de atualizar os `@import` em `src/styles/global.css` com os pesos corretos da fonte escolhida.
+Troque `--t-font-serif` (títulos) e `--t-font-sans` (corpo) em `tokens.css`, e atualize os
+`@import` de fonte em `src/styles/global.css` (ou o `<link>` de fonte no `BaseLayout.astro`)
+com os pesos corretos da fonte escolhida.
 
 ---
 
@@ -124,38 +123,31 @@ O elemento se move verticalmente proporcional ao scroll. Ideal para imagens de f
 
 ---
 
-## 5. Como importar componentes da biblioteca Astroteca
+## 5. Como usar componentes da biblioteca Astroteca
 
-Os componentes da Astroteca estão disponíveis como pacote npm instalado em `package.json`. Para usar:
+Os componentes selecionados no Builder são **copiados como arquivos locais** em
+`src/components/sections/` (não são pacote npm). Importe-os por caminho relativo e edite à vontade:
 
 ```astro
 ---
 // src/pages/index.astro
-import HeroSplit from 'astroteca/HeroSplit.astro';
-import SobreFoto from 'astroteca/SobreFoto.astro';
-import GridServicos from 'astroteca/GridServicos.astro';
-import Depoimentos from 'astroteca/Depoimentos.astro';
-import FAQ from 'astroteca/FAQ.astro';
-import CTAFinal from 'astroteca/CTAFinal.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/sections/Header.astro';
+import Hero from '../components/sections/Hero.astro';
+import Footer from '../components/sections/Footer.astro';
 ---
 
-<Layout>
-  <HeroSplit
-    headline="Título principal"
-    sub="Subtítulo da hero"
-    cta="Quero saber mais"
-    ctaHref="#contato"
-    image="/img/hero.webp"
-  />
-  <SobreFoto ... />
-  <GridServicos servicos={[...]} />
-  <Depoimentos items={[...]} />
-  <FAQ items={[...]} />
-  <CTAFinal ... />
-</Layout>
+<BaseLayout>
+  <Header logo="Cliente" links={[...]} ctaLabel="Fale comigo" ctaHref="#contato" />
+  <main id="main-content">
+    <Hero ... />
+    {/* demais seções */}
+  </main>
+  <Footer brandName="Cliente" links={[...]} />
+</BaseLayout>
 ```
 
-Cada componente aceita apenas props documentadas — sem CSS customizado necessário. Todos os tokens de cores, tipografia e espaçamento vêm automaticamente do `tailwind.config.js` do projeto.
+Os tokens de cor, tipografia e espaçamento vêm de `tokens.css` via `@theme` — não é preciso CSS customizado.
 
 ### Padrão de montagem da página
 

@@ -1,0 +1,175 @@
+---
+// BaseLayout.astro — wrapper de todas as páginas do projeto.
+//
+// Header e Footer NÃO estão aqui. Vêm da biblioteca Astroteca e são
+// compostos na página (index.astro): <BaseLayout> → <Header /> + main + <Footer />.
+//
+// Inclui: anti-flash dark mode, GTM, Consent Mode v2, SEO/OG, fontes,
+// SkipLink, WhatsAppFloat, CookieBanner, ScrollAnimations.
+
+import GTM from '../components/global/GTM.astro';
+import SkipLink from '../components/global/SkipLink.astro';
+import WhatsAppFloat from '../components/global/WhatsAppFloat.astro';
+import CookieBanner from '../components/islands/CookieBanner.tsx';
+import ScrollAnimations from '../components/islands/ScrollAnimations.tsx';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  canonical?: string;
+  noindex?: boolean;
+  schema?: object;
+}
+
+const {
+  // TODO: substitua os defaults pelos dados reais do cliente
+  title = 'Nome do Cliente | Cidade',
+  description = 'Descrição padrão do cliente para SEO. Substitua aqui.',
+  keywords = 'palavra-chave 1, palavra-chave 2, palavra-chave 3',
+  ogTitle = 'Nome do Cliente | Cidade',
+  ogDescription = 'Descrição curta para Open Graph. Substitua aqui.',
+  canonical = 'https://seudominio.com.br', // TODO: domínio real
+  noindex = false,
+  schema,
+} = Astro.props;
+
+// TODO: substitua pelo ID real do GTM do cliente (ou deixe vazio para não injetar)
+const GTM_ID = import.meta.env.PUBLIC_GTM_ID || '';
+
+// Tema inicial do site. TODO: ajuste para 'dark' se o cliente pediu dark por padrão.
+const DEFAULT_THEME = 'light';
+
+// TODO: ajuste o @type e os dados para o tipo de negócio do cliente.
+const defaultSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: 'Nome do Cliente',
+  description: 'Descrição do negócio para schema.org.',
+  url: 'https://seudominio.com.br',
+  telephone: '+55-11-99999-9999',
+  email: 'contato@seudominio.com.br',
+  openingHours: ['Mo-Fr 09:00-18:00'],
+  sameAs: [],
+};
+
+const finalSchema = schema || defaultSchema;
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR" data-default-theme={DEFAULT_THEME}>
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- Dark mode — executa ANTES do CSS para evitar flash.
+       Respeita escolha salva; senão usa data-default-theme; senão prefers-color-scheme. -->
+  <script is:inline>
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var t = stored
+        || document.documentElement.dataset.defaultTheme
+        || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (t === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+
+  {GTM_ID && <GTM id={GTM_ID} />}
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- TODO: substitua pela cor primária do cliente -->
+  <meta name="theme-color" content="#ffffff" />
+
+  <!-- SEO -->
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="keywords" content={keywords} />
+  {noindex && <meta name="robots" content="noindex, follow" />}
+  <link rel="canonical" href={canonical} />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={ogTitle} />
+  <meta property="og:description" content={ogDescription} />
+  <meta property="og:url" content={canonical} />
+  <!-- TODO: adicione a imagem OG real em /public/og-image.webp -->
+  <meta property="og:image" content="https://seudominio.com.br/og-image.webp" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={ogTitle} />
+  <meta name="twitter:description" content={ogDescription} />
+  <meta name="twitter:image" content="https://seudominio.com.br/og-image.webp" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Fonte serifada do projeto.
+       TODO: substitua a URL e a família pela fonte do cliente (sincronize com --t-font-serif em tokens.css).
+       A fonte sans (DM Sans) é carregada via @fontsource no global.css. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="preload"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap"
+    as="style"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap"
+      rel="stylesheet"
+    />
+  </noscript>
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json" set:html={JSON.stringify(finalSchema)} />
+
+  <!-- Google Consent Mode v2 — antes do GTM -->
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      'ad_storage': 'denied',
+      'analytics_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied',
+      'wait_for_update': 500
+    });
+  </script>
+</head>
+<body>
+  {GTM_ID && (
+    <noscript>
+      <iframe
+        src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"
+      ></iframe>
+    </noscript>
+  )}
+
+  <SkipLink />
+
+  <!--
+    Header e Footer vêm da biblioteca Astroteca. Na página:
+      <BaseLayout>
+        <Header ... />
+        <main id="main-content"> ... </main>
+        <Footer ... />
+      </BaseLayout>
+  -->
+  <slot />
+
+  <WhatsAppFloat />
+
+  <CookieBanner client:idle />
+
+  <ScrollAnimations client:load />
+</body>
+</html>

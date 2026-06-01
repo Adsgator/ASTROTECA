@@ -27,20 +27,22 @@ const currentYear = new Date().getFullYear();
   <link rel="canonical" href="https://seudominio.com.br/politica-de-privacidade" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-  {/* TODO: fontes do cliente */}
+  {/* TODO: fontes do cliente (sincronize com tokens.css) */}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <style>
+    /* Tokens do projeto — mesma fonte de verdade das demais páginas */
+    @import '../styles/tokens.css';
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
     body {
-      font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+      font-family: var(--t-font-sans);
       font-weight: 300;
-      /* TODO: cores do cliente */
-      background: #f7f4f0;
-      color: #1d1d1c;
+      background: var(--t-surface);
+      color: var(--t-text-main);
       -webkit-font-smoothing: antialiased;
       padding-top: 88px;
     }
@@ -50,8 +52,8 @@ const currentYear = new Date().getFullYear();
       position: fixed;
       top: 0; left: 0; right: 0;
       z-index: 50;
-      background: #ffffff;
-      border-bottom: 1px solid #e5dfd6;
+      background: var(--t-background);
+      border-bottom: 1px solid var(--t-border);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -74,8 +76,7 @@ const currentYear = new Date().getFullYear();
     }
 
     header .logo:focus-visible {
-      /* TODO: outline na cor primária do cliente */
-      outline: 2px solid #000000;
+      outline: 2px solid var(--t-primary);
       outline-offset: 4px;
     }
 
@@ -87,7 +88,7 @@ const currentYear = new Date().getFullYear();
 
     header .back {
       font-size: 0.82rem;
-      color: #535353;
+      color: var(--t-text-soft);
       text-decoration: none;
       display: flex;
       align-items: center;
@@ -95,9 +96,8 @@ const currentYear = new Date().getFullYear();
       transition: color 0.2s ease;
     }
 
-    /* TODO: cor primária do cliente */
-    header .back:hover { color: #000000; }
-    header .back:focus-visible { outline: 2px solid #000000; outline-offset: 2px; }
+    header .back:hover { color: var(--t-primary); }
+    header .back:focus-visible { outline: 2px solid var(--t-primary); outline-offset: 2px; }
 
     /* ── Main ────────────────────────────────────── */
     main {
@@ -109,17 +109,17 @@ const currentYear = new Date().getFullYear();
 
     /* ── Tipografia ──────────────────────────────── */
     h1 {
-      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-family: var(--t-font-serif);
       font-size: 2.2rem;
       font-weight: 400;
-      color: #1d1d1c;
+      color: var(--t-text-main);
       margin-bottom: 12px;
       letter-spacing: -0.01em;
     }
 
     .updated {
       font-size: 0.8rem;
-      color: #8a8a8a;
+      color: var(--t-text-muted);
       margin-bottom: 48px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -127,11 +127,10 @@ const currentYear = new Date().getFullYear();
     }
 
     h2 {
-      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-family: var(--t-font-serif);
       font-size: 1.4rem;
       font-weight: 400;
-      /* TODO: cor primária do cliente */
-      color: #000000;
+      color: var(--t-primary);
       margin-top: 44px;
       margin-bottom: 16px;
       letter-spacing: -0.005em;
@@ -140,7 +139,7 @@ const currentYear = new Date().getFullYear();
     p, li {
       font-size: 16px;
       line-height: 1.75;
-      color: #535353;
+      color: var(--t-text-soft);
       margin-bottom: 14px;
     }
 
@@ -148,25 +147,24 @@ const currentYear = new Date().getFullYear();
     li { margin-bottom: 8px; }
 
     a {
-      /* TODO: cor primária do cliente */
-      color: #000000;
+      color: var(--t-primary);
       text-decoration: none;
       transition: opacity 0.2s ease;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid color-mix(in srgb, var(--t-primary) 35%, transparent);
     }
 
-    a:hover { opacity: 0.75; border-bottom-color: #000000; }
-    a:focus-visible { outline: 2px solid #000000; outline-offset: 2px; }
-    strong { font-weight: 500; color: #1d1d1c; }
+    a:hover { opacity: 0.75; border-bottom-color: var(--t-primary); }
+    a:focus-visible { outline: 2px solid var(--t-primary); outline-offset: 2px; }
+    strong { font-weight: 500; color: var(--t-text-main); }
 
     /* ── Footer ──────────────────────────────────── */
     footer {
       text-align: center;
       padding: 32px 24px;
-      border-top: 1px solid #e5dfd6;
+      border-top: 1px solid var(--t-border);
       font-size: 0.75rem;
-      color: #8a8a8a;
-      background: #ffffff;
+      color: var(--t-text-muted);
+      background: var(--t-background);
       line-height: 1.6;
       margin-top: 60px;
     }

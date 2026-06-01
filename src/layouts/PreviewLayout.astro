@@ -29,6 +29,12 @@ const { title = 'Preview', fontsUrl } = Astro.props
 
   {/* CSS compilado dos tokens do projeto cliente — isolado do tema dark do Astroteca */}
   <link rel="stylesheet" href="/preview-components.css" />
+
+  {/* Tokens em CSS custom properties da biblioteca (Tailwind v4) —
+      garante que var(--color-*), var(--font-*) etc. existam no preview */}
+  <style is:global>
+    @import '../../minha-lib-astro/src/styles/base.css';
+  </style>
 </head>
 <body>
   <slot />

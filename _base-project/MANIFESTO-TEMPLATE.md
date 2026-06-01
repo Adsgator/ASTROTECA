@@ -1,119 +1,160 @@
 # Manifesto do Projeto — [NOME DO CLIENTE]
 
-> Este arquivo é preenchido com as informações do cliente e enviado ao Claude para configurar o projeto automaticamente.
+> Preenchido com as informações do cliente e enviado ao Claude Code para implementar o site.
+> Quanto mais específico, menos genérico fica o resultado.
 
 ---
 
 ## 1. Identidade
 
-- **Nome do cliente:** 
-- **Profissão / nicho:**
+- **Nome do cliente / negócio:**
+- **Nicho:**
 - **Público-alvo:**
-- **Tom de comunicação:** (ex: sofisticado e acolhedor / direto e confiante / leve e moderno)
+- **Cidade / região de atuação:**
+- **Tom de comunicação:** (ex: sofisticado e acolhedor / direto e confiante)
+
+## 2. Referência visual
+
+- **Sites de referência (1–3):** _URLs_
+- **O que agradou em cada um:** (ex: "tipografia grande no hero", "espaçamento generoso")
+
+## 3. Personalidade da marca
+
+- **3–5 adjetivos:**
+- **O que NÃO é:** (ex: "não é minimalista demais, não é corporativo frio")
+- **Emoção desejada no visitante:**
 
 ---
 
-## 2. Cores
+## 4. Tokens visuais → `src/styles/tokens.css`
 
-- **Cor primária:** #000000
-- **Cor primária escura (hover):** #000000
-- **Cor secundária (acento/CTA):** #000000
-- **Complemento (gradientes):** #000000
-- **Background:** #ffffff
-- **Surface (seções alternadas):** #f7f4f0
-- **Surface alt:** #f0ebe3
-- **Texto principal:** #1d1d1c
-- **Texto suave:** #535353
-- **Texto muted:** #8a8a8a
-- **Borda:** #e5dfd6
+Defina os VALORES; os nomes dos tokens são fixos.
+
+```css
+:root {
+  --t-primary:      #______;  /* botões, links, destaques */
+  --t-primary-dark: #______;  /* hover de botões */
+  --t-secondary:    #______;  /* acentos, badges, CTA dourado */
+  --t-complement:   #______;  /* detalhes em gradiente */
+  --t-background:   #______;
+  --t-surface:      #______;  /* seções alternadas, cards */
+  --t-surface-alt:  #______;
+  --t-dark:         #______;  /* footer, blocos escuros */
+  --t-border:       #______;
+  --t-text-main:    #______;
+  --t-text-soft:    #______;
+  --t-text-muted:   #______;
+  --t-font-serif:   "______"; /* título — nome exato do Google Fonts */
+  --t-font-sans:    "______"; /* corpo — nome exato do Google Fonts */
+}
+.dark { /* paleta dark — preencher os mesmos tokens */ }
+```
+
+- **Tema padrão:** light / dark → ajustar `data-default-theme` no `BaseLayout.astro`.
 
 ---
 
-## 3. Tipografia
+## 5. Estrutura e copy por seção
 
-- **Fonte de título (serif):** Nome exato do Google Fonts
-- **Fonte de corpo (sans):** Nome exato do Google Fonts
-- **Peso da fonte de corpo:** 300 / 400 / 500
+Para cada seção, informe o **tom** e a **mensagem central**, não só o headline.
 
----
-
-## 4. Textos do site
-
-### Hero
-- **Headline:**
-- **Subheadline:**
-- **CTA principal:**
-- **Itens de confiança (2-3 bullets):**
+### Hero — `id="hero-section"`
+- Headline / Subheadline / CTA / itens de confiança:
 
 ### Sobre
-- **Texto principal:**
-- **Citação de destaque:**
+- Texto principal / citação de destaque:
 
-### Serviços (liste quantos forem)
-- **Serviço 1:** nome | descrição
-- **Serviço 2:** nome | descrição
+### Serviços — `id="servicos"`
+- Serviço 1: título | descrição
+- Serviço 2: título | descrição
+- Serviço 3: título | descrição
 
-### Diferenciais (3-6 itens)
-- **Diferencial 1:** título | descrição
-- **Diferencial 2:** título | descrição
+### Como funciona — `id="como-funciona"` (3–4 passos)
+- Passo 1: título | descrição
 
-### Como funciona (3-4 passos)
-- **Passo 1:** título | descrição
-- **Passo 2:** título | descrição
+### Diferenciais — `id="diferenciais"` (3–6)
+- Diferencial 1: título | descrição
 
-### Avaliações (3-5 depoimentos)
-- **Nome:** | **Nota:** | **Texto:**
+### Depoimentos — `id="depoimentos"`
+- Nome | nota | texto
 
-### FAQ (4-6 perguntas)
-- **P:** | **R:**
+### FAQ — `id="faq"` (4–6)
+- P: | R:
 
-### CTA Final
-- **Título:**
-- **Subtítulo:**
-- **CTA:**
+### CTA final / Contato — `id="contato"`
+- Título / subtítulo / CTA
+
+### Footer — `id="footer"`
+- Links, redes sociais, links legais
 
 ---
 
-## 5. Configuração técnica
+## 6. Contratos técnicos (obrigatórios)
+
+- Hero com `id="hero-section"`; Footer com `id="footer"`; `<main id="main-content">`.
+- Cada seção com `id` igual ao item de menu.
+- WhatsApp: preencher `.env` (`PUBLIC_WA_NUMBER`, `PUBLIC_WA_MESSAGE` — número só dígitos com DDI).
+- `politica-de-privacidade.astro` e `termos-de-uso.astro`: preencher todos os TODOs (nome, CNPJ, e-mail, domínio, hospedagem).
+
+---
+
+## 7. Configuração técnica e SEO
 
 - **Domínio:** https://
-- **GTM ID:** GTM-
-- **WhatsApp:** 55 + DDD + número (só números)
-- **Mensagem padrão do WhatsApp:**
-- **E-mail de contato:**
-- **Endereço:**
-- **Horários de atendimento:**
+- **GTM ID:** (deixe vazio se não houver)
+- **WhatsApp:** 55 + DDD + número | **Mensagem padrão:**
+- **E-mail / endereço / horários:**
 - **Redes sociais:** Instagram | TikTok | Facebook | YouTube
+- **Title (50–60 chars):**
+- **Meta description (150–160 chars):**
+- **Keywords (5–8):**
+- **Schema.org @type:** (LocalBusiness, MedicalBusiness, LegalService, etc.)
 
 ---
 
-## 6. SEO
+## 8. Exemplo de componente bem-estruturado
 
-- **Title tag:** (até 60 caracteres)
-- **Meta description:** (até 160 caracteres)
-- **Keywords principais:** (5-8 termos)
-- **Cidade/região de atuação:**
+```astro
+---
+interface Props { title: string; description: string }
+const { title, description } = Astro.props;
+---
+<section id="servicos" class="section-py">
+  <div class="container-wide">
+    <h2 class="font-serif text-display-md text-text-main">{title}</h2>
+    <p class="text-body-lg text-text-soft">{description}</p>
+  </div>
+</section>
+```
+
+Tokens de layout: `.section-py`, `.container-wide`, `.container-content`, `font-serif`,
+`text-display-*`, `text-body-*`, `text-text-main`, `text-text-soft`, `bg-primary`, `bg-surface`.
 
 ---
 
-## 7. Schema.org
+## 9. Imagens disponíveis
 
-- **Tipo de negócio:** (ex: Physician, HealthAndBeautyBusiness, LegalService, LocalBusiness)
-- **Nome da empresa/profissional:**
-- **Especialidade:**
-
----
-
-## 8. Imagens disponíveis
-
-Liste os arquivos de imagem que serão usados e onde cada um vai:
-- `hero-principal.webp` → hero section, lado direito
+- `hero-principal.webp` → hero
 - `foto-sobre.webp` → seção sobre
-- `foto-servico.webp` → seção serviço
 - `logo.svg` → header e footer
+
+---
+
+## 10. Checklist de entrega
+
+- [ ] Header: scroll direction detection + link ativo (IntersectionObserver) + menu mobile fechando
+- [ ] Hero `id="hero-section"`; Footer `id="footer"`; `<main id="main-content">`
+- [ ] WhatsApp flutuante: `.env` preenchido; some quando Hero/Footer visíveis
+- [ ] Dark mode toggle no Footer; persiste; sem flash; `tokens.css` light + dark preenchidos
+- [ ] Páginas legais com TODOs preenchidos
+- [ ] Animações de scroll via `data-animate*`
+- [ ] SEO: title, description, OG, JSON-LD, canonical
+- [ ] Responsividade mobile 375px: hero ≥ 20px, botões ≥ 44px altura, padding lateral ≥ 20px
+- [ ] Sitemap em `/sitemap-index.xml`
+- [ ] `npm run check` e `npm run build` limpos
 
 ---
 
 ## Notas adicionais
 
-(qualquer detalhe específico do cliente que foge ao padrão)
+(qualquer detalhe específico do cliente)

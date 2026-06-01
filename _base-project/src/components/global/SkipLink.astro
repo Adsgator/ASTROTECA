@@ -1,0 +1,25 @@
+---
+// SkipLink — atalho de acessibilidade "Pular para o conteúdo".
+// Invisível até receber foco via teclado; aponta para #main-content.
+---
+
+<a href="#main-content" class="skip-link">Pular para o conteúdo</a>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -3rem;
+    z-index: 100;
+    padding: 0.625rem 1rem;
+    background-color: var(--color-primary);
+    color: #fff;
+    border-radius: var(--radius-md, 8px);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    transition: top 0.2s ease;
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+</style>

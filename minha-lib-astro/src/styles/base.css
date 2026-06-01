@@ -1,0 +1,98 @@
+/* ─────────────────────────────────────────────────────────────
+   base.css — Design tokens da biblioteca Astroteca (Tailwind v4)
+   ─────────────────────────────────────────────────────────────
+   Fonte única de verdade dos tokens. Cada projeto de cliente
+   SOBRESCREVE estes valores no seu próprio tokens.css — nunca
+   altera os NOMES dos tokens.
+
+   Tudo é exposto como CSS custom property (var(--token)) para que
+   o tema seja trocável em runtime sem recompilar. Os mesmos nomes
+   são registrados no @theme do Tailwind v4 do projeto cliente, o
+   que gera utilitários (bg-brand, text-text-strong, etc.).
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Marca ──────────────────────────────────────────── */
+  --color-brand:        oklch(55% 0.25 250);
+  --color-brand-hover:  oklch(48% 0.25 250);
+  --color-brand-light:  oklch(95% 0.05 250);
+  --color-brand-text:   oklch(99% 0.005 250); /* texto sobre fundo brand */
+
+  /* ── Superfícies ────────────────────────────────────── */
+  --color-surface:      oklch(99% 0.005 260);
+  --color-surface-alt:  oklch(96% 0.008 260);
+  --color-border:       oklch(88% 0.01 260);
+  --color-dark:         oklch(20% 0.01 260); /* fundo do footer / blocos escuros */
+
+  /* ── Texto ──────────────────────────────────────────── */
+  --color-text-strong:  oklch(12% 0.01 260);
+  --color-text-base:    oklch(30% 0.01 260);
+  --color-text-muted:   oklch(55% 0.01 260);
+
+  /* ── Utilitárias ────────────────────────────────────── */
+  --color-wa:           oklch(72% 0.18 150); /* verde WhatsApp */
+
+  /* ── Tipografia ─────────────────────────────────────── */
+  --font-heading:       "Inter Variable", system-ui, sans-serif;
+  --font-body:          "Inter Variable", system-ui, sans-serif;
+  --font-mono:          "JetBrains Mono", ui-monospace, monospace;
+
+  /* ── Escala tipográfica (responsiva) ────────────────── */
+  --text-hero:          clamp(2.5rem, 5vw, 4.5rem);
+  --text-headline:      clamp(1.75rem, 3vw, 2.5rem);
+  --text-subheadline:   clamp(1.125rem, 2vw, 1.375rem);
+  --text-body:          1rem;
+  --text-small:         0.875rem;
+  --text-xs:            0.75rem;
+
+  /* ── Line heights ───────────────────────────────────── */
+  --leading-tight:      1.2;
+  --leading-snug:       1.4;
+  --leading-normal:     1.6;
+  --leading-relaxed:    1.8;
+
+  /* ── Bordas ─────────────────────────────────────────── */
+  --radius-button:      8px;
+  --radius-card:        16px;
+  --radius-input:       8px;
+  --radius-badge:       100px;
+
+  /* ── Layout / espaçamento ───────────────────────────── */
+  --section-padding-y:  clamp(4rem, 8vw, 8rem);
+  --container-max:      1200px;
+  --container-padding:  clamp(1rem, 4vw, 2rem);
+
+  /* ── Transições ─────────────────────────────────────── */
+  --transition-fast:    150ms ease;
+  --transition-base:    250ms ease;
+  --transition-slow:    400ms ease;
+
+  /* ── Sombras ────────────────────────────────────────── */
+  --shadow-card:        0 1px 3px oklch(0% 0 0 / 0.08),
+                        0 4px 12px oklch(0% 0 0 / 0.05);
+  --shadow-hover:       0 4px 16px oklch(0% 0 0 / 0.12),
+                        0 8px 32px oklch(0% 0 0 / 0.06);
+  --shadow-float:       0 4px 24px oklch(0% 0 0 / 0.18);
+
+  /* ── Header ─────────────────────────────────────────── */
+  --header-height:      4rem;
+}
+
+/* ── Dark mode ──────────────────────────────────────────
+   Ativado pela classe .dark no <html> (toggle manual) OU pela
+   preferência do sistema na primeira visita (gerenciada pelo
+   script anti-flash no <head> do projeto cliente). */
+.dark {
+  --color-surface:      oklch(14% 0.01 260);
+  --color-surface-alt:  oklch(18% 0.01 260);
+  --color-border:       oklch(28% 0.01 260);
+  --color-dark:         oklch(10% 0.01 260);
+  --color-text-strong:  oklch(96% 0.005 260);
+  --color-text-base:    oklch(80% 0.008 260);
+  --color-text-muted:   oklch(58% 0.01 260);
+  --color-brand-light:  oklch(28% 0.06 250);
+  --shadow-card:        0 1px 3px oklch(0% 0 0 / 0.3),
+                        0 4px 12px oklch(0% 0 0 / 0.2);
+  --shadow-hover:       0 4px 16px oklch(0% 0 0 / 0.4),
+                        0 8px 32px oklch(0% 0 0 / 0.25);
+}

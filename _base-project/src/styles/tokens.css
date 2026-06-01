@@ -1,0 +1,52 @@
+/* ─────────────────────────────────────────────────────────────
+   tokens.css — ÚNICO arquivo que muda entre projetos
+   ─────────────────────────────────────────────────────────────
+   Define os VALORES dos tokens como CSS custom properties com o
+   prefixo --t- (token). O @theme do global.css mapeia estes para os
+   nomes de utilitário do Tailwind (bg-primary, text-text-main…)
+   usando `@theme inline`, de modo que as classes apontem direto
+   para estas vars e respeitem o tema em runtime (incluindo .dark).
+
+   Para customizar um cliente: troque os valores aqui. Nada de cor,
+   fonte ou tamanho hardcodado em outros arquivos.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Marca ──────────────────────────────────────────── */
+  --t-primary:       #436f3e; /* botões, links, destaques */
+  --t-primary-dark:  #2f5129; /* hover de botões, variantes escuras */
+  --t-secondary:     #d59740; /* acentos, badges, CTA dourado */
+  --t-complement:    #f9f395; /* detalhes decorativos */
+
+  /* ── Superfícies ────────────────────────────────────── */
+  --t-background:    #ffffff;
+  --t-surface:       #f7f4f0;
+  --t-surface-alt:   #f0ebe3;
+  --t-dark:          #1d1d1c; /* footer, blocos escuros */
+  --t-border:        #e5dfd6;
+
+  /* ── Texto ──────────────────────────────────────────── */
+  --t-text-main:     #1d1d1c; /* corpo */
+  --t-text-soft:     #535353; /* subtítulos, labels */
+  --t-text-muted:    #8a8a8a; /* metadados, placeholders */
+
+  /* ── Utilitárias ────────────────────────────────────── */
+  --t-wa:            #25d366; /* verde WhatsApp */
+
+  /* ── Tipografia ─────────────────────────────────────── */
+  --t-font-serif:    "Cormorant Garamond", Georgia, ui-serif, serif;
+  --t-font-sans:     "DM Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Dark mode ──────────────────────────────────────────
+   Substitua estes valores pela paleta dark do cliente. */
+.dark {
+  --t-background:    #0f0f0f;
+  --t-surface:       #1a1a1a;
+  --t-surface-alt:   #242424;
+  --t-dark:          #0a0a0a;
+  --t-border:        #2a2a2a;
+  --t-text-main:     #e8e8e8;
+  --t-text-soft:     #b0b0b0;
+  --t-text-muted:    #707070;
+}

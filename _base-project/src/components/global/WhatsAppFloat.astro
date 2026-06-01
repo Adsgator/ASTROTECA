@@ -1,11 +1,18 @@
 ---
 // Botão flutuante de WhatsApp.
-// Aparece assim que o usuário rola para fora da seção hero (observa #hero-section).
-// Se não houver seção hero, remova o IntersectionObserver e torne o botão sempre visível.
+//
+// Visível por padrão. Esconde quando o Hero OU o Footer estão na tela
+// (para não competir com os CTAs dessas seções). Se não houver
+// #hero-section nem #footer, fica sempre visível.
+//
+// O número e a mensagem vêm de .env (PUBLIC_WA_NUMBER / PUBLIC_WA_MESSAGE).
+// Formato do número: só dígitos com DDI, ex.: 5511999999999.
 
-// TODO: substitua pelo número e mensagem real do cliente.
-// Formato: https://wa.me/55DDNÚMERO?text=MENSAGEM_ENCODED
-const WA_LINK = 'https://wa.me/5511999999999?text=Ol%C3%A1!%20Vi%20seu%20site%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es.';
+const waNumber = import.meta.env.PUBLIC_WA_NUMBER || 'SEUNUMERO';
+const waMessage =
+  import.meta.env.PUBLIC_WA_MESSAGE ||
+  'Olá! Vi seu site e gostaria de mais informações.';
+const WA_LINK = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
 ---
 
 <a
@@ -16,7 +23,7 @@ const WA_LINK = 'https://wa.me/5511999999999?text=Ol%C3%A1!%20Vi%20seu%20site%20
   aria-label="Falar pelo WhatsApp"
   data-tracking="click-whatsapp-flutuante"
   data-section="floating"
-  class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-wa rounded-full flex items-center justify-center shadow-float hover:scale-110 transition-all duration-200 opacity-0 pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wa"
+  class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-wa rounded-full flex items-center justify-center shadow-float hover:scale-110 transition-all duration-200 opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wa"
 >
   <svg width="26" height="26" viewBox="0 0 24 24" fill="white" aria-hidden="true">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
@@ -27,23 +34,35 @@ const WA_LINK = 'https://wa.me/5511999999999?text=Ol%C3%A1!%20Vi%20seu%20site%20
 <script is:inline>
   (function () {
     var btn = document.getElementById('btn-whatsapp-float');
-    // Observa a seção hero: o botão só aparece após sair da tela.
-    // O Hero da biblioteca Astroteca deve ter id="hero-section".
+    if (!btn) return;
+
     var hero = document.getElementById('hero-section');
-    if (!btn || !hero) return;
+    var footer = document.getElementById('footer');
 
-    var observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          btn.classList.add('opacity-0', 'pointer-events-none');
-          btn.classList.remove('opacity-100');
-        } else {
-          btn.classList.remove('opacity-0', 'pointer-events-none');
-          btn.classList.add('opacity-100');
-        }
-      });
-    }, { threshold: 0.1 });
+    var heroVisible = false;
+    var footerVisible = false;
 
-    observer.observe(hero);
+    function update() {
+      var hide = heroVisible || footerVisible;
+      btn.classList.toggle('opacity-0', hide);
+      btn.classList.toggle('pointer-events-none', hide);
+      btn.classList.toggle('opacity-100', !hide);
+    }
+
+    if (hero) {
+      new IntersectionObserver(function (entries) {
+        heroVisible = entries[0].isIntersecting;
+        update();
+      }, { threshold: 0.1 }).observe(hero);
+    }
+
+    if (footer) {
+      new IntersectionObserver(function (entries) {
+        footerVisible = entries[0].isIntersecting;
+        update();
+      }, { threshold: 0.1 }).observe(footer);
+    }
+
+    update();
   })();
 </script>
