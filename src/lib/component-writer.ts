@@ -86,6 +86,44 @@ export function detectProps(code: string): PropDefinition[] {
   return props
 }
 
+// ─── Slots e copy ───────────────────────────────────────────────────────────────
+
+export function detectSlots(code: string): string[] {
+  const slotRegex = /<slot\s+(?:name=["']([^"']+)["'])?\s*\/?>/g
+  const slots = ['default']
+  let match: RegExpExecArray | null
+  while ((match = slotRegex.exec(code)) !== null) {
+    if (match[1]) slots.push(match[1])
+  }
+  return [...new Set(slots)]
+}
+
+/** Extrai textos padrão do template como defaults de copy editável */
+export function extractCopyDefaults(code: string): Record<string, string> | undefined {
+  const parts = code.split('---')
+  if (parts.length < 3) return undefined
+  const templateSection = parts[2]
+
+  const copy: Record<string, string> = {}
+
+  const attrRegex = /\b(title|subtitle|label|description|text|cta|heading|caption|eyebrow)\s*=\s*"([^"]{3,100})"/gi
+  for (const [, key, val] of templateSection.matchAll(attrRegex)) {
+    const keyLower = key.toLowerCase()
+    if (!copy[keyLower]) copy[keyLower] = val
+  }
+
+  const tagRegex = /<(h[1-6]|p|button|a|span|li)[^>]*>\s*([A-ZÀ-ÿa-z][^<]{5,120}?)\s*<\/\1>/gi
+  let tagIdx = 0
+  for (const [, tag, text] of templateSection.matchAll(tagRegex)) {
+    const cleaned = text.trim()
+    if (!cleaned.startsWith('{') && !cleaned.includes('\n') && cleaned.length >= 5) {
+      copy[`${tag}_${tagIdx++}`] = cleaned
+    }
+  }
+
+  return Object.keys(copy).length > 0 ? copy : undefined
+}
+
 // ─── Sanitização ──────────────────────────────────────────────────────────────
 
 export function sanitizeCode(code: string): string {
@@ -98,6 +136,8 @@ export function sanitizeCode(code: string): string {
   const removedVars: string[] = []
   for (const pattern of assetPatterns) {
     code = code.replace(pattern, (match) => {
+      // Nunca remover import type — apenas tipos, seguros e necessários ao componente
+      if (match.includes('import type')) return match
       const named = match.match(/import\s+\{([^}]+)\}/)
       const def   = match.match(/import\s+(\w+)\s+from/)
       if (named?.[1]) named[1].split(',').map(s => s.trim().split(/\s+as\s+/).pop()).filter(Boolean).forEach(v => removedVars.push(v!))
@@ -206,6 +246,8 @@ export function writeComponentLocal(payload: WriteComponentPayload): WriteCompon
   registry = registry.filter(r => r.id !== id)
   const componentFile = `${category}/${name}.astro`
   const previewPath = `/preview/${id}`
+  const slots = detectSlots(code)
+  const copy = extractCopyDefaults(code)
   const entry: ComponentMeta = {
     id, name, category, description,
     previewPath,
@@ -216,6 +258,8 @@ export function writeComponentLocal(payload: WriteComponentPayload): WriteCompon
     order: registry.length + 1,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    ...(slots.length > 0 ? { slots } : {}),
+    ...(copy ? { copy } : {}),
   }
   registry.push(entry)
   writeFileSync(REGISTRY, JSON.stringify(registry, null, 2) + '\n')

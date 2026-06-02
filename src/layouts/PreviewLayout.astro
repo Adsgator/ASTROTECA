@@ -1,7 +1,8 @@
 ---
 // PreviewLayout — contexto isolado para preview de componentes da biblioteca.
-// Carrega preview-components.css (compilado de tailwind-tokens.js + global utilities)
-// e NÃO herda o tema dark do Astroteca. O que você vê aqui = o que o cliente vê.
+// Carrega preview-components.css (compilado de src/styles/preview.css via
+// @tailwindcss/cli — ver build:preview-css no package.json) e NÃO herda o tema
+// dark do Astroteca. O que você vê aqui = o que o cliente vê.
 
 interface Props {
   title?: string

@@ -10,11 +10,12 @@ Guia para qualquer IA trabalhando neste projeto. Leia antes de qualquer edição
 Funciona como uma biblioteca de componentes Astro + um studio para orquestrar projetos.
 
 **Fluxo principal:**
-1. **Extrair** (`npm run extract`) — componente do projeto atual vai para `minha-lib-astro/`
-2. **Publicar** (Admin → publish) — sincroniza `minha-lib-astro/` com o registry
-3. **Selecionar** (Builder step 1) — escolhe componentes da biblioteca
-4. **Configurar** (Builder step 2) — cores, fontes, dados do cliente → ArtDirection
-5. **Gerar** (Builder step 3) — cria repo no GitHub com `MANIFESTO.md` para o Claude adaptar
+1. **Adicionar / Extrair componente** — duas portas, mesmo motor (`src/lib/component-writer.ts`):
+   - Pela UI (recomendado): `/admin` cola um `.astro` criado pelo Claude (ver `COMPONENT-BLUEPRINT.md`); `/admin/extract` extrai de um projeto de cliente (arrasta o `.astro` ou cola o caminho). Ambos sanitizam, gravam em `minha-lib-astro/`, geram preview e publicam no GitHub.
+   - Pelo CLI: `npm run new` (criar) e `npm run extract` (extrair). Compartilham `scripts/component-core.mjs` com o motor da UI.
+2. **Selecionar** (Builder) — escolhe componentes da biblioteca
+3. **Configurar** (Builder) — cores, fontes, dados do cliente → ArtDirection
+4. **Gerar** (Builder) — cria repo no GitHub com `MANIFESTO.md` para o Claude adaptar
 
 O projeto gerado não é editado aqui — ele vai para outro repositório e é adaptado por um Claude separado seguindo o manifesto.
 
@@ -36,13 +37,14 @@ src/
   components/    — React/TSX: Builder, AdminPanel, ComponentBrowser, ConfigPanel
   lib/           — TypeScript puro: manifest.ts, github.ts, analytics.ts, utils.ts
   pages/         — Astro: index, builder, admin (+ admin/extract, admin/remove), analytics, config + preview/*
-  pages/api/     — Endpoints Astro: create-project, extract-component, remove-component, publish-component, record-component-usage, registry-proxy
+  pages/api/     — Endpoints Astro: auth, create-project, extract-component, remove-component, publish-component, record-component-usage, registry-proxy
+  middleware.ts  — Auth por PIN (cookie de sessão); rotas públicas: /login, /api/auth
   types/         — index.ts com todos os tipos compartilhados
   layouts/       — AppLayout.astro (sidebar), PreviewLayout.astro (preview isolado)
   styles/        — ui.ts (tokens CSS em JS), app.css, preview.css (estilo isolado do preview)
 
 minha-lib-astro/ — Repo git próprio (in-tree, não submodule). NUNCA editar diretamente aqui a menos que pedido.
-scripts/         — Node.js CLI: extract-component.mjs, add-component.mjs, generate-previews.mjs, remove-component.mjs, analytics.mjs
+scripts/         — Node.js CLI: extract-component.mjs, add-component.mjs, generate-previews.mjs, remove-component.mjs, analytics.mjs + component-core.mjs (núcleo único, espelha component-writer.ts)
 public/          — Assets estáticos (logo_astroteca_branca.svg) + public/data/ (config.json, analytics.json)
 _base-project/   — Template base copiado ao criar projeto no GitHub. Self-contained com Tailwind v4 CSS-first (tokens.css + global.css)
 ```
@@ -83,7 +85,7 @@ Todos os tipos ficam em `src/types/index.ts`. Nunca criar tipos duplicados em co
 |---------|-----------|
 | `npm run dev` | Inicia dev em localhost:4321 (ou 4322 se ocupada) |
 | `npm run build` | Build de produção — deve passar sem erros |
-| `npm run extract <caminho>` | Extrai componente de um projeto para minha-lib-astro/ — faz commit + push automático do submodule, previews e analytics |
+| `npm run extract <caminho>` | Extrai componente de um projeto para minha-lib-astro/ — faz commit + push automático do repo in-tree, previews e analytics |
 | `npm run new` | Wizard para criar componente novo na biblioteca |
 | `npm run previews` | Gera as páginas de preview de todos os componentes |
 | `npm run remove` | Remove componente do registry |

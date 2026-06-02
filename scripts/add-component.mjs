@@ -29,8 +29,10 @@ function getExample(propName) {
 }
 
 // Gera o código do componente .astro com template inicial
+// Segue o padrão do COMPONENT-BLUEPRINT.md: classes Tailwind dos tokens
+// (stack v4 CSS-first), nunca valores literais nem CSS vars inexistentes.
 function generateComponentCode(name, category, props) {
-  const className = toKebab(name)
+  const sectionId = toKebab(name)
 
   const interfaceLines = props.map(p =>
     `  ${p.name}${p.required ? '' : '?'}: ${p.type}`
@@ -47,7 +49,16 @@ function generateComponentCode(name, category, props) {
   return `---
 // minha-lib-astro/src/components/${category}/${name}.astro
 // Gerado automaticamente pelo add-component.mjs
-// Implemente o HTML e CSS abaixo
+//
+// REGRA DE OURO (ver COMPONENT-BLUEPRINT.md): use as classes Tailwind dos
+// tokens — nunca valores literais nem classes de paleta nativa do Tailwind.
+//   Cores:      bg-background bg-surface bg-dark / bg-primary bg-secondary
+//               text-text-main text-text-soft text-text-muted / border-border
+//   Tipografia: font-serif (títulos) font-sans (corpo)
+//               text-display-xl…sm  text-body-lg…sm  text-label
+//   Layout:     .section-py  .container-wide  .container-content
+//   Prontas:    .btn-primary .btn-ghost .btn-secondary-gold .card-hover .label-tag
+// Em CSS escopado, se precisar, use var(--t-primary) etc. O swap de tema é automático.
 
 interface Props {
 ${interfaceLines}
@@ -58,67 +69,17 @@ ${destructureLines}
 } = Astro.props
 ---
 
-<section class="${className}">
-  <div class="${className}__container">
+<section id="${sectionId}" class="section-py bg-surface">
+  <div class="container-wide">
 
-    <h2 class="${className}__title">{${firstStringProp}}</h2>
+    <h2 class="font-serif text-display-lg text-text-main mb-4">{${firstStringProp}}</h2>
 
-    {/* Implemente o resto do componente aqui */}
+    {/* Implemente o resto do componente aqui usando as classes de token acima.
+        Alterne bg-surface ↔ bg-background entre seções vizinhas para criar ritmo.
+        Para destacar uma palavra no título em primary, use <em>: "Meu <em>diferencial</em>" */}
 
   </div>
 </section>
-
-<style>
-  /*
-   * REGRA DE OURO: use sempre CSS variables para cores, fontes, tamanhos.
-   * Nunca valores fixos como #333 ou font-family: Inter.
-   * Isso garante que o componente herda o tema de cada cliente.
-   *
-   * Variáveis disponíveis:
-   * --color-primary      → cor de destaque
-   * --color-on-primary   → texto sobre a cor primary
-   * --color-bg           → fundo da página
-   * --color-heading      → cor dos títulos
-   * --color-text         → cor do texto normal
-   * --color-text-muted   → cor do texto secundário
-   * --font-heading       → fonte dos títulos
-   * --font-body          → fonte do corpo
-   * --radius             → borda arredondada padrão
-   * --radius-lg          → borda arredondada maior
-   * --container-max      → largura máxima do container
-   * --container-padding  → padding lateral do container
-   */
-
-  .${className} {
-    padding: clamp(4rem, 8vw, 7rem) var(--container-padding, 1.5rem);
-    background-color: var(--color-bg);
-  }
-
-  .${className}__container {
-    max-width: var(--container-max, 1200px);
-    margin: 0 auto;
-  }
-
-  .${className}__title {
-    font-family: var(--font-heading);
-    font-size: clamp(1.75rem, 3.5vw, 2.75rem);
-    font-weight: 700;
-    color: var(--color-heading);
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    margin-bottom: 1rem;
-  }
-
-  /* Use <em> no título para destacar uma palavra em primary: "Meu <em>diferencial</em>" */
-  .${className}__title em {
-    font-style: normal;
-    color: var(--color-primary);
-  }
-
-  @media (max-width: 768px) {
-    /* Ajustes mobile aqui */
-  }
-</style>
 `
 }
 
@@ -266,7 +227,7 @@ async function main() {
     category,
     description,
     previewPath: `/preview/${id}`,
-    screenshot: '',
+    screenshotUrl: '',
     componentFile: `${category}/${name}.astro`,
     tags,
     bestFor,

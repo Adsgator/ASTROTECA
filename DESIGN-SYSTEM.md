@@ -95,9 +95,13 @@ Ver **[COMPONENT-BLUEPRINT.md](COMPONENT-BLUEPRINT.md)** — guia completo com t
 
 ## Checklist antes de extrair um componente
 
+> Os tokens dos **componentes da biblioteca** (não do studio) seguem o
+> [COMPONENT-BLUEPRINT.md](COMPONENT-BLUEPRINT.md) — classes Tailwind dos tokens
+> da stack v4 (`bg-primary`, `text-text-main`, `font-serif`, `.section-py`).
+
 - [ ] Sem imports de `../assets/` (imagens locais removidas)
 - [ ] Sem dados reais do cliente (telefone, CNPJ, redes sociais)
 - [ ] Props declaradas com `interface Props` e valores padrão razoáveis
-- [ ] Usa tokens Tailwind (`bg-primary`, `text-text-main`, `py-section`) — sem valores literais
+- [ ] Usa as classes de token do blueprint — sem valores literais nem paleta nativa do Tailwind
 - [ ] Nome do arquivo em PascalCase (`HeroSplit.astro`)
 - [ ] `npm run build` sem erros após adicionar ao registry

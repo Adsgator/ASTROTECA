@@ -1,16 +1,9 @@
 // scripts/utils.mjs
-// Funções e constantes compartilhadas entre os scripts da Astroteca
+// Funções e constantes compartilhadas entre os scripts da Astroteca.
+// Helpers de nome e categorias vêm do núcleo único (component-core.mjs) — não
+// duplicar aqui para não divergir do motor das APIs.
 
-export const toPascal = s => s.replace(/(^\w|-\w|_\w)/g, m => m.replace(/[-_]/, '').toUpperCase())
-
-export const toKebab = s => s
-  .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-  .replace(/([a-z])([A-Z])/g, '$1-$2')
-  .replace(/([a-zA-Z])(\d)/g, '$1-$2')
-  .replace(/[\s_]+/g, '-')
-  .toLowerCase()
-
-export const CATEGORIES = ['Hero', 'Features', 'Services', 'Testimonials', 'Process', 'Pricing', 'FAQ', 'CTA', 'Contact', 'Footer', 'Trust', 'UI', 'Other']
+export { toPascal, toKebab, COMPONENT_CATEGORIES as CATEGORIES } from './component-core.mjs'
 
 export const EXAMPLES = {
   headline:          'Transforme sua presença digital',

@@ -47,6 +47,7 @@ export interface ComponentMeta {
   tags: string[]
   bestFor: string[]
   copy?: Record<string, string>
+  slots?: string[]
   order?: number
   createdAt: string
   updatedAt: string

@@ -9,11 +9,13 @@
 import { intro, outro, text, select, multiselect, isCancel, cancel, note, spinner } from '@clack/prompts'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs'
 import { resolve, join, basename, dirname, relative } from 'node:path'
-import { createRequire } from 'node:module'
-import { pathToFileURL } from 'node:url'
 import { execSync } from 'node:child_process'
 import { recordComponentExtraction } from './analytics.mjs'
-import { toPascal as _toPascal, toKebab as _toKebab, CATEGORIES as _CATEGORIES, EXAMPLES as _EXAMPLES } from './utils.mjs'
+import { EXAMPLES as _EXAMPLES } from './utils.mjs'
+import {
+  toPascal, toKebab, deterministicSuffix, COMPONENT_CATEGORIES as CATEGORIES,
+  inferCategory, detectProps, detectSlots, extractCopyDefaults, sanitizeCode,
+} from './component-core.mjs'
 
 const c = {
   cyan:   s => `\x1b[36m${s}\x1b[0m`,
@@ -43,70 +45,7 @@ function suggestAstroFiles(input) {
   } catch { return [] }
 }
 
-const toPascal = _toPascal
-const toKebab  = _toKebab
-const CATEGORIES = _CATEGORIES
-const randomId = () => String(Math.floor(1000 + Math.random() * 9000))
-
-// Componentes utilitários que sempre ganham a pasta UI (independente do contexto)
-const UI_COMPONENTS = /^(button|btn|icon|badge|tag|chip|card|modal|dialog|tooltip|popover|dropdown|input|textarea|select|checkbox|radio|toggle|switch|form|label|avatar|spinner|loader|alert|toast|banner|divider|separator|breadcrumb|pagination|tab|accordion|collapse|drawer|sidebar|nav|navbar|menu|link|image|img|picture|video|embed)s?(\d+)?$/i
-
-// Infere a categoria de um componente filho pelo nome
-function inferCategory(name) {
-  const n = name.toLowerCase().replace(/\d+$/, '')
-  if (UI_COMPONENTS.test(n))        return 'UI'
-  if (/^hero/.test(n))              return 'Hero'
-  if (/^feature/.test(n))           return 'Features'
-  if (/^service/.test(n))           return 'Services'
-  if (/^testimonial/.test(n))       return 'Testimonials'
-  if (/^process|^step/.test(n))     return 'Process'
-  if (/^pric/.test(n))              return 'Pricing'
-  if (/^faq/.test(n))               return 'FAQ'
-  if (/^cta/.test(n))               return 'CTA'
-  if (/^contact/.test(n))           return 'Contact'
-  if (/^footer/.test(n))            return 'Footer'
-  if (/^trust|^award/.test(n))      return 'Trust'
-  return 'Other'
-}
-
 const EXAMPLES = _EXAMPLES
-
-// Detecta props automaticamente lendo a interface Props do .astro
-function detectProps(code) {
-  const interfaceMatch = code.match(/interface\s+Props\s*\{([^}]+)\}/s)
-  if (!interfaceMatch) return []
-
-  const interfaceBody = interfaceMatch[1]
-  const propRegex = /(\w+)(\?)?:\s*(string|boolean|number|string\[\]|[A-Z]\w+\[\]|\w+)/g
-  const props = []
-  let match
-
-  while ((match = propRegex.exec(interfaceBody)) !== null) {
-    const [, name, optional, type] = match
-    const normalizedType = type.includes('[]') ? 'array' : type
-
-    // Pega o valor default — busca apenas no frontmatter para evitar falsos positivos em atributos HTML
-    let defaultVal = ''
-    const frontmatterMatch = code.match(/^---\r?\n([\s\S]*?)\r?\n---/m)
-    const searchScope = frontmatterMatch ? frontmatterMatch[1] : code
-    const stringDefault = searchScope.match(new RegExp(`\\b${name}\\s*=\\s*['"]([^'"]+)['"]`))
-    const numberDefault = searchScope.match(new RegExp(`\\b${name}\\s*=\\s*(\\d+(?:\\.\\d+)?)`))
-    const boolDefault = searchScope.match(new RegExp(`\\b${name}\\s*=\\s*(true|false)`))
-
-    if (stringDefault?.[1]) defaultVal = stringDefault[1]
-    else if (numberDefault?.[1]) defaultVal = numberDefault[1]
-    else if (boolDefault?.[1]) defaultVal = boolDefault[1]
-
-    props.push({
-      name,
-      type: normalizedType,
-      required: !optional,
-      ...(defaultVal ? { default: defaultVal } : {}),
-    })
-  }
-
-  return props
-}
 
 // Converte imports absolutos pra relativos (usado em ambos os fluxos)
 function normalizeAbsoluteImports(code) {
@@ -165,47 +104,7 @@ function detectFrameworkComponents(code) {
   return components
 }
 
-// Detecta slots no template
-function detectSlots(code) {
-  const slotRegex = /<slot\s+(?:name=["']([^"']+)["'])?\s*\/?>/g
-  const slots = ['default']
-  let match
-  while ((match = slotRegex.exec(code)) !== null) {
-    if (match[1]) slots.push(match[1])
-  }
-  return [...new Set(slots)]
-}
-
-// Extrai textos padrão do template como defaults de copy
-function extractCopyDefaults(code) {
-  // Extrai a seção de template (tudo após o segundo ---)
-  const parts = code.split('---')
-  if (parts.length < 3) return undefined
-  const templateSection = parts[2]
-
-  const copy = {}
-
-  // Atributos semânticos em componentes filho
-  const attrRegex = /\b(title|subtitle|label|description|text|cta|heading|caption|eyebrow)\s*=\s*"([^"]{3,100})"/gi
-  for (const [, key, val] of templateSection.matchAll(attrRegex)) {
-    const keyLower = key.toLowerCase()
-    if (!copy[keyLower]) copy[keyLower] = val
-  }
-
-  // Texto em tags HTML visíveis (h1-h6, p, button, a, span, li)
-  const tagRegex = /<(h[1-6]|p|button|a|span|li)[^>]*>\s*([A-ZÀ-ÿa-z][^<]{5,120}?)\s*<\/\1>/gi
-  let tagIdx = 0
-  for (const [, tag, text] of templateSection.matchAll(tagRegex)) {
-    const cleaned = text.trim()
-    // Ignorar: começa com {, tem \n, tem menos de 5 chars
-    if (!cleaned.startsWith('{') && !cleaned.includes('\n') && cleaned.length >= 5) {
-      const keyName = `${tag}_${tagIdx++}`
-      copy[keyName] = cleaned
-    }
-  }
-
-  return Object.keys(copy).length > 0 ? copy : undefined
-}
+// detectSlots e extractCopyDefaults vêm de component-core.mjs (fonte única)
 
 // Detecta imports dinâmicos
 function detectDynamicImports(code) {
@@ -218,66 +117,11 @@ function detectDynamicImports(code) {
 
 // Sanitiza dados sensíveis e remove assets (PARA BIBLIOTECA)
 function sanitizeForLibrary(code) {
-  // Preserve import type — são apenas tipos, não afetam runtime
-  const preserveImportType = code.match(/^import\s+type\s+.*$/gm) ?? []
+  // Parte comum com as APIs (assets locais, Image/Picture, dados sensíveis,
+  // preservando import type) vem do núcleo único — mesma regra dos endpoints /admin.
+  code = sanitizeCode(code)
 
-  // Remove imports de assets (todos os padrões) — mas não type imports
-  const assetPatterns = [
-    /^import\s+\{[^}]*\}\s+from\s+['"][^'"]*\/assets[^'"]*['"];?\s*$/gm,
-    /^import\s+(\w+)\s+from\s+['"][^'"]*\/assets\/[^'"]*['"];?\s*$/gm,
-    /^import\s+(\w+)\s+from\s+['"](?:\.{1,2}\/)*(?:@|~)?\/?\s*assets\/[^'"]*['"];?\s*$/gm,
-  ]
-
-  const removedAssetVars = []
-  for (const pattern of assetPatterns) {
-    code = code.replace(pattern, (match) => {
-      // Nunca remover import type
-      if (match.includes('import type')) return match
-      const namedMatch = match.match(/import\s+\{([^}]+)\}/)
-      const defaultMatch = match.match(/import\s+(\w+)\s+from/)
-      if (namedMatch?.[1]) {
-        namedMatch[1].split(',').map(s => s.trim().split(/\s+as\s+/).pop()).filter(Boolean)
-          .forEach(v => removedAssetVars.push(v))
-      } else if (defaultMatch?.[1]) {
-        removedAssetVars.push(defaultMatch[1])
-      }
-      return ''
-    })
-  }
-
-  // Remove referências às variáveis de asset removidas em estruturas de dados
-  for (const v of removedAssetVars) {
-    // Escape special chars no nome da variável para uso em RegExp
-    const escapedV = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-    // Caso 1: Propriedade em sua própria linha (com ou sem vírgula)
-    // Match: "    image: leticiaImg," ou "    image: leticiaImg"
-    // Usa String.raw para evitar problemas com escapes em template strings
-    const linePattern = new RegExp(String.raw`^\s*\w+:\s*` + escapedV + String.raw`\s*,?\s*$`, 'gm')
-    code = code.replace(linePattern, '')
-
-    // Caso 2: Propriedade inline em objeto (dentro de uma linha)
-    // Match: "{ image: leticiaImg }" ou "{ image: leticiaImg, }" ou ", image: leticiaImg }"
-    const inlinePattern = new RegExp(String.raw`(\{|,)\s*\w+:\s*` + escapedV + String.raw`\s*(?=,|\}|\n)`, 'g')
-    code = code.replace(inlinePattern, '$1')
-  }
-
-  // Remove referências restantes em expressões
-  for (const v of removedAssetVars) {
-    const escapedV = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    // Em JSX/template: {leticiaImg} → {null}
-    const exprPattern = new RegExp(String.raw`\{` + escapedV + String.raw`\}`, 'g')
-    code = code.replace(exprPattern, '{null}')
-  }
-
-  // Remove Image/Picture components que usavam assets locais
-  code = code.replace(/<Image\s+[^/]*src=\{[^}]+\}[^/]*\/?>/gs, '<img src="/preview-assets/placeholder.svg" alt="imagem" />')
-  code = code.replace(/<Picture\s+[^/]*\/>/gs, '<img src="/preview-assets/placeholder.svg" alt="imagem" />')
-
-  // Remove imports do Astro Image se não houver mais referências como tag JSX
-  if (!/<\s*Image[\s/>]/.test(code) && !/<\s*Picture[\s/>]/.test(code)) {
-    code = code.replace(/^import\s+\{?\s*(?:Image|Picture|getImage)[^}]*\}\s+from\s+['"]astro\/assets['"];?\s*$/gm, '')
-  }
+  // ── Extras exclusivos do CLI (não fazem parte do motor das APIs) ──
 
   // Detecta CSS Modules — remove imports e substitui usos
   const cssModules = detectCSSModules(code)
@@ -352,8 +196,7 @@ function copyChildComponents(children, ROOT, sourceDir) {
   const rewrites = []
   for (const child of children) {
     const childBaseName = toPascal(basename(child.absolutePath, '.astro'))
-    const childUid = randomId()
-    const childName = `${childBaseName}${childUid}`
+    const childName = `${childBaseName}${deterministicSuffix(childBaseName)}`
     const childCategory = child.category
     const childDir = join(ROOT, 'minha-lib-astro', 'src', 'components', childCategory)
     if (!existsSync(childDir)) mkdirSync(childDir, { recursive: true })
@@ -380,97 +223,59 @@ function copyChildComponents(children, ROOT, sourceDir) {
   return rewrites
 }
 
-// ── Detecção de tokens extras ─────────────────────────────────────────────────
+// ── Detecção de tokens extras (stack v4 — tokens.css com prefixo --t-) ─────────
+//
+// A biblioteca usa Tailwind v4 CSS-first: os tokens-base vivem em
+// _base-project/src/styles/tokens.css como custom properties --t-*, mapeadas
+// por @theme para utilitários (bg-primary, text-text-main, font-serif…).
+// Aqui detectamos tokens que o componente extraído referencia mas que NÃO
+// existem na base — para registrá-los e avisar que precisam ser criados.
 
-// Mapeia cada seção de token para os prefixos de classe Tailwind que a usam
-const TOKEN_CLASS_PATTERNS = {
-  colors:       key => [`text-${key}`, `bg-${key}`, `border-${key}`, `ring-${key}`,
-                         `from-${key}`, `to-${key}`, `via-${key}`, `fill-${key}`,
-                         `stroke-${key}`, `decoration-${key}`, `placeholder-${key}`,
-                         `caret-${key}`, `outline-${key}`, `shadow-${key}`],
-  fontFamily:   key => [`font-${key}`],
-  fontSize:     key => [`text-${key}`],
-  spacing:      key => [`p-${key}`, `py-${key}`, `px-${key}`, `pt-${key}`, `pb-${key}`,
-                         `pl-${key}`, `pr-${key}`, `m-${key}`, `my-${key}`, `mx-${key}`,
-                         `mt-${key}`, `mb-${key}`, `ml-${key}`, `mr-${key}`,
-                         `gap-${key}`, `w-${key}`, `h-${key}`, `inset-${key}`],
-  maxWidth:     key => [`max-w-${key}`],
-  borderRadius: key => [`rounded-${key}`],
-  boxShadow:    key => [`shadow-${key}`],
-}
-
-// Gera todos os nomes de classe candidatos para um token (inclui sub-chaves de objetos nested)
-function tokenCandidateClasses(section, key, value) {
-  const patterns = TOKEN_CLASS_PATTERNS[section]
-  if (!patterns) return []
-  const candidates = []
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
-    // Objeto nested: gera para DEFAULT e para cada sub-chave
-    if ('DEFAULT' in value) candidates.push(...patterns(key))
-    for (const subKey of Object.keys(value)) {
-      if (subKey !== 'DEFAULT') candidates.push(...patterns(`${key}-${subKey}`))
-    }
-  } else {
-    candidates.push(...patterns(key))
-  }
-  return candidates
-}
-
-// Sobe a árvore de diretórios procurando tailwind.config.js do projeto de origem
-function findProjectTailwindConfig(startDir) {
-  let dir = startDir
-  for (let i = 0; i < 8; i++) {
-    const candidate = join(dir, 'tailwind.config.js')
-    if (existsSync(candidate)) return candidate
-    const parent = dirname(dir)
-    if (parent === dir) break
-    dir = parent
-  }
-  return null
-}
-
-// Detecta tokens usados no componente que não existem na base Astroteca
-async function detectExtraTokens(code, sourceDir, ROOT) {
-  const projectConfigPath = findProjectTailwindConfig(sourceDir)
-  if (!projectConfigPath) return {}
-
-  let projectConfig, baseModule
+// Lê o conjunto de nomes de token base (sem o prefixo --t-) do tokens.css.
+function readBaseTokenNames(ROOT) {
   try {
-    const req = createRequire(import.meta.url)
-    projectConfig = req(projectConfigPath)
-  } catch { return {} }
+    const css = readFileSync(join(ROOT, '_base-project', 'src', 'styles', 'tokens.css'), 'utf8')
+    const names = new Set()
+    for (const m of css.matchAll(/--t-([a-z0-9-]+)\s*:/gi)) names.add(m[1].toLowerCase())
+    return names
+  } catch {
+    return null
+  }
+}
 
-  try {
-    baseModule = await import(pathToFileURL(join(ROOT, 'tailwind-tokens.js')).href)
-  } catch { return {} }
+// Utilitários Tailwind de cor/tipografia que mapeiam para um token --t-<name>.
+// Mantém só os prefixos realmente usados no design system (ver COMPONENT-BLUEPRINT.md).
+const TOKEN_UTILITY_PREFIXES = ['bg', 'text', 'border', 'from', 'to', 'via', 'ring', 'fill', 'stroke', 'font']
 
-  const projectExtend = projectConfig?.theme?.extend ?? {}
-  const baseTokens    = baseModule.tokens ?? {}
-  const SECTIONS      = ['colors', 'fontFamily', 'fontSize', 'spacing', 'maxWidth', 'borderRadius', 'boxShadow']
-  const extra         = {}
+// Detecta tokens usados no componente que não existem na base v4.
+// Retorna { tokenName: "var" | "class" } — vazio se tudo já existe ou base ausente.
+function detectExtraTokens(code, _sourceDir, ROOT) {
+  const baseNames = readBaseTokenNames(ROOT)
+  if (!baseNames) return {}
 
-  for (const section of SECTIONS) {
-    const projectSection = projectExtend[section]
-    if (!projectSection) continue
-    const baseSection = baseTokens[section] ?? {}
+  const used = new Map() // nome do token → origem ("var" ou "class")
 
-    for (const [key, value] of Object.entries(projectSection)) {
-      // Já existe na base → não precisa carregar
-      if (key in baseSection) continue
+  // 1. Uso direto em CSS escopado: var(--t-XXX)
+  for (const m of code.matchAll(/var\(\s*--t-([a-z0-9-]+)\s*[),]/gi)) {
+    used.set(m[1].toLowerCase(), 'var')
+  }
 
-      // Verifica se alguma classe candidata é usada no código do componente
-      const candidates = tokenCandidateClasses(section, key, value)
-      const isUsed = candidates.some(cls =>
-        new RegExp(`(?:^|[\\s"'\\[{])${cls.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:[\\s"'\\]:/}]|$)`).test(code)
-      )
-
-      if (isUsed) {
-        if (!extra[section]) extra[section] = {}
-        extra[section][key] = value
-      }
+  // 2. Classes utilitárias de token: bg-primary, text-text-main, font-serif…
+  //    Considera apenas classes cujo "nome" bate com um token --t- existente OU
+  //    que claramente seguem o padrão do design system mas faltam na base.
+  for (const prefix of TOKEN_UTILITY_PREFIXES) {
+    const re = new RegExp(`\\b${prefix}-([a-z][a-z0-9-]*)\\b`, 'gi')
+    for (const m of code.matchAll(re)) {
+      const tokenName = m[1].toLowerCase()
+      // ignora se já registrado como var
+      if (!used.has(tokenName)) used.set(tokenName, 'class')
     }
   }
 
+  const extra = {}
+  for (const [name, origin] of used) {
+    if (!baseNames.has(name)) extra[name] = origin
+  }
   return extra
 }
 
@@ -526,8 +331,7 @@ async function main() {
   const rawCode = readFileSync(resolvedPath, 'utf8')
   const fileName = basename(resolvedPath, '.astro')
   const baseName = toPascal(fileName)
-  const uid = randomId()
-  const name = `${baseName}${uid}`
+  const name = `${baseName}${deterministicSuffix(baseName)}`
   const id = toKebab(name)
 
   note(
@@ -613,12 +417,12 @@ async function main() {
   }
 
   // ── Detecta tokens extras do projeto de origem ────────────────────────────
-  const extraTokens = await detectExtraTokens(rawCode, sourceDir, ROOT)
+  const extraTokens = detectExtraTokens(rawCode, sourceDir, ROOT)
   if (Object.keys(extraTokens).length > 0) {
     const tokenSummary = Object.entries(extraTokens)
-      .map(([section, keys]) => `• ${section}: ${Object.keys(keys).join(', ')}`)
+      .map(([name, origin]) => `• --t-${name} (via ${origin === 'var' ? 'var()' : 'classe'})`)
       .join('\n')
-    note(tokenSummary, 'Tokens extras detectados (serão salvos no registry)')
+    note(tokenSummary, 'Tokens fora da base detectados — crie-os em tokens.css')
   }
 
   // ── Cria os arquivos ───────────────────────────────────────────────────────
@@ -699,7 +503,7 @@ async function main() {
   const registryEntry = {
     id, name, category, description,
     previewPath: `/preview/${id}`,
-    screenshot: '',
+    screenshotUrl: '',
     componentFile: `${category}/${name}.astro`,
     tags, bestFor,
     props: detectedProps.map(p => ({
@@ -734,7 +538,7 @@ async function main() {
     'Arquivos gerados'
   )
 
-  // ── Commita e publica o submodule minha-lib-astro ────────────────────────
+  // ── Commita e publica o repo in-tree minha-lib-astro ─────────────────────
   const s2 = spinner()
   s2.start('Publicando componente na biblioteca...')
   const LIB_ROOT = join(ROOT, 'minha-lib-astro')
@@ -751,7 +555,7 @@ async function main() {
     s2.stop('Componente publicado na biblioteca!')
   } catch (e) {
     s2.stop(c.yellow('⚠ Não foi possível publicar o componente na biblioteca.'))
-    note(e.message?.slice(0, 200) ?? '', 'Erro submodule')
+    note(e.message?.slice(0, 200) ?? '', 'Erro biblioteca')
   }
 
   // ── Gera páginas de preview e commita o ASTROTECA ────────────────────────
@@ -759,7 +563,7 @@ async function main() {
   s3.start('Gerando previews e publicando Astroteca...')
   try {
     execSync('node scripts/generate-previews.mjs', { cwd: ROOT, stdio: 'pipe' })
-    execSync(`git add minha-lib-astro src/pages/preview/ public/data/analytics.json && git commit -m "feat: extract ${id} + update submodule ref" && git push`, {
+    execSync(`git add minha-lib-astro src/pages/preview/ public/data/analytics.json && git commit -m "feat: extract ${id} + update lib ref" && git push`, {
       cwd: ROOT,
       stdio: 'pipe',
       shell: true,
