@@ -6,23 +6,36 @@ import { getDNAByType } from './dna'
 export function generateDocument(state: BuilderState, settings: AppSettingsV2): string {
   const { briefing, sections, art, selected } = state
   const studioName = settings.studioName || 'Astroteca'
-  const date = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const date = new Date().toLocaleDateString('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    timeZone: 'America/Sao_Paulo',
+  })
 
   const enabledSections = sections.filter(s => s.enabled).sort((a, b) => a.position - b.position)
 
   // ── 1. Header ──────────────────────────────────────────────────────────────
-  const header = `> **Como usar:** Cole este arquivo em uma nova conversa com o Claude junto com o prompt abaixo.
+  const header = `> **Como usar:** Abra o Claude Code na raiz do projeto clonado e cole o prompt abaixo seguido do conteúdo deste arquivo.
 
-**Prompt sugerido:**
+**Prompt para o Claude Code:**
 \`\`\`
-Você está adaptando um projeto Astro para o cliente ${briefing.nomeCliente} (segmento: ${briefing.segmento}).
-Siga este documento passo a passo:
-1. Atualize tailwind.config.js com as cores da seção "Direção de Arte"
-2. Atualize global.css com as fontes indicadas
-3. Atualize Layout.astro com SEO, GTM e Schema.org desta documentação
-4. Para cada seção habilitada, substitua os textos placeholder pelos valores de copy
-5. Não altere estrutura HTML, classes Tailwind, ou lógica JavaScript — apenas dados do cliente
-6. Configure o tema padrão: ${art.defaultTheme === 'dark' ? 'escuro (adicionar classe "dark" no <html>)' : 'claro (padrão)'}
+Você está implementando o site do cliente ${briefing.nomeCliente} (segmento: ${briefing.segmento}).
+Leia este documento do início ao fim antes de começar. Depois siga passo a passo:
+
+1. Preencha \`src/styles/tokens.css\` com as cores da seção "Direção de Arte" (apenas os valores — os nomes são fixos)
+2. Atualize o \`<link>\` de fonte serifada no \`BaseLayout.astro\` conforme a tipografia indicada
+3. Preencha \`src/pages/index.astro\` com imports dos componentes e ordem das seções
+4. Para cada seção, substitua os textos placeholder pela copy indicada neste documento
+5. Preencha \`.env\` com WhatsApp, GTM e domínio — o template já lê essas variáveis
+6. Preencha o \`defaultSchema\` no \`BaseLayout.astro\` com os dados do Schema.org
+7. Preencha os TODOs em \`politica-de-privacidade.astro\` e \`termos-de-uso.astro\` com dados reais
+8. Garanta: Hero com \`id="hero-section"\`, Footer com \`id="footer"\`, main com \`id="main-content"\`
+9. Rode \`npm run build\` para validar — corrija qualquer erro antes de considerar pronto
+
+Regras absolutas:
+- NUNCA hardcode cor, fonte ou tamanho — sempre \`var(--t-*)\` ou classes utilitárias Tailwind
+- \`<Image />\` do Astro, nunca \`<img>\` nativo
+- Sem \`any\` no TypeScript, sem \`!important\` no CSS
+- Tema padrão: ${art.defaultTheme === 'dark' ? 'escuro (classe "dark" no <html> via BaseLayout)' : 'claro (padrão)'}
 \`\`\`
 
 ---
@@ -91,22 +104,18 @@ Siga este documento passo a passo:
     ? `\n\n### Depoimentos\n\n${depoimentos.join('\n\n')}`
     : ''
 
-  // História
   const historiaSection = briefing.historia
     ? `\n\n### História / Sobre\n\n${briefing.historia}`
     : ''
 
-  // FAQ
   const faqSection = briefing.faq
     ? `\n\n### FAQ\n\n${briefing.faq}`
     : ''
 
-  // Objeções
   const objecoesSection = briefing.objecoes
     ? `\n\n### Objeções a Quebrar\n\n${briefing.objecoes}`
     : ''
 
-  // Preços
   let precosSection = ''
   if (briefing.precoExibir) {
     precosSection = '\n\n### Planos e Preços\n\n'
@@ -127,7 +136,12 @@ Siga este documento passo a passo:
     estruturaSection += '_Nenhuma seção habilitada._'
   } else {
     for (const section of enabledSections) {
-      estruturaSection += `### ${section.position + 1}. ${section.label}${section.fromLibrary && section.componentId ? ` _(Componente: ${section.componentId})_` : ''}\n\n`
+      const fromLib = section.fromLibrary && section.componentId
+      estruturaSection += `### ${section.position + 1}. ${section.label}`
+      if (fromLib) {
+        estruturaSection += ` _(componente da biblioteca: \`${section.componentId}\`)_`
+      }
+      estruturaSection += '\n\n'
       const copyEntries = Object.entries(section.copy).filter(([, v]) => v && String(v).trim())
       if (copyEntries.length > 0) {
         estruturaSection += '| Campo | Texto |\n|-------|-------|\n'
@@ -135,7 +149,7 @@ Siga este documento passo a passo:
           estruturaSection += `| ${key} | ${value} |\n`
         }
       } else {
-        estruturaSection += '_Copy não preenchido — Claude deve criar com base no briefing._\n'
+        estruturaSection += '_Copy não preenchido — Claude Code deve criar com base no briefing._\n'
       }
       estruturaSection += '\n'
     }
@@ -145,42 +159,44 @@ Siga este documento passo a passo:
   const artSection = `\n\n---\n\n## Direção de Arte
 
 ### Tema Padrão
-**${art.defaultTheme === 'dark' ? '🌙 Escuro' : '☀️ Claro'}**${art.defaultTheme === 'dark' ? '\n\nAdicionar \`class="dark"\` no `<html>` do Layout.astro.' : ''}
+**${art.defaultTheme === 'dark' ? '🌙 Escuro' : '☀️ Claro'}**
 
-### Cores Light (tailwind.config.js)
+### Cores — \`src/styles/tokens.css\`
 
-| Token | Hex | Uso |
-|-------|-----|-----|
-| primary | \`${art.colorPrimary}\` | Cor principal da marca |
-| primary-dark | \`${art.colorPrimaryDark}\` | Hover/variante escura do primary |
-| secondary | \`${art.colorSecondary}\` | Cor de destaque secundária |
-| background | \`${art.colorBackground}\` | Fundo da página |
-| surface | \`${art.colorSurface}\` | Cards e superfícies |
-| surface-alt | \`${art.colorSurfaceAlt}\` | Superfícies alternativas |
-| dark | \`${art.colorDark}\` | Seções escuras |
-| text-main | \`${art.colorText}\` | Texto principal |
-| text-soft | \`${art.colorTextSoft}\` | Texto secundário |
-| text-muted | \`${art.colorTextMuted}\` | Texto terciário/placeholder |
-| border | \`${art.colorBorder}\` | Bordas e divisores |
+Preencha **apenas os valores** (os nomes são fixos entre projetos):
 
-### Cores Dark (quando dark mode ativo)
+\`\`\`css
+:root {
+  --t-primary:      ${art.colorPrimary};
+  --t-primary-dark: ${art.colorPrimaryDark};
+  --t-secondary:    ${art.colorSecondary};
+  --t-background:   ${art.colorBackground};
+  --t-surface:      ${art.colorSurface};
+  --t-surface-alt:  ${art.colorSurfaceAlt};
+  --t-dark:         ${art.colorDark};
+  --t-text-main:    ${art.colorText};
+  --t-text-soft:    ${art.colorTextSoft};
+  --t-text-muted:   ${art.colorTextMuted};
+  --t-border:       ${art.colorBorder};
+}
 
-| Token | Hex |
-|-------|-----|
-| dark-bg | \`${art.darkColorBackground}\` |
-| dark-surface | \`${art.darkColorSurface}\` |
-| dark-surface-alt | \`${art.darkColorSurfaceAlt}\` |
-| dark-text-main | \`${art.darkColorText}\` |
-| dark-text-soft | \`${art.darkColorTextSoft}\` |
-| dark-text-muted | \`${art.darkColorTextMuted}\` |
-| dark-border | \`${art.darkColorBorder}\` |
+.dark {
+  --t-background:  ${art.darkColorBackground || '/* derivar do --t-background */'};
+  --t-surface:     ${art.darkColorSurface || '/* derivar do --t-surface */'};
+  --t-surface-alt: ${art.darkColorSurfaceAlt || '/* derivar do --t-surface-alt */'};
+  --t-text-main:   ${art.darkColorText || '/* derivar do --t-text-main */'};
+  --t-text-soft:   ${art.darkColorTextSoft || '/* derivar do --t-text-soft */'};
+  --t-text-muted:  ${art.darkColorTextMuted || '/* derivar do --t-text-muted */'};
+  --t-border:      ${art.darkColorBorder || '/* derivar do --t-border */'};
+}
+\`\`\`
 
 ### Tipografia
 
 | Papel | Fonte |
 |-------|-------|
-| Heading (font-serif) | ${art.fontHeading} |
-| Body (font-sans) | ${art.fontBody} |
+| Heading (\`font-serif\`) | ${art.fontHeading || '—'} |
+| Body (\`font-sans\`) | ${art.fontBody || '—'} |
 
 ${art.mood ? `### Mood & Referências\n\n${art.mood}` : ''}
 ${art.references ? `\n**Referências visuais:** ${art.references}` : ''}
@@ -190,51 +206,34 @@ ${art.notes ? `\n**Notas:** ${art.notes}` : ''}`
   let componentsSection = ''
   if (selected.length > 0) {
     componentsSection = '\n\n---\n\n## Componentes da Biblioteca\n\n'
+    componentsSection += 'Os arquivos abaixo já foram copiados para `src/components/sections/`. Não reinstale — edite diretamente.\n\n'
     componentsSection += '| # | ID | Nome | Categoria |\n|---|----|----|--------|\n'
     for (const s of selected) {
       componentsSection += `| ${s.position + 1} | \`${s.meta.id}\` | ${s.meta.name} | ${s.meta.category} |\n`
     }
-    componentsSection += '\n_Copiar os arquivos da biblioteca para `src/components/` do projeto gerado._'
   }
 
   // ── 6. DNA ────────────────────────────────────────────────────────────────
   const dnaSection = `\n\n---\n\n## Regras de Copy — DNA do Negócio\n\n${getDNAByType(briefing.tipo)}`
 
-  // ── 7. Instruções de Implementação ────────────────────────────────────────
-  const instrucoes = `\n\n---\n\n## Instruções de Implementação
+  // ── 7. Checklist ──────────────────────────────────────────────────────────
+  const checklist = `\n\n---\n\n## Checklist Final
 
-### Tokens obrigatórios (não substituir por valores literais)
-- Cores: \`bg-primary\`, \`text-text-main\`, \`bg-surface\`, \`border-border\`, etc.
-- Fontes: \`font-serif\` (heading), \`font-sans\` (corpo)
-- Espaçamento: \`py-section\`, \`w-[90%] max-w-wide mx-auto\`
-- Sombras: \`shadow-card\`, \`shadow-float\`
-
-### Dark mode
-- Configurar \`darkMode: 'class'\` no tailwind.config.js
-- ThemeToggle já incluso no _base-project — verificar se está importado no Layout.astro
-- Tema padrão: \`data-default-theme="${art.defaultTheme}"\` no \`<html>\`
-
-### Estrutura do projeto (_base-project)
-1. Clonar o repositório base
-2. Atualizar \`tailwind.config.js\` com as cores desta documentação
-3. Atualizar \`src/styles/global.css\` com as fontes
-4. Atualizar \`src/layouts/Layout.astro\` com SEO, GTM, Schema.org
-5. Criar/adaptar componentes em \`src/components/\`
-6. Testar dark mode e responsividade`
-
-  // ── 8. Checklist ──────────────────────────────────────────────────────────
-  const checklist = `\n\n---\n\n## Checklist de Qualidade
-
-- [ ] Cores aplicadas corretamente no tailwind.config.js
-- [ ] Fontes carregadas via Google Fonts no Layout.astro
-- [ ] SEO: título, descrição e keywords preenchidos
-- [ ] Schema.org configurado com tipo \`${briefing.schemaTipo || 'LocalBusiness'}\`
-- [ ] GTM instalado${briefing.gtmId ? ` (ID: ${briefing.gtmId})` : ' (sem GTM configurado)'}
-- [ ] WhatsApp float configurado${briefing.whatsapp ? ` (número: ${briefing.whatsapp})` : ''}
-- [ ] Dark mode funcional (ThemeToggle + localStorage)
-- [ ] Responsivo em mobile (375px) e tablet (768px)
+- [ ] \`npm run build\` sem erros de TypeScript/Astro
+- [ ] \`src/styles/tokens.css\` preenchido com cores reais do cliente
+- [ ] Fontes carregadas: \`<link>\` no \`BaseLayout.astro\` + import \`@fontsource\` no \`global.css\`
+- [ ] \`.env\` preenchido: \`PUBLIC_WA_NUMBER\`, \`PUBLIC_WA_MESSAGE\`, \`PUBLIC_GTM_ID\`, \`PUBLIC_SITE_URL\`
+- [ ] \`BaseLayout.astro\`: title, description, OG, canonical, Schema.org JSON-LD
+- [ ] Hero com \`id="hero-section"\`; Footer com \`id="footer"\`; main com \`id="main-content"\`
+- [ ] Header: esconde ao rolar para baixo; link ativo por IntersectionObserver
+- [ ] WhatsApp flutuante: some quando Hero ou Footer estão visíveis; número real no \`.env\`
+- [ ] Dark mode: toggle no Footer; persiste localStorage; sem flash na primeira carga
 - [ ] Todas as seções com copy real (sem placeholder genérico)
-- [ ] Build sem erros (\`npm run build\`)`
+- [ ] Responsivo em mobile (375px): texto ≥ 20px, botões ≥ 44px, padding lateral ≥ 20px
+- [ ] \`politica-de-privacidade.astro\` e \`termos-de-uso.astro\`: TODOs preenchidos
+- [ ] Schema tipo: \`${briefing.schemaTipo || 'LocalBusiness'}\`
+- [ ] GTM configurado${briefing.gtmId ? ` (ID: ${briefing.gtmId})` : ' (sem GTM — preencher no .env)'}
+- [ ] WhatsApp${briefing.whatsapp ? ` (número: ${briefing.whatsapp})` : ' (número não informado — preencher no .env)'}`
 
   return [
     header,
@@ -248,7 +247,6 @@ ${art.notes ? `\n**Notas:** ${art.notes}` : ''}`
     artSection,
     componentsSection,
     dnaSection,
-    instrucoes,
     checklist,
   ].join('')
 }

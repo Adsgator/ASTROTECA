@@ -1,6 +1,6 @@
 // src/lib/manifest.ts
 
-import type { ProjectConfig, ArtDirectionV2, SelectedComponent, AppSettings } from '../types'
+import type { ProjectConfig, ArtDirectionV2, SelectedComponent, AppSettings, PageSection } from '../types'
 
 export const DEFAULT_TEMPLATE = `> **Como usar:** Abra o Claude Code na raiz do projeto clonado e cole o prompt abaixo seguido do conteúdo deste arquivo.
 
@@ -370,4 +370,162 @@ export function generateManifest(
   }
 
   return renderTemplate(template, vars)
+}
+
+// ─── Manifesto do Path C (biblioteca + criar componentes) ─────────────────────
+
+/**
+ * Gera o MANIFESTO.md para o Path C:
+ * - Seções fromLibrary → componentes já copiados, só adaptar copy
+ * - Seções sem componente → Claude Code cria do zero seguindo COMPONENT-BLUEPRINT.md
+ */
+export function generateCreateManifest(opts: {
+  project: ProjectConfig
+  artDirection: ArtDirectionV2
+  sections: PageSection[]
+  libraryComponents: SelectedComponent[]
+  settings: AppSettings
+}): string {
+  const { project, artDirection, sections, libraryComponents, settings } = opts
+  const studioName = settings.studioName || 'Astroteca'
+  const date = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo' }).format(new Date())
+
+  const enabled = sections.filter(s => s.enabled).sort((a, b) => a.position - b.position)
+  const libSections = enabled.filter(s => s.fromLibrary && s.componentId)
+  const createSections = enabled.filter(s => !(s.fromLibrary && s.componentId))
+
+  // ── Seção de componentes da biblioteca ──────────────────────────────────────
+  let libBlock = ''
+  if (libSections.length > 0) {
+    libBlock = '\n\n---\n\n## Componentes da Biblioteca (já copiados)\n\n'
+    libBlock += 'Estes componentes foram copiados para `src/components/sections/`. **Não reescreva** — apenas adapte a copy indicada abaixo.\n\n'
+    for (const s of libSections) {
+      const meta = libraryComponents.find(c => c.meta.id === s.componentId)
+      libBlock += `### ${s.label} (\`${s.componentId}\`)\n\n`
+      if (meta) libBlock += `**Arquivo:** \`src/components/sections/${meta.meta.componentFile || `${meta.meta.category}/${meta.meta.name}.astro`}\`\n\n`
+      const copyEntries = Object.entries(s.copy).filter(([, v]) => v?.trim())
+      if (copyEntries.length > 0) {
+        libBlock += '| Campo | Texto |\n|-------|-------|\n'
+        for (const [k, v] of copyEntries) libBlock += `| ${k} | ${v} |\n`
+      } else {
+        libBlock += '_Nenhuma copy pré-definida — adapte pelo briefing do cliente._\n'
+      }
+      libBlock += '\n'
+    }
+  }
+
+  // ── Seção de componentes a criar ─────────────────────────────────────────
+  let createBlock = ''
+  if (createSections.length > 0) {
+    createBlock = '\n\n---\n\n## Componentes a Criar\n\n'
+    createBlock += `Estas seções **não** têm componente na biblioteca e devem ser criadas do zero.\n`
+    createBlock += `Siga o \`COMPONENT-BLUEPRINT.md\` (incluído neste repositório) para estrutura, tokens e padrões.\n\n`
+    for (const s of createSections) {
+      createBlock += `### ${s.label}\n\n`
+      createBlock += `**ID da seção:** \`${s.id}\`\n`
+      createBlock += `**Arquivo a criar:** \`src/components/sections/${s.type}/${s.label.replace(/\s+/g, '')}.astro\`\n\n`
+      const copyEntries = Object.entries(s.copy).filter(([, v]) => v?.trim())
+      if (copyEntries.length > 0) {
+        createBlock += '**Copy / Textos:**\n\n'
+        createBlock += '| Campo | Texto |\n|-------|-------|\n'
+        for (const [k, v] of copyEntries) createBlock += `| ${k} | ${v} |\n`
+      } else {
+        createBlock += '_Copy não preenchida — crie baseado no briefing do cliente._\n'
+      }
+      createBlock += '\n'
+    }
+  }
+
+  // ── Ordem final da página ────────────────────────────────────────────────
+  const orderLines = enabled.map((s, i) => {
+    const fromLib = s.fromLibrary && s.componentId
+    return `${i + 1}. **${s.label}**${fromLib ? ` — biblioteca (\`${s.componentId}\`)` : ' — criar'}`
+  }).join('\n')
+
+  const orderBlock = `\n\n---\n\n## Ordem das Seções na Página\n\n${orderLines}`
+
+  // ── Cores ────────────────────────────────────────────────────────────────
+  const colorsBlock = `\n\n---\n\n## Tokens de Cor — \`src/styles/tokens.css\`
+
+Preencha **apenas os valores** (nomes são fixos):
+
+\`\`\`css
+:root {
+  --t-primary:      ${artDirection.colorPrimary};
+  --t-primary-dark: ${artDirection.colorPrimaryDark};
+  --t-secondary:    ${artDirection.colorSecondary};
+  --t-background:   ${artDirection.colorBackground};
+  --t-surface:      ${artDirection.colorSurface};
+  --t-surface-alt:  ${artDirection.colorSurfaceAlt};
+  --t-dark:         ${artDirection.colorDark};
+  --t-text-main:    ${artDirection.colorText};
+  --t-text-soft:    ${artDirection.colorTextSoft};
+  --t-text-muted:   ${artDirection.colorTextMuted};
+  --t-border:       ${artDirection.colorBorder};
+  --t-font-serif:   "${artDirection.fontHeading}", Georgia, ui-serif, serif;
+  --t-font-sans:    "${artDirection.fontBody}", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark {
+  --t-background:  ${artDirection.darkColorBackground || '/* derivar */'};
+  --t-surface:     ${artDirection.darkColorSurface || '/* derivar */'};
+  --t-surface-alt: ${artDirection.darkColorSurfaceAlt || '/* derivar */'};
+  --t-text-main:   ${artDirection.darkColorText || '/* derivar */'};
+  --t-text-soft:   ${artDirection.darkColorTextSoft || '/* derivar */'};
+  --t-text-muted:  ${artDirection.darkColorTextMuted || '/* derivar */'};
+  --t-border:      ${artDirection.darkColorBorder || '/* derivar */'};
+}
+\`\`\``
+
+  // ── Dados do cliente ─────────────────────────────────────────────────────
+  const clientBlock = `\n\n---\n\n## Identidade do Cliente
+
+| Campo | Valor |
+|-------|-------|
+| Nome | ${project.clientName} |
+| Domínio | ${project.siteUrl || '—'} |
+| WhatsApp | ${project.whatsapp || '—'} |
+| Mensagem WA | ${project.whatsappMessage || '—'} |
+| Email | ${project.email || '—'} |
+| GTM ID | ${project.gtmId || '—'} |
+| Schema | ${project.schemaType || 'LocalBusiness'} |`
+
+  // ── Prompt de instrução ──────────────────────────────────────────────────
+  const promptBlock = `> **Como usar:** Abra o Claude Code na raiz do projeto clonado e cole o prompt abaixo.
+
+**Prompt para o Claude Code:**
+\`\`\`
+Você está implementando o site do cliente ${project.clientName}.
+Leia este manifesto e o COMPONENT-BLUEPRINT.md antes de qualquer edição. Depois:
+
+1. Preencha \`src/styles/tokens.css\` com as cores da seção "Tokens de Cor"
+2. Atualize o \`<link>\` de fonte serifada no \`BaseLayout.astro\`: fonte heading = ${artDirection.fontHeading}
+3. Para fontes sans, instale e importe @fontsource/${fontToSlug(artDirection.fontBody)} no global.css
+4. Para os componentes da biblioteca (seção "Componentes da Biblioteca"): adapte apenas a copy
+5. Para os componentes a criar (seção "Componentes a Criar"): crie cada um seguindo o COMPONENT-BLUEPRINT.md
+6. Monte \`src/pages/index.astro\` com a ordem definida em "Ordem das Seções"
+7. Preencha \`.env\`: PUBLIC_WA_NUMBER, PUBLIC_WA_MESSAGE, PUBLIC_GTM_ID, PUBLIC_SITE_URL
+8. Preencha o Schema.org no \`BaseLayout.astro\` com os dados de "Identidade do Cliente"
+9. Preencha os TODOs em politica-de-privacidade.astro e termos-de-uso.astro
+10. Rode \`npm run build\` — corrija qualquer erro antes de considerar pronto
+
+Regras: NUNCA hardcode cor/fonte/tamanho. Sempre var(--t-*) ou classes Tailwind.
+IDs obrigatórios: Hero → id="hero-section", Footer → id="footer", main → id="main-content"
+\`\`\`
+
+---
+
+# Manifesto do Projeto — ${project.clientName}
+**Gerado em:** ${date} por ${studioName}
+**Nicho:** ${project.niche || '—'}
+**Objetivo:** ${project.pageGoal || '—'}`
+
+  return [
+    promptBlock,
+    clientBlock,
+    colorsBlock,
+    orderBlock,
+    libBlock,
+    createBlock,
+  ].join('')
 }

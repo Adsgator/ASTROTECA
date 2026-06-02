@@ -164,7 +164,7 @@ export type GeminiModel = 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gemini
 // ─── Builder v2 ─────────────────────────────────────────────────────────────
 
 export type BuilderStep = 'briefing' | 'estrutura' | 'arte' | 'componentes' | 'preview' | 'gerar'
-export type OutputPath = 'library' | 'manual' | 'hybrid'
+export type OutputPath = 'library' | 'manual' | 'hybrid' | 'create'
 
 export interface Briefing {
   briefingBruto: string

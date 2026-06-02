@@ -15,6 +15,7 @@ import { buildDefaultSections } from '../../lib/section-defaults'
 import { buildSectionsFromSuggestions } from '../../lib/intake-prompt'
 import { createProjectFromTemplate } from '../../lib/github'
 import { generateDocument } from '../../lib/export-document'
+import { generateCreateManifest } from '../../lib/manifest'
 import { wait } from '../../lib/utils'
 import type { IntakeResult } from '../../lib/intake-prompt'
 import StepNav from './StepNav'
@@ -270,9 +271,66 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
     setError('')
     setResult(null)
     try {
-      const manifestContent = generateDocument(state, settings)
+      let manifestContent: string
+      if (state.outputPath === 'create') {
+        manifestContent = generateCreateManifest({
+          project: {
+            clientName: state.briefing.nomeCliente,
+            projectType: state.briefing.tipo,
+            niche: state.briefing.segmento,
+            pageGoal: state.briefing.objetivoConversao,
+            siteUrl: state.briefing.dominio,
+            email: state.briefing.email,
+            whatsapp: state.briefing.whatsapp,
+            whatsappMessage: state.briefing.whatsappMensagem,
+            address: '',
+            hours: state.briefing.horarios,
+            instagram: state.briefing.instagram,
+            facebook: state.briefing.facebook,
+            gtmId: state.briefing.gtmId,
+            schemaType: state.briefing.schemaTipo,
+            seoTitle: state.briefing.seoTitulo,
+            seoDescription: state.briefing.seoDescricao,
+            seoKeywords: state.briefing.seoKeywords,
+          },
+          artDirection: state.art,
+          sections: state.sections,
+          libraryComponents: state.selected,
+          settings,
+        })
+      } else {
+        manifestContent = generateDocument(state, settings)
+      }
+
       const componentMetas = state.selected.map(s => s.meta)
-      const res = await createProjectFromTemplate(settings, state.briefing.nomeCliente, manifestContent, componentMetas)
+      const isCreate = state.outputPath === 'create'
+
+      // Path C chama o endpoint server-side para que ele leia o blueprint do disco
+      if (isCreate) {
+        const apiRes = await fetch('/api/create-project', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            settings,
+            clientName: state.briefing.nomeCliente,
+            manifest: manifestContent,
+            components: componentMetas,
+            includeBlueprint: true,
+          }),
+        })
+        const res: CreateProjectResult = await apiRes.json()
+        setResult(res)
+        if (res.success) toast('Projeto criado no GitHub!', 'success')
+        else setError((res as { error?: string }).error ?? 'Erro ao criar projeto')
+        return
+      }
+
+      const res = await createProjectFromTemplate(
+        settings,
+        state.briefing.nomeCliente,
+        manifestContent,
+        componentMetas,
+      )
       setResult(res)
       if (res.success) toast('Projeto criado no GitHub!', 'success')
       else setError(res.error ?? 'Erro ao criar projeto')
@@ -355,6 +413,8 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
               art={state.art}
               onChange={art => dispatch({ type: 'UPDATE_ART', art })}
               nomeCliente={state.briefing.nomeCliente}
+              niche={state.briefing.segmento}
+              settings={settings}
             />
           )}
           {displayStep === 'componentes' && (

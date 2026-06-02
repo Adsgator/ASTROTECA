@@ -236,7 +236,8 @@ export async function createProjectFromTemplate(
   settings: AppSettings,
   clientName: string,
   manifestContent: string,
-  selectedComponents?: import('../types').ComponentMeta[]
+  selectedComponents?: import('../types').ComponentMeta[],
+  blueprintContent?: string
 ): Promise<CreateProjectResult> {
   const { githubToken, githubOwner, baseProjectRepo, componentsRepo } = settings
   const repoName = slugify(clientName)
@@ -275,6 +276,15 @@ export async function createProjectFromTemplate(
       'MANIFESTO.md', manifestContent,
       'init: manifesto do projeto'
     )
+
+    // 3b. Commita o COMPONENT-BLUEPRINT.md quando Path C
+    if (blueprintContent) {
+      await commitFile(
+        githubToken, githubOwner, repoName,
+        'COMPONENT-BLUEPRINT.md', blueprintContent,
+        'init: blueprint de criação de componentes'
+      )
+    }
 
     // 4. Copia os componentes selecionados + gera index.astro
     if (selectedComponents && selectedComponents.length > 0 && componentsRepo) {

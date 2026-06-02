@@ -47,6 +47,15 @@ const OUTPUT_PATHS = [
     badgeColor: 'bg-raised text-ink-muted',
     needs: null,
   },
+  {
+    path: 'create' as OutputPath,
+    icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5zM15 5l3 3',
+    label: 'Path C — Biblioteca + Criar componentes',
+    desc: 'Cria repo, copia da biblioteca e gera instruções para o Claude Code criar as seções restantes com COMPONENT-BLUEPRINT.md',
+    badge: 'Claude Code',
+    badgeColor: 'bg-accent/20 text-accent',
+    needs: 'GitHub configurado',
+  },
 ]
 
 // Etapas falsas removidas — apenas spinner genérico durante criação
@@ -90,7 +99,7 @@ export default function GenerateStep({
       ok: !!settings.githubToken && !!settings.githubOwner,
       label: 'GitHub configurado',
       configLink: '/config',
-      onlyPath: ['library', 'manual'] as OutputPath[],
+      onlyPath: ['library', 'manual', 'create'] as OutputPath[],
     },
   ]
 

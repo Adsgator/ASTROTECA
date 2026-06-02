@@ -1,8 +1,9 @@
 // src/components/builder/ArtStep.tsx
 
 import { useState, useEffect } from 'react'
-import type { ArtDirectionV2 } from '../../types'
+import type { ArtDirectionV2, AppSettingsV2 } from '../../types'
 import { generateDarkPalette } from '../../lib/color-utils'
+import { generateFullPalette } from '../../lib/palette-ai'
 import * as ui from '../../styles/ui'
 import { cn } from '../../lib/utils'
 
@@ -11,6 +12,8 @@ interface ArtStepProps {
   onChange: (art: ArtDirectionV2) => void
   nomeCliente?: string
   studioName?: string
+  niche?: string
+  settings?: AppSettingsV2
 }
 
 const PALETTE_PRESETS = [
@@ -137,10 +140,12 @@ function ColorPreview({ art, nomeCliente }: { art: ArtDirectionV2; nomeCliente: 
   )
 }
 
-export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studioName = 'Astroteca' }: ArtStepProps) {
+export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studioName = 'Astroteca', niche = '', settings }: ArtStepProps) {
   const [darkExpanded, setDarkExpanded] = useState(true)
   const [shared, setShared] = useState(false)
   const [showPreview, setShowPreview] = useState(true)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
 
   function shareArtDirection() {
     const payload = { ...art, nomeCliente, studioName }
@@ -174,10 +179,83 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
     setDarkExpanded(true)
   }
 
+  async function generateAIPalette() {
+    if (!settings?.geminiApiKey) return
+    setAiLoading(true)
+    setAiError('')
+    try {
+      const palette = await generateFullPalette({
+        apiKey: settings.geminiApiKey,
+        model: settings.geminiModel || 'gemini-2.5-flash',
+        primary: art.colorPrimary,
+        secondary: art.colorSecondary,
+        niche,
+        mood: art.mood,
+      })
+      // Aplica paleta gerada e em seguida gera dark automaticamente
+      const newArt = { ...art, ...palette }
+      const dark = generateDarkPalette({
+        colorBackground: newArt.colorBackground,
+        colorSurface: newArt.colorSurface,
+        colorSurfaceAlt: newArt.colorSurfaceAlt,
+        colorText: newArt.colorText,
+        colorTextSoft: newArt.colorTextSoft,
+        colorTextMuted: newArt.colorTextMuted,
+        colorBorder: newArt.colorBorder,
+      })
+      onChange({ ...newArt, ...dark })
+      setDarkExpanded(true)
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : 'Erro ao gerar paleta')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
   return (
     <div className="grid grid-cols-[1fr_320px] gap-5 h-full">
       {/* Coluna esquerda: controles */}
       <div className="space-y-5 overflow-y-auto min-h-0">
+      {/* Gerar com IA */}
+      <div>
+        <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider mb-2">Paleta com IA</p>
+        <div className="flex items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] text-ink-muted leading-relaxed">
+              Defina a cor primária e secundária, depois gere a paleta completa com o Gemini.
+              O dark mode é derivado automaticamente.
+            </p>
+            {aiError && (
+              <p className="text-[11px] text-fail mt-1.5 bg-fail/10 rounded-lg px-2.5 py-1.5">{aiError}</p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={generateAIPalette}
+            disabled={aiLoading || !settings?.geminiApiKey || !art.colorPrimary}
+            title={!settings?.geminiApiKey ? 'Configure a API key do Gemini em Configurações' : 'Gerar paleta completa com Gemini'}
+            className={cn(
+              'flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all border',
+              aiLoading || !settings?.geminiApiKey
+                ? 'opacity-40 cursor-not-allowed border-white/10 text-ink-muted'
+                : 'border-accent/40 text-accent hover:bg-accent/10 hover:border-accent',
+            )}
+          >
+            {aiLoading ? (
+              <>
+                <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+                Gerando…
+              </>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Gerar com Gemini
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
       {/* Presets */}
       <div>
         <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider mb-2">Presets de Paleta</p>
