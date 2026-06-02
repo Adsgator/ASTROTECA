@@ -1,8 +1,8 @@
 {
   "githubToken": "",
-  "githubOwner": "AdsGator",
-  "baseProjectRepo": "astroteca-base",
+  "githubOwner": "Adsgator",
+  "baseProjectRepo": "_base-project",
   "componentsRepo": "minha-lib-astro",
-  "registryUrl": "https://raw.githubusercontent.com/AdsGator/minha-lib-astro/main/registry.json",
+  "registryUrl": "https://raw.githubusercontent.com/Adsgator/minha-lib-astro/main/registry.json",
   "defaultBranch": "main"
 }
