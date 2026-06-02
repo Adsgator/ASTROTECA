@@ -2,14 +2,15 @@ import { defineConfig } from 'astro/config'
 import react from '@astrojs/react'
 import tailwind from '@astrojs/tailwind'
 import vercel from '@astrojs/vercel'
+import icon from 'astro-icon'
 import { execSync } from 'child_process'
 
 // ─── Plugin: compila CSS de preview dos componentes ───────────────────────────
-// Usa tailwind.preview.config.js (tokens do _base-project) para gerar
-// public/preview-components.css. Roda automaticamente ao iniciar o dev e
-// ao alterar arquivos da biblioteca ou dos tokens.
+// Usa @tailwindcss/cli (v4) com preview.css como entry point CSS-first para
+// gerar public/preview-components.css. Roda automaticamente ao iniciar o dev
+// e ao alterar arquivos da biblioteca ou do preview.css.
 function previewCssPlugin() {
-  const cmd = 'npx tailwindcss -c tailwind.preview.config.js -i src/styles/preview.css -o public/preview-components.css'
+  const cmd = 'node node_modules/@tailwindcss/cli/dist/index.mjs -i src/styles/preview.css -o public/preview-components.css'
 
   function build(label = '') {
     try {
@@ -29,11 +30,10 @@ function previewCssPlugin() {
       build('compilando preview-components.css')
     },
 
-    // Em dev: recompila quando arquivos da biblioteca ou tokens mudam
+    // Em dev: recompila quando arquivos da biblioteca ou preview mudam
     configureServer(server) {
       const watched = [
         'minha-lib-astro/src',
-        'tailwind-tokens.js',
         'src/styles/preview.css',
         'src/layouts/PreviewLayout.astro',
       ]
@@ -53,6 +53,7 @@ export default defineConfig({
   integrations: [
     react(),
     tailwind({ applyBaseStyles: false }),
+    icon({ include: { lucide: ['*'] } }),
   ],
   vite: {
     plugins: [previewCssPlugin()],

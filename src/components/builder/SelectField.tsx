@@ -3,6 +3,7 @@
 
 import { useState, useRef, useEffect, type CSSProperties } from 'react'
 import { cn } from '../../lib/utils'
+import { Check, ChevronDown } from 'lucide-react'
 
 interface Option {
   value: string
@@ -75,12 +76,7 @@ export default function SelectField({
         )}
       >
         <span className="truncate">{selected ? selected.label : placeholder}</span>
-        <svg
-          className={cn('w-4 h-4 text-ink-muted flex-shrink-0 transition-transform duration-200', open && 'rotate-180')}
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        <ChevronDown className={cn('w-4 h-4 text-ink-muted flex-shrink-0 transition-transform duration-200', open && 'rotate-180')} />
       </button>
 
       {open && (
@@ -98,11 +94,7 @@ export default function SelectField({
                     : 'text-ink-secondary hover:text-ink-primary hover:bg-raised/60',
                 )}
               >
-                {opt.value === value && (
-                  <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
+                {opt.value === value && <Check className="w-3.5 h-3.5 flex-shrink-0" />}
                 <span className={opt.value === value ? '' : 'ml-5'}>{opt.label}</span>
               </button>
             ))}

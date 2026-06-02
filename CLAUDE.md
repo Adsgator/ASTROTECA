@@ -24,9 +24,8 @@ O projeto gerado não é editado aqui — ele vai para outro repositório e é a
 
 | Documento | Propósito |
 |-----------|-----------|
-| `DESIGN-SYSTEM.md` | Tokens do studio + tokens da biblioteca de componentes |
-| `COMPONENT-BLUEPRINT.md` | Guia completo para criar componentes — tokens, estrutura, categorias, exemplo de referência |
-| `AUDIT-CHECKLIST.md` | Checklist de auditoria para projetos de clientes (12 seções, 100+ itens) |
+| `DESIGN-SYSTEM.md` | Tokens e padrões visuais do studio (app.css, tailwind.config.js, ui.ts) |
+| `COMPONENT-BLUEPRINT.md` | Guia completo para criar componentes da biblioteca — tokens, estrutura, categorias, exemplo de referência |
 
 ---
 
@@ -40,22 +39,23 @@ src/
   pages/api/     — Endpoints Astro: create-project, extract-component, remove-component, publish-component, record-component-usage, registry-proxy
   types/         — index.ts com todos os tipos compartilhados
   layouts/       — AppLayout.astro (sidebar), PreviewLayout.astro (preview isolado)
-  styles/        — ui.ts (tokens CSS em JS), app.css
+  styles/        — ui.ts (tokens CSS em JS), app.css, preview.css (estilo isolado do preview)
 
-minha-lib-astro/ — Submodule git. NUNCA editar diretamente aqui a menos que pedido.
+minha-lib-astro/ — Repo git próprio (in-tree, não submodule). NUNCA editar diretamente aqui a menos que pedido.
 scripts/         — Node.js CLI: extract-component.mjs, add-component.mjs, generate-previews.mjs, remove-component.mjs, analytics.mjs
 public/          — Assets estáticos (logo_astroteca_branca.svg) + public/data/ (config.json, analytics.json)
-_base-project/   — Template base copiado ao criar projeto no GitHub. Self-contained com tailwind-tokens.js próprio
+_base-project/   — Template base copiado ao criar projeto no GitHub. Self-contained com Tailwind v4 CSS-first (tokens.css + global.css)
 ```
 
 ---
 
 ## Regras inegociáveis
 
-### minha-lib-astro é submodule
-- Nunca fazer commit no root do Astroteca com mudanças do submodule sem confirmar com o usuário
-- Commits no submodule são feitos separadamente dentro de `minha-lib-astro/`
-- `registry.json` dentro do submodule é a fonte da verdade da biblioteca
+### minha-lib-astro é repo git independente (in-tree)
+- Não é submodule — vive dentro do Astroteca mas tem `.git` próprio
+- Nunca commitar mudanças de `minha-lib-astro/` junto com commits do Astroteca
+- Commits em `minha-lib-astro/` são feitos separadamente dentro da pasta
+- `registry.json` dentro de `minha-lib-astro/` é a fonte da verdade da biblioteca
 
 ### Tokens de design system
 Os componentes da biblioteca usam tokens Tailwind fixos. **Nunca substituir por valores literais:**
@@ -87,21 +87,25 @@ Todos os tipos ficam em `src/types/index.ts`. Nunca criar tipos duplicados em co
 | `npm run new` | Wizard para criar componente novo na biblioteca |
 | `npm run previews` | Gera as páginas de preview de todos os componentes |
 | `npm run remove` | Remove componente do registry |
+| `npm run preview:css` | (auxiliar) Recompila o CSS isolado do preview em watch — rode ao mexer em `preview.css` ou tokens de preview |
+| `npm run build:preview-css` | (auxiliar) Build minificado do CSS de preview em `public/preview-components.css` |
 
 ---
 
 ## Fluxo de dados — Builder
 
 ```
-ProjectConfig + ArtDirection + SelectedComponent[] + AppSettings
+ProjectConfig + ArtDirection + SelectedComponent[] + AppSettingsV2
        ↓
-generateManifest() — src/lib/manifest.ts
+generateDocument() — src/lib/export-document.ts   (Path A / B / Hybrid)
+generateCreateManifest() — src/lib/manifest.ts    (Path C — criar componentes)
        ↓
 MANIFESTO.md (markdown para o Claude do projeto do cliente)
        ↓
 createProjectFromTemplate() — src/lib/github.ts
+  (Path C: chamado via /api/create-project para ler COMPONENT-BLUEPRINT.md do disco)
        ↓
-Novo repositório GitHub com componentes + MANIFESTO.md
+Novo repositório GitHub com componentes + MANIFESTO.md (+ COMPONENT-BLUEPRINT.md no Path C)
 ```
 
 ---
@@ -113,6 +117,7 @@ Novo repositório GitHub com componentes + MANIFESTO.md
 - **Analytics** em `public/data/analytics.json` — gerado automaticamente, não editar à mão. A escrita usa `node:fs`, então só persiste em ambiente local; em serverless (Vercel) o filesystem é read-only
 - **Preview pages** em `src/pages/preview/` — uma por componente, geradas por `npm run extract` e `npm run previews`
 - **PreviewLayout** injeta CSS de preview isolado — não confundir com AppLayout
+- **CSS de preview** (`src/styles/preview.css`) usa Tailwind v4 via `@tailwindcss/cli`. O studio usa Tailwind v3 para seu próprio UI — coexistem. Não existe mais `tailwind-tokens.js` nem `tailwind.preview.config.js`
 
 ---
 

@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import * as ui from '../styles/ui'
 import SelectField from './builder/SelectField'
+import { Check, Upload, Loader2, Info, AlertTriangle } from 'lucide-react'
 
 const CATEGORIES = [
-  'Hero', 'Features', 'Services', 'Testimonials', 'Process',
-  'Pricing', 'FAQ', 'CTA', 'Contact', 'Footer', 'Trust', 'UI', 'Other',
+  'Hero', 'Header', 'Navigation', 'Features', 'Services', 'Pricing',
+  'Testimonials', 'Process', 'CTA', 'FAQ', 'Stats', 'Gallery',
+  'Contact', 'Footer', 'About', 'Team', 'Trust', 'UI', 'Misc', 'Other',
 ]
 
 interface ChildInfo {
@@ -21,12 +23,37 @@ interface PropInfo {
 
 type Phase = 'idle' | 'analyzing' | 'ready' | 'extracting' | 'done' | 'error'
 
+/** Tenta inferir categoria pelo nome do arquivo */
+function guessCategory(fileName: string): string {
+  const n = fileName.toLowerCase().replace(/\.\w+$/, '').replace(/\d{4}$/, '')
+  if (n.includes('hero'))        return 'Hero'
+  if (n.includes('header'))      return 'Header'
+  if (n.includes('nav'))         return 'Navigation'
+  if (n.includes('footer'))      return 'Footer'
+  if (n.includes('feature'))     return 'Features'
+  if (n.includes('service'))     return 'Services'
+  if (n.includes('testimonial')) return 'Testimonials'
+  if (n.includes('pric'))        return 'Pricing'
+  if (n.includes('faq'))         return 'FAQ'
+  if (n.includes('cta'))         return 'CTA'
+  if (n.includes('contact'))     return 'Contact'
+  if (n.includes('stat'))        return 'Stats'
+  if (n.includes('trust'))       return 'Trust'
+  if (n.includes('about'))       return 'About'
+  if (n.includes('team'))        return 'Team'
+  return 'Other'
+}
+
 export default function ExtractForm() {
+  // Modo: 'file' = caminho no disco | 'upload' = arquivo arrastado/selecionado
+  const [mode, setMode] = useState<'file' | 'upload'>('upload')
   const [filePath, setFilePath] = useState('')
+  const [uploadedCode, setUploadedCode] = useState('')
+  const [uploadedFileName, setUploadedFileName] = useState('')
   const [dragging, setDragging] = useState(false)
-  const [dropHint, setDropHint] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [error, setError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Dados analisados
   const [fileName, setFileName] = useState('')
@@ -42,10 +69,42 @@ export default function ExtractForm() {
 
   // Resultado
   const [result, setResult] = useState<{
-    name: string; id: string; category: string
+    name: string; id: string; category: string; previewPath: string
     children: { childName: string; childCategory: string }[]
-    gitWarning?: string
+    gitWarnings?: string[]
   } | null>(null)
+
+  function readFile(file: File) {
+    if (!file.name.endsWith('.astro')) {
+      setError('Somente arquivos .astro são suportados')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const code = e.target?.result as string
+      setUploadedCode(code)
+      setUploadedFileName(file.name)
+      setMode('upload')
+      setCategory(guessCategory(file.name))
+      if (phase !== 'idle') reset()
+    }
+    reader.readAsText(file)
+  }
+
+  function buildRequestBody(extraPhase: 'analyze' | 'extract') {
+    const base = mode === 'upload'
+      ? { astroCode: uploadedCode, fileName: uploadedFileName }
+      : { filePath: filePath.trim() }
+    return {
+      ...base,
+      phase: extraPhase,
+      category,
+      description,
+      tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+      bestFor: bestFor.split(',').map(t => t.trim()).filter(Boolean),
+      chosenChildren,
+    }
+  }
 
   async function analyze() {
     setError('')
@@ -54,7 +113,7 @@ export default function ExtractForm() {
       const res = await fetch('/api/extract-component', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filePath: filePath.trim(), phase: 'analyze' }),
+        body: JSON.stringify(buildRequestBody('analyze')),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -77,15 +136,7 @@ export default function ExtractForm() {
       const res = await fetch('/api/extract-component', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filePath: filePath.trim(),
-          phase: 'extract',
-          category,
-          description,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-          bestFor: bestFor.split(',').map(t => t.trim()).filter(Boolean),
-          chosenChildren,
-        }),
+        body: JSON.stringify(buildRequestBody('extract')),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -98,9 +149,14 @@ export default function ExtractForm() {
   }
 
   function reset() {
-    setFilePath(''); setPhase('idle'); setError(''); setFileName('')
+    setPhase('idle'); setError(''); setFileName('')
     setDetectedProps([]); setChildren([]); setChosenChildren([])
     setDescription(''); setTags(''); setBestFor(''); setResult(null)
+  }
+
+  function fullReset() {
+    reset()
+    setFilePath(''); setUploadedCode(''); setUploadedFileName(''); setMode('upload')
   }
 
   function toggleChild(importName: string) {
@@ -109,25 +165,31 @@ export default function ExtractForm() {
     )
   }
 
+  const hasSource = mode === 'upload' ? !!uploadedCode : !!filePath.trim()
+  const busy = phase === 'analyzing' || phase === 'extracting'
+
   return (
     <div className="max-w-2xl flex flex-col gap-5 stagger">
       <div>
         <h1 className="text-2xl font-bold mb-1">Extrair Componente</h1>
         <p className="text-sm text-ink-muted">
-          Aponte para um <code className="bg-raised px-1 rounded">.astro</code> em qualquer projeto local.
+          Arraste um <code className="bg-raised px-1 rounded">.astro</code> de qualquer projeto local,
+          selecione um arquivo, ou cole o caminho abaixo.
           O sistema analisa, sanitiza e publica direto no GitHub.
         </p>
       </div>
 
-      {/* ── Passo 1: Caminho ── */}
+      {/* ── Passo 1: Arquivo ── */}
       <div className={`${ui.cardBase} p-5`}>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-ink-muted mb-3">1. Arquivo</h2>
 
-        {/* Zona de drag & drop */}
+        {/* Zona de drag & drop / upload */}
         <div
           className={`relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors p-6 mb-3 cursor-default ${
             dragging
               ? 'border-accent bg-accent/10 text-accent'
+              : uploadedCode
+              ? 'border-ok/40 bg-ok/5 text-ok'
               : 'border-white/10 bg-raised/30 text-ink-muted hover:border-white/20'
           }`}
           onDragOver={e => { e.preventDefault(); setDragging(true) }}
@@ -136,62 +198,75 @@ export default function ExtractForm() {
             e.preventDefault()
             setDragging(false)
             const file = e.dataTransfer.files[0]
-            if (file) {
-              // file.path só existe em Electron — no browser só temos o nome
-              // Tenta pegar o path completo via item.getAsString (não suportado)
-              // Fallback: sugerir o nome e deixar o usuário completar o caminho
-              const fullPath = (file as File & { path?: string }).path
-              if (fullPath) {
-                setFilePath(fullPath)
-                setDropHint('')
-                if (phase !== 'idle') reset()
-              } else {
-                setDropHint(`Arquivo detectado: "${file.name}". Complete o caminho no campo abaixo.`)
-              }
-            }
+            if (file) readFile(file)
           }}
+          onClick={() => fileInputRef.current?.click()}
+          style={{ cursor: 'pointer' }}
         >
-          <svg className="w-8 h-8 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          <p className="text-sm">{dragging ? 'Solte aqui' : 'Arraste o arquivo .astro aqui'}</p>
-          <p className="text-xs opacity-50">ou cole o caminho abaixo</p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".astro"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) readFile(f) }}
+          />
+          {uploadedCode ? (
+            <>
+              <Check className="w-7 h-7" />
+              <p className="text-sm font-medium">{uploadedFileName}</p>
+              <p className="text-xs opacity-60">Clique para trocar o arquivo</p>
+            </>
+          ) : (
+            <>
+              <Upload className="w-8 h-8 opacity-40" />
+              <p className="text-sm">{dragging ? 'Solte aqui' : 'Arraste o .astro aqui ou clique para selecionar'}</p>
+            </>
+          )}
         </div>
 
+        {/* Alternativa: caminho no disco */}
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex-1 h-px bg-white/[0.06]" />
+          <span className="text-xs text-ink-muted">ou cole o caminho</span>
+          <div className="flex-1 h-px bg-white/[0.06]" />
+        </div>
         <div className="flex gap-2">
           <input
             className={ui.inputBase}
             placeholder="C:/PROJETOS/meu-projeto/src/components/Footer.astro"
             value={filePath}
-            onChange={e => { setFilePath(e.target.value.replace(/^["']|["']$/g, '')); if (phase !== 'idle') reset() }}
-            disabled={phase === 'analyzing' || phase === 'extracting'}
+            onChange={e => {
+              const v = e.target.value.replace(/^["']|["']$/g, '')
+              setFilePath(v)
+              if (v) { setMode('file'); setUploadedCode(''); setUploadedFileName('') }
+              if (phase !== 'idle') reset()
+            }}
+            disabled={busy}
           />
-          <button
-            className={`${ui.btnPrimary} whitespace-nowrap`}
-            onClick={analyze}
-            disabled={!filePath.trim() || phase === 'analyzing' || phase === 'extracting'}
-          >
-            {phase === 'analyzing' ? (
-              <span className="flex items-center gap-2">
-                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".25"/><path d="M21 12a9 9 0 00-9-9"/></svg>
-                Analisando...
-              </span>
-            ) : 'Analisar'}
-          </button>
         </div>
+        <p className="text-xs text-ink-muted/60 mt-1.5">
+          Dica Windows: Shift + botão direito no arquivo → "Copiar como caminho"
+        </p>
 
-        {dropHint && (
-          <div className="mt-2 flex items-start gap-2 text-xs text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-3 py-2">
-            <svg className="w-3.5 h-3.5 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span>{dropHint} <strong>Dica:</strong> Shift + botão direito no arquivo → "Copiar como caminho"</span>
+        {/* Botão analisar */}
+        {hasSource && phase === 'idle' && (
+          <button
+            className={`${ui.btnPrimary} mt-3 w-full`}
+            onClick={analyze}
+            disabled={busy}
+          >
+            Analisar
+          </button>
+        )}
+        {phase === 'analyzing' && (
+          <div className="mt-3 flex items-center gap-2 text-ink-muted text-sm">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Analisando...
           </div>
         )}
-
-        {phase === 'ready' && (
+        {(phase === 'ready' || phase === 'extracting' || phase === 'done') && (
           <div className="mt-3 flex items-center gap-2 text-ok text-sm">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <Check className="w-4 h-4" />
             <span><strong>{fileName}</strong> — {detectedProps.length} prop(s) detectada(s)</span>
           </div>
         )}
@@ -310,7 +385,7 @@ export default function ExtractForm() {
       {phase === 'done' && result && (
         <div className={`${ui.cardBase} p-5 border-ok/20 bg-ok/5`}>
           <div className="flex items-center gap-2 text-ok mb-3">
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <Check className="w-5 h-5" />
             <span className="font-semibold">Componente extraído e publicado!</span>
           </div>
           <div className="space-y-1 text-sm text-ink-secondary">
@@ -323,14 +398,16 @@ export default function ExtractForm() {
               ))}</p>
             )}
           </div>
-          {result.gitWarning && (
+          {result.gitWarnings && result.gitWarnings.length > 0 && (
             <div className="mt-3 p-2.5 rounded bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs">
-              ⚠️ {result.gitWarning}
+              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 inline mr-1" />
+              {result.gitWarnings.join(' | ')}
             </div>
           )}
           <div className="flex gap-2 mt-4">
+            <a href={result.previewPath} target="_blank" rel="noopener noreferrer" className={`${ui.btnOutline} text-sm`}>Ver Preview</a>
             <a href="/" className={`${ui.btnOutline} text-sm`}>Ver na Biblioteca</a>
-            <button onClick={reset} className={`${ui.btnGhost} text-sm`}>Extrair outro</button>
+            <button onClick={fullReset} className={`${ui.btnGhost} text-sm`}>Extrair outro</button>
           </div>
         </div>
       )}
@@ -339,11 +416,11 @@ export default function ExtractForm() {
       {(phase === 'ready' || phase === 'extracting') && (
         <div className="space-y-3">
           <div className="rounded-xl border border-white/[0.06] bg-raised/30 px-4 py-3 text-xs text-ink-muted flex items-start gap-2">
-            <svg className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <Info className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
             <span>
-              Ao clicar em "Extrair e publicar", o componente será sanitizado (tokens limpos, imports normalizados),
-              commitado na biblioteca <code className="bg-raised px-1 rounded">minha-lib-astro</code> e ficará
-              disponível no Builder imediatamente. A preview é gerada automaticamente e o uso é registrado no analytics.
+              O componente será sanitizado (tokens limpos, assets removidos), gravado em{' '}
+              <code className="bg-raised px-1 rounded">{category}/</code> e publicado no GitHub.
+              Preview gerado automaticamente.
             </span>
           </div>
           <button
@@ -352,30 +429,15 @@ export default function ExtractForm() {
             disabled={phase === 'extracting' || !description.trim()}
             title={!description.trim() ? 'Descrição é obrigatória' : ''}
           >
-          {phase === 'extracting' ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".25"/><path d="M21 12a9 9 0 00-9-9"/></svg>
-              Extraindo e publicando...
-            </span>
-          ) : 'Extrair e publicar no GitHub'}
+            {phase === 'extracting' ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Extraindo e publicando...
+              </span>
+            ) : 'Extrair e publicar no GitHub'}
           </button>
         </div>
       )}
     </div>
   )
-}
-
-function guessCategory(fileName: string): string {
-  const n = fileName.toLowerCase().replace(/\.\w+$/, '')
-  if (n.includes('hero'))        return 'Hero'
-  if (n.includes('footer'))      return 'Footer'
-  if (n.includes('feature'))     return 'Features'
-  if (n.includes('service'))     return 'Services'
-  if (n.includes('testimonial')) return 'Testimonials'
-  if (n.includes('pric'))        return 'Pricing'
-  if (n.includes('faq'))         return 'FAQ'
-  if (n.includes('cta'))         return 'CTA'
-  if (n.includes('contact'))     return 'Contact'
-  if (n.includes('trust'))       return 'Trust'
-  return 'Other'
 }

@@ -7,8 +7,10 @@ export type ComponentCategory =
   | 'Header'
   | 'Navigation'
   | 'Features'
+  | 'Services'
   | 'Pricing'
   | 'Testimonials'
+  | 'Process'
   | 'CTA'
   | 'FAQ'
   | 'Stats'
@@ -17,7 +19,10 @@ export type ComponentCategory =
   | 'Footer'
   | 'About'
   | 'Team'
+  | 'Trust'
+  | 'UI'
   | 'Misc'
+  | 'Other'
 
 export interface PropDefinition {
   name: string
@@ -56,7 +61,7 @@ export interface SelectedComponent {
 }
 
 export interface ArtDirection {
-  // Cores principais (tokens do tailwind.config.js)
+  // Cores principais (tokens CSS em tokens.css, prefixo --t-)
   colorPrimary: string
   colorPrimaryDark: string
   colorSecondary: string

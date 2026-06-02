@@ -161,6 +161,7 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
   const [settings] = useState<AppSettingsV2>(loadSettings)
   const [state, dispatch] = useReducer(builderReducer, activeProject?.builderState ?? DEFAULT_BUILDER_STATE)
   const [sidebarTab, setSidebarTab] = useState<'resumo' | 'componentes' | 'documento'>('resumo')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [creating, setCreating] = useState(false)
   const [result, setResult] = useState<CreateProjectResult | null>(null)
   const [error, setError] = useState('')
@@ -469,7 +470,11 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
       </div>
 
       {/* Sidebar direita */}
-      <div className={cn(ui.cardBase, 'xl:w-96 flex-shrink-0 overflow-hidden')}>
+      <div className={cn(
+        ui.cardBase,
+        'flex-shrink-0 overflow-hidden transition-all duration-300',
+        sidebarCollapsed ? 'xl:w-14 w-14' : 'xl:w-[440px] w-full',
+      )}>
         <BuilderSidebar
           tab={sidebarTab}
           onTabChange={t => setSidebarTab(t as typeof sidebarTab)}
@@ -477,6 +482,8 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
           settings={settings}
           onRemoveComponent={handleRemoveComponent}
           onMoveComponent={handleMoveComponent}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(c => !c)}
         />
       </div>
     </div>

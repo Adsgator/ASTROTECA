@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import type { ComponentMeta, SelectedComponent } from '../../types'
 import * as ui from '../../styles/ui'
+import ComponentThumbnail from '../ui/ComponentThumbnail'
+import { Check, Loader2, XCircle, Search, Plus, Maximize2, LayoutGrid } from 'lucide-react'
 
 interface Props {
   initialComponents: ComponentMeta[]
@@ -286,7 +288,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
       {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-surface border border-white/[0.08] shadow-2xl text-sm text-ink-primary animate-fade-in">
-          <svg className="w-4 h-4 text-ok shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+          <Check className="w-4 h-4 text-ok shrink-0" />
           {toast}
         </div>
       )}
@@ -323,7 +325,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
       {/* ── Search & Filters ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="relative flex-1 sm:max-w-md">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none" />
           <input
             type="text"
             className="w-full rounded-xl border border-white/[0.06] bg-surface/60 backdrop-blur-xl pl-10 pr-4 py-2.5 text-sm text-ink-primary placeholder-ink-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/50 transition-all"
@@ -366,13 +368,13 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
       {/* ── Loading / Error ── */}
       {loading && (
         <div className="flex items-center justify-center py-20 text-ink-secondary">
-          <svg className="animate-spin w-5 h-5 mr-3 text-accent" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.2" /><path d="M12 2a10 10 0 019.8 7.8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>
+          <Loader2 className="animate-spin w-5 h-5 mr-3 text-accent" />
           Carregando componentes...
         </div>
       )}
       {error && (
         <div className="flex items-center gap-3 p-4 rounded-xl border border-fail/20 bg-fail/5 text-fail text-sm">
-          <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" /></svg>
+          <XCircle className="w-5 h-5 flex-shrink-0" />
           {error}
         </div>
       )}
@@ -384,7 +386,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
           <div className="flex flex-col gap-3 overflow-y-auto pr-1">
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-ink-muted">
-                <svg className="w-12 h-12 mb-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+                <Search className="w-12 h-12 mb-3 opacity-30" />
                 <p className="text-sm">Nenhum componente encontrado</p>
               </div>
             ) : (
@@ -405,43 +407,15 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
                     >
                       {/* Thumbnail */}
                       <div className="h-32 relative overflow-hidden">
-                        {c.screenshotUrl ? (
-                          <img
-                            src={c.screenshotUrl}
-                            alt={c.name}
-                            className="w-full h-full object-cover object-top"
-                          />
-                        ) : (
-                          <>
-                            <div
-                              className="absolute inset-0 opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-300"
-                              style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div
-                                className="w-14 h-14 rounded-2xl flex items-center justify-center opacity-20 group-hover:opacity-0 transition-all duration-300 animate-float"
-                                style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}
-                              >
-                                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d={iconPath} />
-                                </svg>
-                              </div>
-                            </div>
-                            {/* Wireframe lines for visual texture */}
-                            <div className="absolute inset-x-4 top-5 space-y-1.5 opacity-[0.06]">
-                              <div className="h-2 rounded-full bg-white w-3/4" />
-                              <div className="h-1.5 rounded-full bg-white w-full" />
-                              <div className="h-1.5 rounded-full bg-white w-5/6" />
-                              <div className="flex gap-1.5 mt-2">
-                                <div className="h-8 rounded bg-white w-1/3" />
-                                <div className="h-8 rounded bg-white w-1/3" />
-                                <div className="h-8 rounded bg-white w-1/3" />
-                              </div>
-                            </div>
-                          </>
-                        )}
+                        <ComponentThumbnail
+                          previewUrl={c.previewUrl}
+                          screenshotUrl={c.screenshotUrl}
+                          name={c.name}
+                          category={c.category}
+                          height={128}
+                        />
                         {/* Category dot indicator */}
-                        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/30 backdrop-blur-sm">
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/30 backdrop-blur-sm z-10">
                           <span className="w-1.5 h-1.5 rounded-full" style={{ background: g1 }} />
                           <span className="text-[10px] font-medium text-white/70">{c.category}</span>
                         </div>
@@ -459,7 +433,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
                       {/* Selection indicator */}
                       {isSelected && (
                         <div className="absolute top-3 left-3 w-5 h-5 rounded-full bg-accent flex items-center justify-center shadow-lg">
-                          <svg className="w-3 h-3 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                          <Check className="w-3 h-3 text-black" />
                         </div>
                       )}
                     </div>
@@ -473,7 +447,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
           <div className={`flex flex-col gap-4 overflow-y-auto ${selected ? 'animate-slide-right' : 'hidden lg:flex'}`}>
             {!selected ? (
               <div className="hidden lg:flex flex-col items-center justify-center h-full rounded-xl border border-dashed border-white/[0.08] text-ink-muted">
-                <svg className="w-10 h-10 mb-3 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>
+                <LayoutGrid className="w-10 h-10 mb-3 opacity-20" />
                 <p className="text-sm">Clique em um componente</p>
                 <p className="text-xs text-ink-muted/60 mt-0.5">para ver detalhes e preview</p>
               </div>
@@ -498,7 +472,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
                           title="Ver preview completo"
                         >
                           <span className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/60 text-white text-sm font-medium border border-white/20">
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                            <Maximize2 className="w-4 h-4" />
                             Ver em tela cheia
                           </span>
                         </a>
@@ -513,7 +487,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
                         className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 hover:bg-black/80 text-white rounded-lg p-1.5"
                         title="Ver em tela cheia"
                       >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                        <Maximize2 className="w-4 h-4" />
                       </a>
                       <iframe
                         src={selected.previewUrl}
@@ -525,7 +499,7 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
                     </div>
                   ) : selected.previewUrl && previewError ? (
                     <div className="flex flex-col items-center justify-center h-[260px] gap-2 text-ink-muted">
-                      <svg className="w-10 h-10 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+                      <LayoutGrid className="w-10 h-10 opacity-20" />
                       <p className="text-sm">Preview não disponível</p>
                       <p className="text-xs text-ink-muted/60">Rode <code className="text-accent/80">npm run previews</code> para gerar</p>
                     </div>
@@ -579,18 +553,15 @@ export default function ComponentBrowser({ initialComponents, registryUrl, initi
                   >
                     {builderIds.has(selected.id) ? (
                       <span className="flex items-center justify-center gap-2">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
-                        Já no Builder
+                        <Check className="w-4 h-4" />Já no Builder
                       </span>
                     ) : addedId === selected.id ? (
                       <span className="flex items-center justify-center gap-2">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
-                        Adicionado!
+                        <Check className="w-4 h-4" />Adicionado!
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-2">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
-                        Adicionar ao Builder
+                        <Plus className="w-4 h-4" />Adicionar ao Builder
                       </span>
                     )}
                   </button>

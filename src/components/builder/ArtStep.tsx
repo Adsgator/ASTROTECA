@@ -6,6 +6,7 @@ import { generateDarkPalette } from '../../lib/color-utils'
 import { generateFullPalette } from '../../lib/palette-ai'
 import * as ui from '../../styles/ui'
 import { cn } from '../../lib/utils'
+import { Check, Star, Share2, Sun, Moon, ChevronDown, Loader2 } from 'lucide-react'
 
 interface ArtStepProps {
   art: ArtDirectionV2
@@ -242,15 +243,9 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
             )}
           >
             {aiLoading ? (
-              <>
-                <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
-                Gerando…
-              </>
+              <><Loader2 className="w-3.5 h-3.5 animate-spin" />Gerando…</>
             ) : (
-              <>
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                Gerar com Gemini
-              </>
+              <><Star className="w-3.5 h-3.5" />Gerar com Gemini</>
             )}
           </button>
         </div>
@@ -297,11 +292,7 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
               )}
             >
               <div className="text-accent">
-                {theme === 'light' ? (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                ) : (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-                )}
+                {theme === 'light' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </div>
               <p className="text-xs font-semibold text-ink-primary mt-1">
                 {theme === 'light' ? 'Tema Claro' : 'Tema Escuro'}
@@ -349,7 +340,7 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
             >
               Gerar do Light
             </button>
-            <svg className="w-3.5 h-3.5 text-ink-muted transition-transform" style={{ transform: darkExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            <ChevronDown className="w-3.5 h-3.5 text-ink-muted transition-transform" style={{ transform: darkExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
           </div>
         </div>
 
@@ -450,9 +441,9 @@ export default function ArtStep({ art, onChange, nomeCliente = 'Cliente', studio
           )}
         >
           {shared ? (
-            <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Link copiado!</>
+            <><Check className="w-3.5 h-3.5" />Link copiado!</>
           ) : (
-            <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Compartilhar Direção de Arte</>
+            <><Share2 className="w-3.5 h-3.5" />Compartilhar Direção de Arte</>
           )}
         </button>
       </div>

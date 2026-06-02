@@ -1,12 +1,8 @@
 /* ─────────────────────────────────────────────────────────────
    global.css — Reset + base tipográfica da biblioteca Astroteca
    ─────────────────────────────────────────────────────────────
-   Importa os tokens (base.css) e aplica os estilos base que todo
-   projeto herda. Os valores SEMPRE vêm de var(--token) — nada
-   hardcodado aqui.
-
-   No projeto cliente (Tailwind v4), este arquivo é importado pelo
-   global.css local junto do `@import "tailwindcss"`.
+   Importa os tokens (base.css) e aplica estilos base compartilhados.
+   Os valores SEMPRE vêm de var(--t-*) — nada hardcodado aqui.
    ───────────────────────────────────────────────────────────── */
 
 @import "./base.css";
@@ -26,18 +22,17 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--font-body);
-  font-size: var(--text-body);
-  line-height: var(--leading-normal);
-  color: var(--color-text-base);
-  background-color: var(--color-surface);
+  font-family: var(--t-font-sans);
+  line-height: 1.6;
+  color: var(--t-text-main);
+  background-color: var(--t-background);
   overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  line-height: var(--leading-tight);
-  color: var(--color-text-strong);
+  font-family: var(--t-font-serif);
+  line-height: 1.2;
+  color: var(--t-text-main);
   margin: 0;
 }
 
@@ -54,13 +49,13 @@ img, video, svg {
 }
 
 ::selection {
-  background-color: var(--color-brand-light);
-  color: var(--color-brand);
+  background-color: color-mix(in srgb, var(--t-primary) 15%, transparent);
+  color: var(--t-primary-dark);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 3px;
+  outline: 2px solid var(--t-primary);
+  outline-offset: 2px;
   border-radius: 4px;
 }
 

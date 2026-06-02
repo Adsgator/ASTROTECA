@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { SelectedComponent, ArtDirectionV2, PageSection } from '../../types'
 import * as ui from '../../styles/ui'
 import { cn } from '../../lib/utils'
+import { Check, Monitor, Smartphone, Eye } from 'lucide-react'
 
 interface PreviewStepProps {
   selected: SelectedComponent[]
@@ -79,7 +80,7 @@ export default function PreviewStep({ selected, art, sections = [] }: PreviewSte
               viewport === 'desktop' ? ui.tabActive : ui.tabInactive,
             )}
           >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <Monitor className="w-3.5 h-3.5" />
             Desktop
           </button>
           <button
@@ -89,7 +90,7 @@ export default function PreviewStep({ selected, art, sections = [] }: PreviewSte
               viewport === 'mobile' ? ui.tabActive : ui.tabInactive,
             )}
           >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <Smartphone className="w-3.5 h-3.5" />
             Mobile
           </button>
         </div>
@@ -109,7 +110,7 @@ export default function PreviewStep({ selected, art, sections = [] }: PreviewSte
               className="flex flex-col items-center justify-center py-24 text-center px-8"
               style={{ background: art.colorBackground || '#fff' }}
             >
-              <svg className="w-10 h-10 mb-3 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: art.colorText || '#333' }}><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <Eye className="w-10 h-10 mb-3 opacity-20" style={{ color: art.colorText || '#333' }} />
               <p className="text-sm font-medium" style={{ color: art.colorText || '#333' }}>
                 Nenhum componente selecionado
               </p>
@@ -163,9 +164,7 @@ export default function PreviewStep({ selected, art, sections = [] }: PreviewSte
                     <div key={s.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-raised/30 border border-white/5">
                       <span className="text-[10px] text-ink-muted w-3 text-right flex-shrink-0">{i + 1}</span>
                       <p className="text-[11px] text-ink-secondary truncate">{s.label}</p>
-                      {s.fromLibrary && (
-                        <svg className="w-3 h-3 text-ok flex-shrink-0 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      )}
+                      {s.fromLibrary && <Check className="w-3 h-3 text-ok flex-shrink-0 ml-auto" />}
                     </div>
                   ))}
                 </div>

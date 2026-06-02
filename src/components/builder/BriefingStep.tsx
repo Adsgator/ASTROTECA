@@ -8,6 +8,7 @@ import * as ui from '../../styles/ui'
 import { cn } from '../../lib/utils'
 import Dialog from './Dialog'
 import SelectField from './SelectField'
+import { Check, Loader2, Zap, Trash2 } from 'lucide-react'
 
 interface BriefingStepProps {
   briefing: Briefing
@@ -216,9 +217,9 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
             >
               <span className="flex items-center gap-1.5">
               {analyzing ? (
-                <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.2"/><path d="M12 2a10 10 0 019.8 7.8" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>Analisando...</>
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" />Analisando...</>
               ) : (
-                <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Analisar com Gemini</>
+                <><Zap className="w-3.5 h-3.5" />Analisar com Gemini</>
               )}
             </span>
             </button>
@@ -231,7 +232,7 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
 
           {filledByAI.length > 0 && (
             <span className="text-xs text-ok flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <Check className="w-3.5 h-3.5" />
               {filledByAI.length} campos preenchidos pela IA
             </span>
           )}
@@ -273,7 +274,7 @@ export default function BriefingStep({ briefing, onChange, settings, filledByAI,
           })}
           className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-ink-muted hover:text-fail transition-colors"
         >
-          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          <Trash2 className="w-3.5 h-3.5" />
           Limpar
         </button>
       </div>

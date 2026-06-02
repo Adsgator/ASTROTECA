@@ -20,6 +20,7 @@
     "@tailwindcss/vite": "^4.0.0",
     "astro": "^5.2.0",
     "astro-icon": "^1.1.5",
+    "@iconify-json/lucide": "^1.2.0",
     "framer-motion": "^11.3.0",
     "gsap": "^3.12.5",
     "lenis": "^1.1.18",

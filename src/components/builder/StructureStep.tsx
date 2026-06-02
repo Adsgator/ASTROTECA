@@ -4,6 +4,28 @@ import { useState, useRef } from 'react'
 import type { PageSection, Briefing, AppSettingsV2 } from '../../types'
 import { getAvailableSections, prefillCopyFromBriefing } from '../../lib/section-defaults'
 import {
+  Check, X, Download, Upload, GripVertical, ChevronUp, ChevronDown, Star,
+  MessageSquare, DollarSign, HelpCircle, MapPin, ArrowRight, User, Settings,
+  Zap, LayoutGrid, ClipboardList, Camera,
+} from 'lucide-react'
+
+const SECTION_ICONS: Record<string, React.ReactNode> = {
+  'header':        <LayoutGrid className="w-4 h-4" />,
+  'hero':          <Zap className="w-4 h-4" />,
+  'sobre':         <User className="w-4 h-4" />,
+  'servicos':      <Settings className="w-4 h-4" />,
+  'como-funciona': <ArrowRight className="w-4 h-4" />,
+  'diferenciais':  <Star className="w-4 h-4" />,
+  'depoimentos':   <MessageSquare className="w-4 h-4" />,
+  'google-reviews':<Star className="w-4 h-4" />,
+  'precos':        <DollarSign className="w-4 h-4" />,
+  'faq':           <HelpCircle className="w-4 h-4" />,
+  'instagram':     <Camera className="w-4 h-4" />,
+  'localizacao':   <MapPin className="w-4 h-4" />,
+  'cta':           <ArrowRight className="w-4 h-4" />,
+  'footer':        <ClipboardList className="w-4 h-4" />,
+}
+import {
   generateStructureDocument,
   parseStructureOutput,
   applyParsedStructure,
@@ -40,7 +62,7 @@ function ImportModal({ onImport, onClose }: { onImport: (text: string) => void; 
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-ink-primary">Importar Output da IA</h3>
           <button onClick={onClose} className="text-ink-muted hover:text-ink-primary transition-colors">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -69,7 +91,7 @@ function ImportModal({ onImport, onClose }: { onImport: (text: string) => void; 
             disabled={!text.trim()}
             className={cn(ui.btnPrimary, 'text-xs')}
           >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <Download className="w-3.5 h-3.5" />
             Importar e Aplicar
           </button>
         </div>
@@ -218,14 +240,14 @@ export default function StructureStep({ sections, briefing, onChange, settings }
               onClick={handleDownload}
               className={cn(ui.btnOutline, 'text-xs gap-1.5')}
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              <Download className="w-3.5 h-3.5" />
               Baixar para IA
             </button>
             <button
               onClick={() => setShowImport(true)}
               className={cn(ui.btnPrimary, 'text-xs gap-1.5')}
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              <Upload className="w-3.5 h-3.5" />
               Importar Output
             </button>
           </div>
@@ -239,7 +261,7 @@ export default function StructureStep({ sections, briefing, onChange, settings }
 
         {importSuccess && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ok/10 border border-ok/20">
-            <svg className="w-4 h-4 text-ok flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <Check className="w-4 h-4 text-ok flex-shrink-0" />
             <p className="text-xs text-ok">Output importado com sucesso. Seções e copy foram atualizadas.</p>
           </div>
         )}
@@ -272,7 +294,9 @@ export default function StructureStep({ sections, briefing, onChange, settings }
                       !conditionMet && !template.required && 'opacity-40',
                     )}
                   >
-                    <span className="text-base flex-shrink-0 w-7 text-center">{template.icon}</span>
+                    <span className="flex-shrink-0 w-7 flex items-center justify-center text-ink-secondary">
+                      {SECTION_ICONS[template.icon] ?? SECTION_ICONS['cta']}
+                    </span>
                     <div className="flex-1 min-w-0">
                       <p className={cn(
                         'text-sm font-medium leading-tight',
@@ -325,7 +349,7 @@ export default function StructureStep({ sections, briefing, onChange, settings }
 
             {enabledSections.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-ink-muted gap-2">
-                <svg className="w-8 h-8 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <ClipboardList className="w-8 h-8 opacity-20" />
                 <p className="text-xs">Ative seções à esquerda</p>
               </div>
             ) : (
@@ -354,7 +378,7 @@ export default function StructureStep({ sections, briefing, onChange, settings }
                     >
                       <div className="flex items-center gap-2.5 px-3 py-2.5">
                         {/* Drag handle */}
-                        <svg className="w-3 h-3 text-ink-muted opacity-40 cursor-grab flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 4a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm6 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9 10.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm6 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9 17a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm6 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"/></svg>
+                        <GripVertical className="w-3 h-3 text-ink-muted opacity-40 cursor-grab flex-shrink-0" />
                         <span className="w-5 h-5 rounded-full bg-accent/20 text-accent text-[10px] font-bold flex items-center justify-center flex-shrink-0">
                           {idx + 1}
                         </span>
@@ -370,14 +394,14 @@ export default function StructureStep({ sections, briefing, onChange, settings }
                             disabled={idx === 0}
                             className="p-1 rounded text-ink-muted hover:text-ink-primary disabled:opacity-20 transition-colors"
                           >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+                            <ChevronUp width={12} height={12} />
                           </button>
                           <button
                             onClick={() => moveSection(section.id, 'down')}
                             disabled={idx === enabledSections.length - 1}
                             className="p-1 rounded text-ink-muted hover:text-ink-primary disabled:opacity-20 transition-colors"
                           >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+                            <ChevronDown width={12} height={12} />
                           </button>
                           <button
                             onClick={() => setExpandedId(isExpanded ? null : section.id)}
@@ -386,7 +410,7 @@ export default function StructureStep({ sections, briefing, onChange, settings }
                               isExpanded ? 'text-accent' : 'text-ink-muted hover:text-ink-primary',
                             )}
                           >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points={isExpanded ? '18 15 12 9 6 15' : '6 9 12 15 18 9'}/></svg>
+                            {isExpanded ? <ChevronUp width={12} height={12} /> : <ChevronDown width={12} height={12} />}
                           </button>
                         </div>
                       </div>
@@ -397,7 +421,7 @@ export default function StructureStep({ sections, briefing, onChange, settings }
                             onClick={() => prefill(section)}
                             className={cn(ui.btnGhost, 'text-[11px] w-full py-1.5 gap-1.5')}
                           >
-                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            <Star className="w-3 h-3" />
                             Preencher com briefing
                           </button>
                           {copyEntries.map(([field, value]) => (

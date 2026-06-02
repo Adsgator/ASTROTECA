@@ -7,6 +7,10 @@ import { generateDocument } from '../../lib/export-document'
 import * as ui from '../../styles/ui'
 import { cn } from '../../lib/utils'
 import PromptBlock from './PromptBlock'
+import {
+  Check, X, Copy, Download, ExternalLink, Code2, GitBranch, FileText,
+  Info, Loader2, Zap, XCircle,
+} from 'lucide-react'
 
 interface GenerateStepProps {
   state: BuilderState
@@ -188,13 +192,13 @@ export default function GenerateStep({
                   className={cn(ui.btnOutline, 'text-xs flex items-center gap-1.5', docCopied && 'text-ok border-ok/30')}
                 >
                   {docCopied ? (
-                    <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Copiado!</>
+                    <><Check className="w-3.5 h-3.5" />Copiado!</>
                   ) : (
-                    <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copiar</>
+                    <><Copy className="w-3.5 h-3.5" />Copiar</>
                   )}
                 </button>
                 <button onClick={() => setManifestOpen(false)} className="p-1.5 rounded text-ink-muted hover:text-ink-primary">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -266,7 +270,7 @@ export default function GenerateStep({
               </div>
               {opt.needs && (
                 <p className="text-[10px] text-ink-muted flex items-center gap-1">
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <Info className="w-3 h-3" />
                   Requer: {opt.needs}
                 </p>
               )}
@@ -281,13 +285,10 @@ export default function GenerateStep({
         <div className="space-y-2">
           {visibleChecks.map((check, i) => (
             <div key={i} className="flex items-center gap-2.5">
-              <svg className={cn('w-4 h-4 flex-shrink-0', check.ok ? 'text-ok' : 'text-fail')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                {check.ok ? (
-                  <polyline points="20 6 9 17 4 12" />
-                ) : (
-                  <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
-                )}
-              </svg>
+              {check.ok
+                ? <Check className="w-4 h-4 text-ok flex-shrink-0" />
+                : <X className="w-4 h-4 text-fail flex-shrink-0" />
+              }
               <span className={cn('text-xs flex-1', check.ok ? 'text-ink-primary' : 'text-ink-secondary')}>
                 {check.label}
               </span>
@@ -330,7 +331,7 @@ export default function GenerateStep({
           onClick={() => setManifestOpen(true)}
           className={cn(ui.btnOutline, 'flex items-center gap-1.5 text-sm')}
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm4 18H6V4h7v5h5z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <FileText className="w-4 h-4" />
           Revisar manifesto
         </button>
       </div>
@@ -343,9 +344,9 @@ export default function GenerateStep({
           >
             <span className="flex items-center justify-center gap-2">
               {creating ? (
-                <><svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.2"/><path d="M12 2a10 10 0 019.8 7.8" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>Criando...</>
+                <><Loader2 className="w-4 h-4 animate-spin" />Criando...</>
               ) : (
-                <><svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>Criar Projeto no GitHub</>
+                <><Zap className="w-4 h-4" />Criar Projeto no GitHub</>
               )}
             </span>
           </button>
@@ -358,9 +359,9 @@ export default function GenerateStep({
           >
             <span className="flex items-center justify-center gap-2">
               {creating ? (
-                <><svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.2"/><path d="M12 2a10 10 0 019.8 7.8" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>Criando...</>
+                <><Loader2 className="w-4 h-4 animate-spin" />Criando...</>
               ) : (
-                <><svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>Criar no GitHub (só manifesto)</>
+                <><GitBranch className="w-4 h-4" />Criar no GitHub (só manifesto)</>
               )}
             </span>
           </button>
@@ -371,7 +372,7 @@ export default function GenerateStep({
             className={cn(ui.btnPrimary, 'flex-1 py-3 text-sm')}
           >
             <span className="flex items-center justify-center gap-2">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <Download className="w-4 h-4" />
               Baixar MANIFESTO.md
             </span>
           </button>
@@ -383,18 +384,14 @@ export default function GenerateStep({
           className={cn(ui.btnOutline, 'py-3 px-3')}
           title="Baixar documento .md"
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <Download className="w-4 h-4" />
         </button>
         <button
           onClick={copyDoc}
           className={cn(ui.btnOutline, 'py-3 px-3', docCopied && 'text-ok border-ok/30')}
           title="Copiar documento"
         >
-          {docCopied ? (
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          ) : (
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          )}
+          {docCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
         </button>
       </div>
 
@@ -411,7 +408,7 @@ export default function GenerateStep({
         <div className="space-y-3">
           <div className={cn(ui.cardBase, 'p-5 border-ok/30 bg-ok/5')}>
             <div className="flex items-center gap-2 mb-3">
-              <svg className="w-5 h-5 text-ok flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <Check className="w-5 h-5 text-ok flex-shrink-0" />
               <p className="text-sm font-semibold text-ok">Projeto criado no GitHub!</p>
             </div>
 
@@ -422,11 +419,7 @@ export default function GenerateStep({
                 onClick={() => copyUrl(result.repoUrl)}
                 className={cn('p-1 rounded text-ink-muted hover:text-ink-primary transition-colors flex-shrink-0', copied && 'text-ok')}
               >
-                {copied ? (
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                ) : (
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                )}
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             </div>
 
@@ -435,7 +428,7 @@ export default function GenerateStep({
                 href={`${result.repoUrl}/archive/refs/heads/main.zip`}
                 className={cn(ui.btnPrimary, 'text-xs flex items-center gap-1.5')}
               >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <Download className="w-3.5 h-3.5" />
                 Baixar ZIP
               </a>
               <a
@@ -444,12 +437,12 @@ export default function GenerateStep({
                 rel="noopener"
                 className={cn(ui.btnOutline, 'text-xs flex items-center gap-1.5')}
               >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <ExternalLink className="w-3.5 h-3.5" />
                 Ver no GitHub
               </a>
               {result.vscodeUrl && (
                 <a href={result.vscodeUrl} className={cn(ui.btnGhost, 'text-xs flex items-center gap-1.5')}>
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                  <Code2 className="w-3.5 h-3.5" />
                   Abrir no VS Code <span className="text-ink-muted">(opcional)</span>
                 </a>
               )}
@@ -470,11 +463,11 @@ export default function GenerateStep({
                     className={cn(ui.btnOutline, 'text-xs flex items-center gap-1.5', manifestCopied && 'text-ok border-ok/30')}
                   >
                     {fetchingManifest ? (
-                      <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.2"/><path d="M12 2a10 10 0 019.8 7.8" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>Buscando...</>
+                      <><Loader2 className="w-3.5 h-3.5 animate-spin" />Buscando...</>
                     ) : manifestCopied ? (
-                      <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Copiado!</>
+                      <><Check className="w-3.5 h-3.5" />Copiado!</>
                     ) : (
-                      <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copiar MANIFESTO.md</>
+                      <><Copy className="w-3.5 h-3.5" />Copiar MANIFESTO.md</>
                     )}
                   </button>
                 </div>
@@ -495,7 +488,7 @@ export default function GenerateStep({
       {/* Erro */}
       {error && (
         <div className="rounded-xl border border-fail/30 bg-fail/5 px-4 py-3 flex items-start gap-2">
-          <svg className="w-4 h-4 text-fail flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <XCircle className="w-4 h-4 text-fail flex-shrink-0 mt-0.5" />
           <p className="text-xs text-fail">{error}</p>
         </div>
       )}

@@ -3,6 +3,7 @@
 // Dashboard de analytics — componentes extraídos e seu uso
 
 import AppLayout from '../layouts/AppLayout.astro'
+import { Icon } from 'astro-icon/components'
 import { loadAnalytics, getAnalyticsSummary, formatDateFull } from '../lib/analytics'
 
 const analyticsData = loadAnalytics()
@@ -27,11 +28,7 @@ const summary = getAnalyticsSummary(analyticsData)
               <p class="text-4xl font-bold text-accent">{summary.totalComponents}</p>
             </div>
             <div class="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-accent">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2 17l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              <Icon name="lucide:layers" class="w-6 h-6 text-accent" />
             </div>
           </div>
         </div>
@@ -43,9 +40,7 @@ const summary = getAnalyticsSummary(analyticsData)
               <p class="text-4xl font-bold text-ok">{summary.totalProjects}</p>
             </div>
             <div class="w-12 h-12 rounded-lg bg-ok/10 flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-ok">
-                <path d="M8 12l2 2 4-4m6 0a8 8 0 11-16 0 8 8 0 0116 0z" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              <Icon name="lucide:check-circle" class="w-6 h-6 text-ok" />
             </div>
           </div>
         </div>
@@ -154,9 +149,7 @@ const summary = getAnalyticsSummary(analyticsData)
           {summary.allComponents.some(c => c.usedIn.length > 0) && (
             <details class="mt-6 pt-6 border-t border-border">
               <summary class="cursor-pointer font-medium text-ink-primary hover:text-accent transition-colors flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition-transform">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
+                <Icon name="lucide:chevron-down" class="w-4 h-4 transition-transform" />
                 Ver projetos por componente
               </summary>
               <div class="space-y-4 mt-6">
@@ -184,7 +177,7 @@ const summary = getAnalyticsSummary(analyticsData)
       <!-- Vazio -->
       {summary.allComponents.length === 0 && (
         <div class="card text-center py-16">
-          <p class="text-2xl text-ink-secondary mb-2">📭</p>
+          <Icon name="lucide:mail" class="w-10 h-10 text-ink-muted mx-auto mb-3 opacity-40" />
           <p class="font-medium text-ink-primary mb-1">Nenhum componente extraído ainda</p>
           <p class="text-sm text-ink-secondary">Os componentes aparecerão aqui quando você extrair o primeiro</p>
         </div>

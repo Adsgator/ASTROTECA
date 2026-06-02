@@ -2,6 +2,7 @@
 // Substitui window.confirm() e window.alert() com design Astroteca
 
 import { useEffect, useRef } from 'react'
+import { AlertTriangle, Info } from 'lucide-react'
 
 interface DialogProps {
   open: boolean
@@ -63,19 +64,11 @@ export default function Dialog({
         <div className="flex items-center gap-3 px-5 pt-5 pb-3">
           {variant === 'danger' ? (
             <div className="w-9 h-9 rounded-xl bg-fail/10 border border-fail/20 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-fail" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
+              <AlertTriangle className="w-5 h-5 text-fail" />
             </div>
           ) : (
             <div className="w-9 h-9 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+              <Info className="w-5 h-5 text-accent" />
             </div>
           )}
           <h3 className="font-semibold text-ink-primary text-sm">{title}</h3>

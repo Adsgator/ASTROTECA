@@ -1,5 +1,6 @@
 ---
 // Footer.astro — Rodapé da biblioteca Astroteca
+import { Icon } from 'astro-icon/components'
 //
 // Inclui o toggle de tema (dark mode) em vanilla JS — NÃO é um botão
 // flutuante; vive dentro do rodapé. Escreve em localStorage['theme'] e
@@ -84,7 +85,10 @@ const year = new Date().getFullYear();
           aria-label="Alternar tema claro/escuro"
           data-theme-toggle
         >
-          <span data-theme-icon>🌙</span>
+          <span data-theme-icon aria-hidden="true">
+            <Icon data-icon-dark name="lucide:moon" class="footer__theme-icon" />
+            <Icon data-icon-light name="lucide:sun" class="footer__theme-icon" style="display:none" />
+          </span>
         </button>
       </div>
     </div>
@@ -169,10 +173,10 @@ const year = new Date().getFullYear();
     background-color: oklch(100% 0 0 / 0.08);
     border: 1px solid oklch(100% 0 0 / 0.15);
     cursor: pointer;
-    font-size: 1rem;
     transition: background-color 150ms ease-out;
   }
   .footer__theme:hover { background-color: oklch(100% 0 0 / 0.16); }
+  .footer__theme-icon { width: 1rem; height: 1rem; color: oklch(90% 0.01 260); }
 
   @media (min-width: 768px) {
     .footer__grid { grid-template-columns: 2fr 1fr 1fr; }
@@ -192,7 +196,12 @@ const year = new Date().getFullYear();
     return document.documentElement.classList.contains("dark") ? "dark" : "light";
   }
   function syncIcon() {
-    if (icon) icon.textContent = currentTheme() === "dark" ? "☀️" : "🌙";
+    if (!icon) return
+    const iconDark = icon.querySelector<SVGElement>('[data-icon-dark]')
+    const iconLight = icon.querySelector<SVGElement>('[data-icon-light]')
+    const isDark = currentTheme() === "dark"
+    if (iconDark) iconDark.style.display = isDark ? 'none' : 'block'
+    if (iconLight) iconLight.style.display = isDark ? 'block' : 'none'
   }
 
   if (toggle) {

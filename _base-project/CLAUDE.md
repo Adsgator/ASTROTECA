@@ -85,6 +85,26 @@ Padrão de card: `class="bg-background rounded-xl p-8 border border-border shado
 
 ---
 
+## Ícones
+
+Use **`astro-icon`** com a coleção **`@iconify-json/lucide`** (já nas dependências).
+
+```astro
+---
+import { Icon } from 'astro-icon/components'
+---
+
+<Icon name="lucide:arrow-right" class="w-4 h-4" />
+<Icon name="lucide:phone" class="w-5 h-5" />
+```
+
+- O SVG é gerado inline no build — zero JS, zero runtime, sem requisição extra.
+- Coleção padrão: `lucide:*`. Se precisar de ícone de nicho sem equivalente, use outro prefixo do Iconify (ex: `ph:stethoscope` do Phosphor para saúde) — basta instalar o `@iconify-json/<coleção>` correspondente.
+- Nunca use emojis como ícones em componentes de UI.
+- Para SVG muito específico sem equivalente em nenhuma coleção, use inline diretamente.
+
+---
+
 ## Dark mode
 
 - A classe `.dark` é aplicada ao `<html>` pelo script anti-flash no `<head>` do `BaseLayout.astro`.

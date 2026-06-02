@@ -1,336 +1,309 @@
 import { useState } from 'react'
-import type { ComponentMeta, PropDefinition, PropDraft, AppSettings } from '../types'
 import * as ui from '../styles/ui'
 import SelectField from './builder/SelectField'
+import { Check, Loader2, Info } from 'lucide-react'
 
 const CATEGORIES = [
-  'Hero', 'Features', 'Pricing', 'Testimonials', 'CTA', 'Footer',
-  'Navigation', 'FAQ', 'Gallery', 'Contact', 'About', 'Stats', 'Team', 'Misc',
+  'Hero', 'Header', 'Navigation', 'Features', 'Services', 'Pricing',
+  'Testimonials', 'Process', 'CTA', 'FAQ', 'Stats', 'Gallery',
+  'Contact', 'Footer', 'About', 'Team', 'Trust', 'UI', 'Misc', 'Other',
 ]
 
-const EMPTY_PROP: PropDraft = {
-  name: '',
-  type: 'string',
-  required: false,
-  description: '',
-  previewValue: '',
+interface DetectedProp {
+  name: string
+  type: string
+  required: boolean
+  previewValue?: string
+}
+
+type Phase = 'idle' | 'analyzing' | 'ready' | 'publishing' | 'done' | 'error'
+
+function guessCategory(code: string): string {
+  const m = code.match(/\/\/\s*(\w+)\/(\w+)\.astro/)
+  if (m) {
+    const cat = m[1]
+    if (CATEGORIES.includes(cat)) return cat
+  }
+  return 'Other'
+}
+
+function guessName(code: string): string {
+  const m = code.match(/\/\/\s*(?:\w+\/)?(\w+)\.astro/)
+  if (m) return m[1]
+  const im = code.match(/interface Props/)
+  if (im) return 'MeuComponente'
+  return 'MeuComponente'
 }
 
 export default function AdminForm() {
+  const [astroCode, setAstroCode] = useState('')
+  const [phase, setPhase] = useState<Phase>('idle')
+  const [error, setError] = useState('')
+
+  // Dados analisados
+  const [detectedName, setDetectedName] = useState('')
+  const [detectedProps, setDetectedProps] = useState<DetectedProp[]>([])
+
+  // Form
   const [name, setName] = useState('')
-  const [category, setCategory] = useState('Hero')
+  const [category, setCategory] = useState('Other')
   const [description, setDescription] = useState('')
   const [tags, setTags] = useState('')
   const [bestFor, setBestFor] = useState('')
-  const [props, setProps] = useState<PropDraft[]>([])
-  const [screenshotUrl, setScreenshotUrl] = useState('')
-  const [astroCode, setAstroCode] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [feedback, setFeedback] = useState<{ type: 'ok' | 'fail'; message: string } | null>(null)
 
-  function generateId(n: string): string {
-    return n
-      .replace(/([a-z])([A-Z])/g, '$1-$2')
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-  }
+  // Resultado
+  const [result, setResult] = useState<{ name: string; id: string; category: string } | null>(null)
 
-  function addProp() {
-    setProps(prev => [...prev, { ...EMPTY_PROP }])
-  }
-
-  function removeProp(index: number) {
-    setProps(prev => prev.filter((_, i) => i !== index))
-  }
-
-  function updateProp<K extends keyof PropDraft>(index: number, key: K, value: PropDraft[K]) {
-    setProps(prev => {
-      const arr = [...prev]
-      arr[index] = { ...arr[index], [key]: value }
-      return arr
-    })
-  }
-
-  function generatePreviewCode(): string {
-    const propsStr = props
-      .map(p => {
-        if (p.type === 'boolean') return `  ${p.name}={${p.previewValue || 'true'}}`
-        if (p.type === 'number') return `  ${p.name}={${p.previewValue || '0'}}`
-        if (p.type.includes('[]') || p.type.includes('Array'))
-          return `  ${p.name}={${p.previewValue || '[]'}}`
-        return `  ${p.name}="${p.previewValue || ''}"`
-      })
-      .join('\n')
-
-    return `---\nimport ${name} from './${name}.astro'\n---\n\n<${name}\n${propsStr}\n/>`
-  }
-
-  function generateIndexCode(): string {
-    const propsMeta: PropDefinition[] = props.map(p => ({
-      name: p.name,
-      type: p.type as PropDefinition['type'],
-      required: p.required,
-      description: p.description,
-      previewValue: p.previewValue || '',
-    }))
-
-    const copy: Record<string, string> = {}
-    props.forEach(p => {
-      if (p.type === 'string' && p.previewValue) {
-        copy[p.name] = p.previewValue
-      }
-    })
-
-    const meta: ComponentMeta = {
-      id: generateId(name),
-      name,
-      category: category as ComponentMeta['category'],
-      description,
-      tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-      bestFor: bestFor.split(',').map(t => t.trim()).filter(Boolean),
-      props: propsMeta,
-      copy: Object.keys(copy).length > 0 ? copy : undefined,
-      screenshotUrl: screenshotUrl.trim() || undefined,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+  function handleCodeChange(code: string) {
+    setAstroCode(code)
+    if (phase !== 'idle') reset()
+    // Auto-detecta nome e categoria do comentário no topo
+    if (code.trim()) {
+      const n = guessName(code)
+      const c = guessCategory(code)
+      setName(n)
+      setCategory(c)
     }
-
-    return `export const meta = ${JSON.stringify(meta, null, 2)} as const`
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setFeedback(null)
-    setSubmitting(true)
-
+  async function analyze() {
+    if (!astroCode.trim()) return
+    setError('')
+    setPhase('analyzing')
     try {
-      const raw = localStorage.getItem('acs-settings')
-      if (!raw) throw new Error('Configure o GitHub em Configuracoes primeiro.')
-      const settings: AppSettings = JSON.parse(raw)
-
-      // Validar campos obrigatórios
-      if (!settings.githubToken) throw new Error('GitHub token não configurado. Vá para Configuracoes.')
-      if (!settings.githubOwner) throw new Error('GitHub owner não configurado. Vá para Configuracoes.')
-      if (!settings.componentsRepo) throw new Error('Repo de componentes não configurado. Vá para Configuracoes.')
-      if (!settings.registryUrl) throw new Error('URL do registry não configurada. Vá para Configuracoes.')
-
-      const propsMeta: PropDefinition[] = props.map(p => ({
-        name: p.name,
-        type: p.type as PropDefinition['type'],
-        required: p.required,
-        description: p.description,
-        previewValue: p.previewValue || '',
-      }))
-
-      const copy: Record<string, string> = {}
-      props.forEach(p => {
-        if (p.type === 'string' && p.previewValue) {
-          copy[p.name] = p.previewValue
-        }
-      })
-
-      const meta: ComponentMeta = {
-        id: generateId(name),
-        name,
-        category: category as ComponentMeta['category'],
-        description,
-        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-        bestFor: bestFor.split(',').map(t => t.trim()).filter(Boolean),
-        props: propsMeta,
-        copy: Object.keys(copy).length > 0 ? copy : undefined,
-        screenshotUrl: screenshotUrl.trim() || undefined,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-
-      const previewCode = generatePreviewCode()
-      const indexCode = generateIndexCode()
-
       const res = await fetch('/api/publish-component', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ settings, meta, astroCode, previewCode, indexCode }),
+        body: JSON.stringify({ phase: 'analyze', astroCode }),
       })
-
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Erro ao publicar')
-
-      setFeedback({ type: 'ok', message: `Componente "${name}" publicado com sucesso!` })
-      setName('')
-      setDescription('')
-      setTags('')
-      setBestFor('')
-      setProps([])
-      setAstroCode('')
-      setScreenshotUrl('')
+      if (!res.ok) throw new Error(data.error)
+      setDetectedName(data.name)
+      setDetectedProps(data.props)
+      if (data.name && !name) setName(data.name)
+      setPhase('ready')
     } catch (e) {
-      setFeedback({ type: 'fail', message: e instanceof Error ? e.message : 'Erro desconhecido' })
-    } finally {
-      setSubmitting(false)
+      setError(e instanceof Error ? e.message : 'Erro ao analisar')
+      setPhase('error')
     }
   }
 
-  function Field({ label, children }: { label: string; children: React.ReactNode }) {
-    return (
-      <div className="space-y-1.5">
-        <label className="block text-xs font-medium text-ink-secondary uppercase tracking-wider">{label}</label>
-        {children}
-      </div>
-    )
+  async function publish() {
+    setError('')
+    setPhase('publishing')
+    try {
+      const res = await fetch('/api/publish-component', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phase: 'publish',
+          astroCode,
+          name: name.trim() || detectedName,
+          category,
+          description,
+          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+          bestFor: bestFor.split(',').map(t => t.trim()).filter(Boolean),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setResult(data)
+      setPhase('done')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erro ao publicar')
+      setPhase('error')
+    }
   }
 
+  function reset() {
+    setPhase('idle'); setError(''); setDetectedName(''); setDetectedProps([])
+    setResult(null); setDescription(''); setTags(''); setBestFor('')
+  }
+
+  const busy = phase === 'analyzing' || phase === 'publishing'
+
   return (
-    <form className="max-w-3xl flex flex-col gap-4 stagger" onSubmit={handleSubmit}>
-      <h1 className="text-2xl font-bold">Adicionar Componente</h1>
+    <div className="max-w-3xl flex flex-col gap-5 stagger">
+      <div>
+        <h1 className="text-2xl font-bold mb-1">Adicionar Componente</h1>
+        <p className="text-sm text-ink-muted">
+          Cole o código <code className="bg-raised px-1 rounded">.astro</code> gerado pelo Claude.
+          O sistema detecta as props, sanitiza e publica direto no GitHub.
+        </p>
+      </div>
 
-      {feedback && (
-        <div className={`${ui.badgeBase} ${feedback.type === 'ok' ? 'bg-ok/10 text-ok border border-ok/20' : 'bg-fail/10 text-fail border border-fail/20'} px-3 py-2 animate-slide-down`}>
-          {feedback.message}
+      {/* Resultado */}
+      {phase === 'done' && result && (
+        <div className={`${ui.cardBase} p-5 border-ok/20 bg-ok/5`}>
+          <div className="flex items-center gap-2 text-ok mb-3">
+            <Check className="w-5 h-5" />
+            <span className="font-semibold">Componente publicado com sucesso!</span>
+          </div>
+          <div className="space-y-1 text-sm text-ink-secondary">
+            <p><span className="text-ink-muted">Nome:</span> <code className="bg-raised px-1 rounded text-xs">{result.name}</code></p>
+            <p><span className="text-ink-muted">ID:</span> <code className="bg-raised px-1 rounded text-xs">{result.id}</code></p>
+            <p><span className="text-ink-muted">Pasta:</span> <code className="bg-raised px-1 rounded text-xs">{result.category}/</code></p>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <a href={`/preview/${result.id}`} target="_blank" rel="noopener noreferrer" className={`${ui.btnOutline} text-sm`}>Ver Preview</a>
+            <button onClick={() => { reset(); setAstroCode(''); setName(''); setCategory('Other') }} className={`${ui.btnGhost} text-sm`}>Adicionar outro</button>
+          </div>
         </div>
       )}
 
-      <div className={`${ui.cardBase} p-5`}>
-        <h2 className="text-lg font-semibold mb-4">Informacoes Basicas</h2>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Nome (PascalCase)">
-            <input
-              className={ui.inputBase}
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="HeroSplit"
-              required
-            />
-          </Field>
-          <Field label="Categoria">
-            <SelectField
-              value={category}
-              onChange={v => setCategory(v)}
-              options={CATEGORIES.map(c => ({ value: c, label: c }))}
-            />
-          </Field>
-          <div className="col-span-2">
-            <Field label="Descricao">
-              <input
-                className={ui.inputBase}
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="Descricao curta do componente"
-                required
-              />
-            </Field>
-          </div>
-          <Field label="Tags (separadas por virgula)">
-            <input
-              className={ui.inputBase}
-              value={tags}
-              onChange={e => setTags(e.target.value)}
-              placeholder="hero, split, imagem"
-            />
-          </Field>
-          <Field label="Melhor para">
-            <input
-              className={ui.inputBase}
-              value={bestFor}
-              onChange={e => setBestFor(e.target.value)}
-              placeholder="Landing pages com imagem lateral"
-            />
-          </Field>
-          <div className="col-span-2">
-            <Field label="Screenshot URL (1280×720px)">
-              <input
-                className={ui.inputBase}
-                value={screenshotUrl}
-                onChange={e => setScreenshotUrl(e.target.value)}
-                placeholder="https://raw.githubusercontent.com/.../screenshot.png"
-                type="url"
-              />
-            </Field>
-          </div>
-        </div>
-
-        {name && (
-          <div className="mt-3 text-sm">
-            <span className="text-ink-muted">ID gerado: </span>
-            <code className="bg-raised px-1.5 py-0.5 rounded text-xs">{generateId(name)}</code>
-          </div>
-        )}
-      </div>
-
-      <div className={`${ui.cardBase} p-5`}>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Props</h2>
-          <button type="button" className={`${ui.btnOutline} py-1 px-3 text-xs`} onClick={addProp}>
-            + Adicionar Prop
-          </button>
-        </div>
-
-        {props.length === 0 && (
-          <div className="text-ink-secondary py-4 text-center">Nenhuma prop adicionada ainda.</div>
-        )}
-
-        {props.map((prop, i) => (
-          <div key={i} className="grid grid-cols-[1fr_100px_60px_1fr_1fr_auto] gap-2 items-end py-2 border-b border-border last:border-0 animate-slide-down">
-            <Field label="Nome">
-              <input className={ui.inputBase} value={prop.name} onChange={e => updateProp(i, 'name', e.target.value)} placeholder="titulo" />
-            </Field>
-            <Field label="Tipo">
-              <SelectField
-                value={prop.type}
-                onChange={v => updateProp(i, 'type', v)}
-                options={[
-                  { value: 'string', label: 'string' },
-                  { value: 'number', label: 'number' },
-                  { value: 'boolean', label: 'boolean' },
-                  { value: 'string[]', label: 'string[]' },
-                  { value: 'Record<string, string>', label: 'Record' },
-                ]}
-              />
-            </Field>
-            <Field label="Obrig.">
-              <input type="checkbox" checked={prop.required} onChange={e => updateProp(i, 'required', e.target.checked)} />
-            </Field>
-            <Field label="Descricao">
-              <input className={ui.inputBase} value={prop.description} onChange={e => updateProp(i, 'description', e.target.value)} placeholder="Descricao" />
-            </Field>
-            <Field label="Preview">
-              <input className={ui.inputBase} value={prop.previewValue} onChange={e => updateProp(i, 'previewValue', e.target.value)} placeholder="Valor" />
-            </Field>
-            <button type="button" className={`${ui.btnDanger} hover-scale`} onClick={() => removeProp(i)}>×</button>
-          </div>
-        ))}
-      </div>
-
-      <div className={`${ui.cardBase} p-5`}>
-        <h2 className="text-lg font-semibold mb-4">Codigo do Componente (.astro)</h2>
-        <textarea
-          className={`${ui.inputBase} min-h-[300px] font-mono text-sm resize-y`}
-          value={astroCode}
-          onChange={e => setAstroCode(e.target.value)}
-          placeholder={'---\ninterface Props {\n  titulo: string\n}\nconst { titulo } = Astro.props\n---\n\n<section>\n  <h1>{titulo}</h1>\n</section>'}
-          required
-        />
-      </div>
-
-      {name && props.length > 0 && (
-        <div className={`${ui.cardBase} p-5`}>
-          <h2 className="text-lg font-semibold mb-2">Preview Gerado</h2>
-          <pre className="bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto mb-4">{generatePreviewCode()}</pre>
-
-          <h2 className="text-lg font-semibold mb-2">index.ts Gerado</h2>
-          <pre className="bg-raised p-3 rounded-lg text-xs font-mono overflow-x-auto">{generateIndexCode()}</pre>
+      {/* Erro */}
+      {error && (
+        <div className={`${ui.badgeBase} bg-fail/10 text-fail border border-fail/20 px-3 py-2.5 text-sm`}>
+          {error}
         </div>
       )}
 
-      <button
-        type="submit"
-        className={`${ui.btnPrimary} py-3 text-base`}
-        disabled={submitting || !name || !astroCode}
-        title={!name ? 'Nome do componente é obrigatório' : !astroCode ? 'Código Astro é obrigatório' : 'Publicar componente'}
-      >
-        {submitting ? 'Publicando...' : 'Publicar Componente'}
-      </button>
-    </form>
+      {phase !== 'done' && (
+        <>
+          {/* Passo 1: Código */}
+          <div className={`${ui.cardBase} p-5`}>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-ink-muted mb-3">1. Código do Componente</h2>
+            <textarea
+              className={`${ui.inputBase} min-h-[260px] font-mono text-sm resize-y`}
+              value={astroCode}
+              onChange={e => handleCodeChange(e.target.value)}
+              placeholder={`---\n// Hero/HeroSplit.astro\ninterface Props {\n  headline: string\n  subheadline?: string\n}\nconst { headline, subheadline = 'Subtítulo' } = Astro.props\n---\n\n<section class="section-py bg-background">\n  <div class="container-wide">\n    <h1 class="font-serif text-display-xl">{headline}</h1>\n  </div>\n</section>`}
+              disabled={busy}
+            />
+            {astroCode.trim() && phase === 'idle' && (
+              <div className="mt-3 flex items-center gap-3">
+                {name && (
+                  <span className="text-xs text-ink-muted">
+                    Detectado: <code className="bg-raised px-1 rounded">{name}</code> → <code className="bg-raised px-1 rounded">{category}/</code>
+                  </span>
+                )}
+                <button
+                  className={`${ui.btnPrimary} ml-auto`}
+                  onClick={analyze}
+                  disabled={busy}
+                >
+                  Analisar props
+                </button>
+              </div>
+            )}
+            {phase === 'analyzing' && (
+              <div className="mt-3 flex items-center gap-2 text-ink-muted text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Analisando...
+              </div>
+            )}
+            {(phase === 'ready' || phase === 'publishing') && (
+              <div className="mt-3 flex items-center gap-2 text-ok text-sm">
+                <Check className="w-4 h-4" />
+                <span><strong>{detectedProps.length}</strong> prop(s) detectada(s)</span>
+              </div>
+            )}
+          </div>
+
+          {/* Passo 2: Props detectadas */}
+          {(phase === 'ready' || phase === 'publishing') && detectedProps.length > 0 && (
+            <div className={`${ui.cardBase} p-5`}>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-ink-muted mb-3">2. Props Detectadas</h2>
+              <div className="flex flex-wrap gap-1.5">
+                {detectedProps.map(p => (
+                  <span key={p.name} className={`${ui.badgeBase} bg-surface text-ink-secondary`}>
+                    {p.name}
+                    <span className="opacity-50 ml-1">{p.type}</span>
+                    {p.required && <span className="ml-1 text-accent">*</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Passo 3: Metadados */}
+          {(phase === 'ready' || phase === 'publishing') && (
+            <div className={`${ui.cardBase} p-5`}>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-ink-muted mb-4">
+                {detectedProps.length > 0 ? '3.' : '2.'} Metadados
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-ink-secondary uppercase tracking-wider">Nome (PascalCase)</label>
+                  <input
+                    className={ui.inputBase}
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="HeroSplit"
+                    disabled={phase === 'publishing'}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-ink-secondary uppercase tracking-wider">Categoria</label>
+                  <SelectField
+                    value={category}
+                    onChange={v => setCategory(v)}
+                    options={CATEGORIES.map(c => ({ value: c, label: c }))}
+                    disabled={phase === 'publishing'}
+                  />
+                </div>
+                <div className="col-span-2 space-y-1.5">
+                  <label className="block text-xs font-medium text-ink-secondary uppercase tracking-wider">Descrição</label>
+                  <input
+                    className={ui.inputBase}
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder="Hero com imagem lateral e dois CTAs"
+                    disabled={phase === 'publishing'}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-ink-secondary uppercase tracking-wider">Tags</label>
+                  <input
+                    className={ui.inputBase}
+                    value={tags}
+                    onChange={e => setTags(e.target.value)}
+                    placeholder="hero, split, imagem"
+                    disabled={phase === 'publishing'}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-ink-secondary uppercase tracking-wider">Ideal para</label>
+                  <input
+                    className={ui.inputBase}
+                    value={bestFor}
+                    onChange={e => setBestFor(e.target.value)}
+                    placeholder="landing pages, serviços"
+                    disabled={phase === 'publishing'}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Botão publicar */}
+          {(phase === 'ready' || phase === 'publishing') && (
+            <div className="space-y-3">
+              <div className="rounded-xl border border-white/[0.06] bg-raised/30 px-4 py-3 text-xs text-ink-muted flex items-start gap-2">
+                <Info className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                <span>
+                  O componente será sanitizado (assets removidos, dados sensíveis limpos), gravado em{' '}
+                  <code className="bg-raised px-1 rounded">{category}/{name || detectedName}.astro</code>,
+                  registrado e publicado no GitHub. A preview é gerada automaticamente.
+                </span>
+              </div>
+              <button
+                className={`${ui.btnPrimary} w-full py-3 text-base`}
+                onClick={publish}
+                disabled={phase === 'publishing' || !description.trim()}
+                title={!description.trim() ? 'Descrição é obrigatória' : ''}
+              >
+                {phase === 'publishing' ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Publicando...
+                  </span>
+                ) : 'Publicar no GitHub'}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
   )
 }

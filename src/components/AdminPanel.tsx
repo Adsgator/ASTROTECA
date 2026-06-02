@@ -2,42 +2,14 @@ import { useState, type ReactNode } from 'react'
 import AdminForm from './AdminForm'
 import ExtractForm from './ExtractForm'
 import RemoveForm from './RemoveForm'
+import { PlusCircle, ExternalLink, Trash2 } from 'lucide-react'
 
 type Tab = 'adicionar' | 'extrair' | 'remover'
 
 const tabs: { id: Tab; label: string; icon: ReactNode }[] = [
-  {
-    id: 'adicionar',
-    label: 'Adicionar',
-    icon: (
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="M12 8v8M8 12h8"/>
-      </svg>
-    ),
-  },
-  {
-    id: 'extrair',
-    label: 'Extrair',
-    icon: (
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-        <path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/>
-        <path d="M15 3h6v6"/>
-        <path d="M10 14L21 3"/>
-      </svg>
-    ),
-  },
-  {
-    id: 'remover',
-    label: 'Remover',
-    icon: (
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="3 6 5 6 21 6"/>
-        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-        <path d="M10 11v6M14 11v6"/>
-      </svg>
-    ),
-  },
+  { id: 'adicionar', label: 'Adicionar', icon: <PlusCircle className="w-4 h-4" /> },
+  { id: 'extrair',  label: 'Extrair',   icon: <ExternalLink className="w-4 h-4" /> },
+  { id: 'remover',  label: 'Remover',   icon: <Trash2 className="w-4 h-4" /> },
 ]
 
 interface Props {

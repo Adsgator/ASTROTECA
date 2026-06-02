@@ -1,6 +1,7 @@
 // src/components/builder/StepNav.tsx
 
 import type { BuilderStep } from '../../types'
+import { Check, Zap } from 'lucide-react'
 
 interface StepNavProps {
   steps: { key: BuilderStep; label: string; iconPath?: string }[]
@@ -49,16 +50,8 @@ export default function StepNav({ steps, current, validation, onStep, intakeAnal
                   </svg>
                 )}
                 <span>{step.label}</span>
-                {isDone && !isActive && (
-                  <svg className="w-3 h-3 text-ok flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
-                {isAIFilled && !isActive && (
-                  <svg className="w-3 h-3 text-accent/70 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                  </svg>
-                )}
+                {isDone && !isActive && <Check className="w-3 h-3 text-ok flex-shrink-0" />}
+                {isAIFilled && !isActive && <Zap className="w-3 h-3 text-accent/70 flex-shrink-0" />}
               </button>
               {i < steps.length - 1 && (
                 <span className="text-white/10 text-xs flex-shrink-0">›</span>

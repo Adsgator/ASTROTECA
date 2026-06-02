@@ -15,21 +15,25 @@
     "extract": "node scripts/extract-component.mjs",
     "remove": "node scripts/remove-component.mjs",
     "previews": "node scripts/generate-previews.mjs",
-    "preview:css": "npx tailwindcss -c tailwind.preview.config.js -i src/styles/preview.css -o public/preview-components.css --watch",
-    "build:preview-css": "npx tailwindcss -c tailwind.preview.config.js -i src/styles/preview.css -o public/preview-components.css --minify"
+    "preview:css": "node node_modules/@tailwindcss/cli/dist/index.mjs -i src/styles/preview.css -o public/preview-components.css --watch",
+    "build:preview-css": "node node_modules/@tailwindcss/cli/dist/index.mjs -i src/styles/preview.css -o public/preview-components.css --minify"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",
     "@astrojs/vercel": "^9.0.5",
     "@clack/prompts": "^1.4.0",
+    "@iconify-json/lucide": "^1.2.111",
     "astro": "^5.18.2",
+    "astro-icon": "^1.1.5",
     "clsx": "^2.1.1",
+    "lucide-react": "^1.17.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.6.1"
   },
   "devDependencies": {
     "@astrojs/tailwind": "^6.0.2",
+    "@tailwindcss/cli": "^4.3.0",
     "@types/node": "^25.9.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

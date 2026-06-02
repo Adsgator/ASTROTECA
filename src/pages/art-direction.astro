@@ -3,6 +3,7 @@
 // Dados chegam pela query string: ?data=BASE64(JSON de ArtDirectionV2 + nomeCliente)
 // Não usa AppLayout — CSS inline independente.
 
+import { Icon } from 'astro-icon/components'
 const raw = Astro.url.searchParams.get('data') ?? ''
 
 interface ArtData {
@@ -333,7 +334,7 @@ const bodyEncoded    = fontBody.replace(/\s+/g, '+')
 
     {parseError ? (
       <div class="error-box">
-        <p style="font-size:1.5rem; margin-bottom:0.5rem">⚠️</p>
+        <Icon name="lucide:triangle-alert" style="width:1.5rem;height:1.5rem;margin-bottom:0.5rem;margin-inline:auto;display:block" />
         <p><strong>Link inválido ou corrompido.</strong></p>
         <p style="font-size:0.85rem; margin-top:0.5rem; opacity:0.7">Gere um novo link na Astroteca.</p>
       </div>
@@ -348,20 +349,22 @@ const bodyEncoded    = fontBody.replace(/\s+/g, '+')
             <strong>{studioName}</strong>
             <span>{now}</span>
             <span class="tag-tema">
-              {defaultTheme === 'dark' ? '🌙 Tema Escuro' : '☀️ Tema Claro'}
+              {defaultTheme === 'dark' ? 'Tema Escuro' : 'Tema Claro'}
             </span>
           </div>
         </header>
 
         <div class="actions no-print">
           <button class="btn btn-primary-art" onclick="window.print()">
-            🖨️ Imprimir / Salvar PDF
+            <Icon name="lucide:printer" style="width:1rem;height:1rem;display:inline;margin-right:0.35rem;vertical-align:middle" />
+            Imprimir / Salvar PDF
           </button>
           <button
             class="btn btn-outline-art"
             onclick={`navigator.clipboard.writeText(window.location.href).then(()=>alert('Link copiado!'))`}
           >
-            🔗 Copiar Link
+            <Icon name="lucide:link" style="width:1rem;height:1rem;display:inline;margin-right:0.35rem;vertical-align:middle" />
+            Copiar Link
           </button>
         </div>
 
@@ -370,7 +373,7 @@ const bodyEncoded    = fontBody.replace(/\s+/g, '+')
           <p class="section-title">Paleta de Cores</p>
 
           <div class="palette-group">
-            <h3>☀️ Tema Claro</h3>
+            <h3>Tema Claro</h3>
             <div class="swatches">
               {lightColors.map(c => (
                 <div class="swatch">
@@ -383,7 +386,7 @@ const bodyEncoded    = fontBody.replace(/\s+/g, '+')
           </div>
 
           <div class="palette-group">
-            <h3>🌙 Tema Escuro</h3>
+            <h3>Tema Escuro</h3>
             <div class="swatches">
               {darkColors.map(c => (
                 <div class="swatch">

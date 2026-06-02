@@ -1,184 +1,220 @@
-/* preview.css — entry point para o build de preview dos componentes */
+/* ─────────────────────────────────────────────────────────────
+   preview.css — CSS de preview dos componentes da biblioteca
+   ─────────────────────────────────────────────────────────────
+   Tailwind v4 CSS-first. Compilado para public/preview-components.css
+   pelo @tailwindcss/cli via previewCssPlugin em astro.config.mjs.
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+   Espelha o global.css do _base-project para que o preview seja
+   fiel ao que o cliente vê no projeto final.
+   ───────────────────────────────────────────────────────────── */
 
-/* Reset base e tipografia para contexto de preview */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* Tokens padrão da biblioteca (valores substituídos por projeto) */
+@import '../../minha-lib-astro/src/styles/base.css';
+
+/* Tailwind v4 via pacote bundled do @tailwindcss/cli.
+   O studio usa tailwindcss@3 para seu próprio UI — coexistem sem conflito. */
+@import '../../node_modules/@tailwindcss/cli/node_modules/tailwindcss/index.css';
+
+/* Dark mode por classe (consistente com os projetos cliente) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── @theme — mapeia --t-* para utilitários Tailwind ───────── */
+@theme inline {
+  --color-primary:      var(--t-primary);
+  --color-primary-dark: var(--t-primary-dark);
+  --color-secondary:    var(--t-secondary);
+  --color-complement:   var(--t-complement);
+  --color-background:   var(--t-background);
+  --color-surface:      var(--t-surface);
+  --color-surface-alt:  var(--t-surface-alt);
+  --color-dark:         var(--t-dark);
+  --color-border:       var(--t-border);
+  --color-text-main:    var(--t-text-main);
+  --color-text-soft:    var(--t-text-soft);
+  --color-text-muted:   var(--t-text-muted);
+  --color-wa:           var(--t-wa);
+
+  --font-serif: var(--t-font-serif);
+  --font-sans:  var(--t-font-sans);
+
+  /* Escala tipográfica */
+  --text-display-xl: clamp(2.6rem, 5.5vw, 4.2rem);
+  --text-display-xl--line-height: 1;
+  --text-display-xl--letter-spacing: -0.02em;
+  --text-display-lg: clamp(2rem, 4vw, 3.2rem);
+  --text-display-lg--line-height: 1;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-md: clamp(1.7rem, 3vw, 2.4rem);
+  --text-display-md--line-height: 1.15;
+  --text-display-sm: clamp(1.4rem, 2.5vw, 1.9rem);
+  --text-display-sm--line-height: 1.25;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.7;
+  --text-body-md: 1rem;
+  --text-body-md--line-height: 1.7;
+  --text-body-sm: 0.9rem;
+  --text-body-sm--line-height: 1.6;
+  --text-label: 0.72rem;
+  --text-label--line-height: 1;
+  --text-label--letter-spacing: 0.16em;
+
+  /* Larguras máximas */
+  --container-content: 860px;
+  --container-wide: 1200px;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+
+  /* Sombras */
+  --shadow-card: 0 2px 16px rgba(29, 29, 28, 0.07);
+  --shadow-card-hover: 0 8px 32px rgba(29, 29, 28, 0.12);
+  --shadow-float: 0 4px 24px rgba(29, 29, 28, 0.15);
+  --shadow-primary-sm: 0 4px 14px rgba(67, 111, 62, 0.25);
+  --shadow-primary-md: 0 8px 24px rgba(67, 111, 62, 0.3);
+  --shadow-secondary-sm: 0 4px 15px rgba(213, 151, 64, 0.25);
+  --shadow-secondary-md: 0 8px 25px rgba(213, 151, 64, 0.35);
+
+  /* Easing */
+  --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-snappy: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-html {
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ── Utilitários de layout ──────────────────────────────────── */
+@utility max-w-content { max-width: var(--container-content); }
+@utility max-w-wide    { max-width: var(--container-wide); }
+
+/* ── BASE ────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-main);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  img, video { max-width: 100%; display: block; }
+  a { color: inherit; text-decoration: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
-body {
-  background: #ffffff;
-  color: theme('colors.text-main');
-  font-family: theme('fontFamily.sans');
-  line-height: 1.6;
-}
+/* ── COMPONENTS (espelho do global.css do _base-project) ────── */
+@layer components {
+  .container-content { @apply w-[90%] max-w-content mx-auto; }
+  .container-wide    { @apply w-[90%] max-w-wide mx-auto; }
+  .section-py        { @apply py-[clamp(5rem,10vw,8rem)]; }
+  .section-py-sm     { @apply py-[clamp(3rem,6vw,5rem)]; }
+  .section-py-lg     { @apply py-[clamp(7rem,14vw,12rem)]; }
 
-img {
-  max-width: 100%;
-  display: block;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* ── Utilitários premium (espelho do global.css do _base-project) ─── */
-
-@layer utilities {
-  .container-content {
-    @apply max-w-content mx-auto px-6;
-  }
-
-  .container-wide {
-    @apply max-w-wide mx-auto px-6;
-  }
-
-  .section-py {
-    @apply py-section;
-  }
-
-  .section-py-sm {
-    @apply py-section-sm;
-  }
-
-  .section-py-lg {
-    @apply py-section-lg;
-  }
-
-  /* Labels / badges */
   .label-tag {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
-           text-label font-semibold tracking-widest uppercase
-           text-primary bg-primary/[8%] border border-primary/20;
+    @apply inline-flex items-center gap-1.5 text-label font-medium uppercase
+           tracking-[0.16em] text-secondary;
   }
 
-  .label-tag-dark {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
-           text-label font-semibold tracking-widest uppercase
-           text-secondary bg-secondary/10 border border-secondary/20;
-  }
-
-  /* Imagens */
-  .img-hover {
-    @apply overflow-hidden;
-  }
-
-  .img-hover img {
-    @apply transition-transform duration-600 ease-smooth;
-  }
-
-  .img-hover:hover img {
-    @apply scale-105;
-  }
-
-  /* Cards */
   .card-hover {
-    @apply transition-all duration-350 ease-smooth
-           hover:-translate-y-1 hover:shadow-card-hover;
+    @apply transition-all duration-[350ms];
+    transition-timing-function: var(--ease-smooth);
   }
+  .card-hover:hover { @apply -translate-y-1; box-shadow: var(--shadow-card-hover); }
 
-  /* Links com underline animado */
-  .link-underline {
-    @apply relative inline-block;
-  }
+  .img-hover { @apply overflow-hidden; }
+  .img-hover img { @apply transition-transform duration-700; transition-timing-function: var(--ease-smooth); }
+  .img-hover:hover img { @apply scale-[1.04]; }
 
+  .link-underline { @apply relative inline-block; }
   .link-underline::after {
     content: '';
-    @apply absolute bottom-0 left-0 h-px w-0 bg-primary
-           transition-all duration-350 ease-smooth;
+    @apply absolute bottom-0 left-0 w-0 h-px bg-current transition-all duration-300;
+    transition-timing-function: var(--ease-snappy);
   }
+  .link-underline:hover::after { @apply w-full; }
 
-  .link-underline:hover::after {
-    @apply w-full;
-  }
-
-  /* Botões */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2
-           px-7 py-3.5 rounded-lg
-           bg-primary text-white font-semibold text-body-sm
-           shadow-primary-sm
-           transition-all duration-250 ease-smooth
-           hover:bg-primary-dark hover:shadow-primary-md hover:-translate-y-0.5
-           active:translate-y-0 active:shadow-primary-sm;
+           bg-primary text-white font-sans font-medium
+           px-7 py-3.5 rounded transition-all duration-300
+           hover:-translate-y-0.5 hover:bg-primary-dark
+           active:translate-y-0 active:scale-[0.98];
+    box-shadow: var(--shadow-primary-sm);
+    transition-timing-function: var(--ease-smooth);
   }
+  .btn-primary:hover { box-shadow: var(--shadow-primary-md); }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2
-           px-7 py-3.5 rounded-lg
-           border-2 border-primary text-primary font-semibold text-body-sm
-           transition-all duration-250 ease-smooth
-           hover:bg-primary hover:text-white hover:-translate-y-0.5
-           active:translate-y-0;
+           bg-transparent text-primary font-sans font-medium
+           px-7 py-3.5 rounded border border-primary/30
+           transition-all duration-300
+           hover:border-primary hover:bg-primary/5 hover:-translate-y-0.5
+           active:translate-y-0 active:scale-[0.98];
+    transition-timing-function: var(--ease-smooth);
   }
 
   .btn-secondary-gold {
-    @apply relative inline-flex items-center justify-center gap-2
-           px-7 py-3.5 rounded-lg overflow-hidden
-           bg-secondary-gradient text-dark font-bold text-body-sm
-           shadow-secondary-sm
-           transition-all duration-350 ease-smooth
-           hover:shadow-secondary-md hover:-translate-y-0.5
-           active:translate-y-0;
+    @apply relative overflow-hidden inline-flex items-center justify-center gap-2
+           text-text-main font-sans font-medium px-7 py-3.5 rounded;
+    background-image: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-complement) 50%, var(--color-primary-dark) 100%);
+    box-shadow: var(--shadow-secondary-sm);
+  }
+  .btn-secondary-gold:hover {
+    @apply -translate-y-0.5;
+    box-shadow: var(--shadow-secondary-md);
   }
 
-  /* Divisor ornamental */
-  .divider-ornament {
-    @apply flex items-center gap-4 my-8;
+  .badge {
+    @apply inline-flex items-center gap-1.5 text-label font-medium uppercase
+           tracking-[0.12em] px-3.5 py-1.5 rounded-full
+           bg-primary/10 text-primary border border-primary/20;
+  }
+  .badge-secondary {
+    @apply inline-flex items-center gap-1.5 text-label font-medium uppercase
+           tracking-[0.12em] px-3.5 py-1.5 rounded-full
+           bg-secondary/10 text-secondary border border-secondary/20;
   }
 
+  .blockquote-premium {
+    @apply relative pl-6 border-l-2 border-secondary
+           text-body-lg font-serif italic text-text-soft my-8;
+  }
+
+  .stat-number { @apply font-serif text-display-lg text-primary leading-none; }
+  .stat-label  { @apply text-body-sm text-text-muted mt-1; }
+
+  .divider-ornament { @apply flex items-center gap-4 my-8; }
   .divider-ornament::before,
   .divider-ornament::after {
     content: '';
     @apply flex-1 h-px bg-border;
   }
-
-  /* Badges */
-  .badge {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
-           text-label font-semibold tracking-wider uppercase
-           bg-surface border border-border text-text-soft;
-  }
-
-  .badge-secondary {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
-           text-label font-semibold tracking-wider uppercase
-           bg-secondary/10 border border-secondary/25 text-secondary;
-  }
-
-  /* Quote */
-  .blockquote-premium {
-    @apply relative pl-6 border-l-4 border-secondary
-           text-body-lg italic text-text-soft;
-  }
-
-  /* Stat */
-  .stat-number {
-    @apply text-display-lg font-serif font-bold text-primary leading-none;
-  }
-
-  .stat-label {
-    @apply text-body-sm text-text-muted mt-1;
-  }
 }
 
-/* ── Animações GSAP (data-attributes, sem JS precisam ter estado inicial) ─── */
+/* Animações GSAP — visíveis por padrão no preview sem JS */
 [data-animate],
 [data-animate-left],
 [data-animate-right],
 [data-animate-scale],
-[data-animate-item] {
-  opacity: 1; /* Estado visível por padrão no preview sem JS */
-}
+[data-animate-item] { opacity: 1; }

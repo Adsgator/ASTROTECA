@@ -159,7 +159,7 @@ Regras absolutas:
   const artSection = `\n\n---\n\n## Direção de Arte
 
 ### Tema Padrão
-**${art.defaultTheme === 'dark' ? '🌙 Escuro' : '☀️ Claro'}**
+**${art.defaultTheme === 'dark' ? 'Escuro' : 'Claro'}**
 
 ### Cores — \`src/styles/tokens.css\`
 

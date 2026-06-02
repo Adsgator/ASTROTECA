@@ -123,27 +123,30 @@ projeto-cliente/
 
 ```javascript
 import { defineConfig } from 'astro/config';
-import tailwind from '@astrojs/tailwind';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import icon from 'astro-icon';
 
+// Tailwind v4: configurado via plugin do Vite (CSS-first).
+// Não existe tailwind.config.js — tokens vivem em src/styles/tokens.css (@theme).
+
 export default defineConfig({
+  output: 'static',
   site: 'https://dominio-do-cliente.com.br',
   integrations: [
-    tailwind({ applyBaseStyles: false }),
+    react(),
     sitemap(),
     icon(),
   ],
-  image: {
-    domains: [],
-  },
   compressHTML: true,
   build: {
     inlineStylesheets: 'auto',
   },
   vite: {
-    build: {
-      cssMinify: true,
+    plugins: [tailwindcss()],
+    css: {
+      postcss: {},
     },
   },
 });
@@ -215,86 +218,112 @@ export default defineConfig({
 
 ## 4. Sistema de Tokens — Estrutura Obrigatória
 
-O arquivo `src/styles/tokens.css` é o único arquivo que muda entre projetos.
-Todo estilo visual deve derivar dele. Nenhum valor de cor, fonte ou tamanho
-pode estar hardcodado em outros arquivos.
+Dois arquivos formam o sistema de tokens. **Apenas `tokens.css` muda entre projetos.**
+
+### `src/styles/tokens.css` — valores do cliente (prefixo `--t-`)
 
 ```css
 /* src/styles/tokens.css */
+/* ─── Único arquivo que muda por cliente. Troque os VALORES, nunca os nomes. ─ */
 
 :root {
-  /* ─── Marca ─────────────────────────────────────── */
-  --color-brand:          oklch(55% 0.25 250);
-  --color-brand-hover:    oklch(48% 0.25 250);
-  --color-brand-light:    oklch(95% 0.05 250);
-  --color-brand-text:     oklch(99% 0.005 250);  /* texto sobre bg brand */
+  /* ── Marca ──────────────────────────────────────────── */
+  --t-primary:       #436f3e;
+  --t-primary-dark:  #2f5129;
+  --t-secondary:     #d59740;
+  --t-complement:    #f9f395;
 
-  /* ─── Superfícies ───────────────────────────────── */
-  --color-surface:        oklch(99% 0.005 260);
-  --color-surface-alt:    oklch(96% 0.008 260);
-  --color-border:         oklch(88% 0.01 260);
+  /* ── Superfícies ────────────────────────────────────── */
+  --t-background:    #ffffff;
+  --t-surface:       #f7f4f0;
+  --t-surface-alt:   #f0ebe3;
+  --t-dark:          #1d1d1c;
+  --t-border:        #e5dfd6;
 
-  /* ─── Texto ─────────────────────────────────────── */
-  --color-text-strong:    oklch(12% 0.01 260);
-  --color-text-base:      oklch(30% 0.01 260);
-  --color-text-muted:     oklch(55% 0.01 260);
+  /* ── Texto ──────────────────────────────────────────── */
+  --t-text-main:     #1d1d1c;
+  --t-text-soft:     #535353;
+  --t-text-muted:    #8a8a8a;
 
-  /* ─── Tipografia ────────────────────────────────── */
-  --font-heading:         "Inter Variable", sans-serif;
-  --font-body:            "Inter Variable", sans-serif;
-  --font-mono:            "JetBrains Mono", monospace;
+  /* ── Utilitárias ────────────────────────────────────── */
+  --t-wa:            #25d366;
 
-  /* ─── Escala tipográfica (responsiva) ───────────── */
-  --text-hero:            clamp(2.5rem, 5vw, 4.5rem);
-  --text-headline:        clamp(1.75rem, 3vw, 2.5rem);
-  --text-subheadline:     clamp(1.125rem, 2vw, 1.375rem);
-  --text-body:            1rem;
-  --text-small:           0.875rem;
-  --text-xs:              0.75rem;
-
-  /* ─── Line heights ──────────────────────────────── */
-  --leading-tight:        1.2;
-  --leading-snug:         1.4;
-  --leading-normal:       1.6;
-  --leading-relaxed:      1.8;
-
-  /* ─── Bordas ────────────────────────────────────── */
-  --radius-button:        8px;
-  --radius-card:          16px;
-  --radius-input:         8px;
-  --radius-badge:         100px;
-
-  /* ─── Espaçamento de seções ─────────────────────── */
-  --section-padding-y:    clamp(4rem, 8vw, 8rem);
-  --container-max:        1200px;
-  --container-padding:    clamp(1rem, 4vw, 2rem);
-
-  /* ─── Transições ────────────────────────────────── */
-  --transition-fast:      150ms ease;
-  --transition-base:      250ms ease;
-  --transition-slow:      400ms ease;
-
-  /* ─── Sombras ───────────────────────────────────── */
-  --shadow-card:          0 1px 3px oklch(0% 0 0 / 0.08),
-                          0 4px 12px oklch(0% 0 0 / 0.05);
-  --shadow-hover:         0 4px 16px oklch(0% 0 0 / 0.12),
-                          0 8px 32px oklch(0% 0 0 / 0.06);
+  /* ── Tipografia ─────────────────────────────────────── */
+  --t-font-serif:    "Cormorant Garamond", Georgia, ui-serif, serif;
+  --t-font-sans:     "DM Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ─── Dark mode automático ──────────────────────── */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-surface:      oklch(12% 0.01 260);
-    --color-surface-alt:  oklch(16% 0.01 260);
-    --color-border:       oklch(25% 0.01 260);
-    --color-text-strong:  oklch(96% 0.005 260);
-    --color-text-base:    oklch(80% 0.008 260);
-    --color-text-muted:   oklch(55% 0.01 260);
-    --shadow-card:        0 1px 3px oklch(0% 0 0 / 0.3),
-                          0 4px 12px oklch(0% 0 0 / 0.2);
-  }
+/* Dark mode por classe .dark no <html> */
+.dark {
+  --t-background:    #0f0f0f;
+  --t-surface:       #1a1a1a;
+  --t-surface-alt:   #242424;
+  --t-dark:          #0a0a0a;
+  --t-border:        #2a2a2a;
+  --t-text-main:     #e8e8e8;
+  --t-text-soft:     #b0b0b0;
+  --t-text-muted:    #707070;
 }
 ```
+
+### `src/styles/global.css` — mapeia tokens → utilitários Tailwind
+
+```css
+@import './tokens.css';
+@import 'tailwindcss';
+
+/* Dark mode por classe em vez de media query */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* @theme inline — as classes Tailwind apontam direto para as vars de tokens.css */
+@theme inline {
+  --color-primary:      var(--t-primary);
+  --color-primary-dark: var(--t-primary-dark);
+  --color-secondary:    var(--t-secondary);
+  --color-complement:   var(--t-complement);
+  --color-background:   var(--t-background);
+  --color-surface:      var(--t-surface);
+  --color-surface-alt:  var(--t-surface-alt);
+  --color-dark:         var(--t-dark);
+  --color-border:       var(--t-border);
+  --color-text-main:    var(--t-text-main);
+  --color-text-soft:    var(--t-text-soft);
+  --color-text-muted:   var(--t-text-muted);
+  --color-wa:           var(--t-wa);
+
+  --font-serif: var(--t-font-serif);
+  --font-sans:  var(--t-font-sans);
+
+  /* Escala tipográfica — igual em todos os projetos */
+  --text-display-xl: clamp(2.6rem, 5.5vw, 4.2rem);
+  --text-display-lg: clamp(2rem, 4vw, 3.2rem);
+  --text-display-md: clamp(1.7rem, 3vw, 2.4rem);
+  --text-display-sm: clamp(1.4rem, 2.5vw, 1.9rem);
+  --text-body-lg: 1.125rem;
+  --text-body-md: 1rem;
+  --text-body-sm: 0.9rem;
+  --text-label: 0.72rem;
+}
+
+/* Classes utilitárias de layout (usadas nos componentes) */
+@layer components {
+  .container-wide { @apply w-[90%] max-w-wide mx-auto; }
+  .section-py     { @apply py-[clamp(5rem,10vw,8rem)]; }
+  /* ... demais utilitários em global.css */
+}
+```
+
+**Classes Tailwind resultantes** (geradas pelo `@theme` acima):
+
+| Classe | Valor |
+|--------|-------|
+| `bg-primary` / `text-primary` | `var(--t-primary)` |
+| `bg-surface` / `bg-surface-alt` | superfícies do cliente |
+| `bg-background` | fundo base |
+| `text-text-main` / `text-text-soft` / `text-text-muted` | escala de texto |
+| `border-border` | borda padrão |
+| `font-serif` / `font-sans` | tipografia do cliente |
+| `text-display-xl` … `text-label` | escala tipográfica responsiva |
 
 ---
 

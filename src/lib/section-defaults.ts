@@ -17,35 +17,35 @@ export const SECTION_TEMPLATES: SectionTemplate[] = [
   {
     type: 'header',
     label: 'Header',
-    icon: '🔝',
+    icon: 'header',
     copyFields: ['logoAlt', 'ctaTexto', 'ctaUrl'],
     required: true,
   },
   {
     type: 'hero',
     label: 'Hero',
-    icon: '🦸',
+    icon: 'hero',
     copyFields: ['titulo', 'subtitulo', 'ctaTexto', 'ctaUrl', 'ctaSecundarioTexto'],
     required: true,
   },
   {
     type: 'sobre',
     label: 'Sobre',
-    icon: '👤',
+    icon: 'sobre',
     copyFields: ['titulo', 'texto', 'credenciais'],
     required: false,
   },
   {
     type: 'servicos',
     label: 'Serviços',
-    icon: '⚙️',
+    icon: 'servicos',
     copyFields: ['titulo', 'subtitulo', 'servico1Titulo', 'servico1Texto', 'servico2Titulo', 'servico2Texto', 'servico3Titulo', 'servico3Texto'],
     required: false,
   },
   {
     type: 'como-funciona',
     label: 'Como Funciona',
-    icon: '🔄',
+    icon: 'como-funciona',
     copyFields: ['titulo', 'subtitulo', 'passo1', 'passo2', 'passo3'],
     required: false,
     condition: (b) => b.comoFunciona.trim().length > 0,
@@ -54,7 +54,7 @@ export const SECTION_TEMPLATES: SectionTemplate[] = [
   {
     type: 'diferenciais',
     label: 'Diferenciais',
-    icon: '⭐',
+    icon: 'diferenciais',
     copyFields: ['titulo', 'subtitulo', 'diferencial1', 'diferencial2', 'diferencial3'],
     required: false,
     condition: (b) => b.diferencial.trim().length > 0,
@@ -63,7 +63,7 @@ export const SECTION_TEMPLATES: SectionTemplate[] = [
   {
     type: 'depoimentos',
     label: 'Depoimentos',
-    icon: '💬',
+    icon: 'depoimentos',
     copyFields: ['titulo', 'subtitulo'],
     required: false,
     condition: (b) => b.depoimento1Nome.trim().length > 0 && b.depoimento2Nome.trim().length > 0,
@@ -72,7 +72,7 @@ export const SECTION_TEMPLATES: SectionTemplate[] = [
   {
     type: 'google-reviews',
     label: 'Avaliações Google',
-    icon: '⭐',
+    icon: 'google-reviews',
     copyFields: ['titulo'],
     required: false,
     condition: (b) => b.googleNota.trim().length > 0,
@@ -81,7 +81,7 @@ export const SECTION_TEMPLATES: SectionTemplate[] = [
   {
     type: 'precos',
     label: 'Preços',
-    icon: '💰',
+    icon: 'precos',
     copyFields: ['titulo', 'subtitulo', 'ctaTexto'],
     required: false,
     condition: (b) => b.precoExibir === true,
@@ -90,7 +90,7 @@ export const SECTION_TEMPLATES: SectionTemplate[] = [
   {
     type: 'faq',
     label: 'FAQ',
-    icon: '❓',
+    icon: 'faq',
     copyFields: ['titulo', 'subtitulo'],
     required: false,
     condition: (b) => b.faq.trim().length > 0,
@@ -99,7 +99,7 @@ export const SECTION_TEMPLATES: SectionTemplate[] = [
   {
     type: 'instagram',
     label: 'Instagram Feed',
-    icon: '📸',
+    icon: 'instagram',
     copyFields: ['titulo', 'ctaTexto'],
     required: false,
     condition: (b) => b.instagram.trim().length > 0,
@@ -108,11 +108,10 @@ export const SECTION_TEMPLATES: SectionTemplate[] = [
   {
     type: 'localizacao',
     label: 'Localização',
-    icon: '📍',
+    icon: 'localizacao',
     copyFields: ['titulo', 'endereco'],
     required: false,
     condition: (b) => {
-      // campo endereco não existe diretamente no Briefing, usa googleBusiness como proxy
       return b.googleBusiness.trim().length > 0
     },
     hint: 'Habilitado quando Google Business está preenchido',
@@ -120,14 +119,14 @@ export const SECTION_TEMPLATES: SectionTemplate[] = [
   {
     type: 'cta',
     label: 'CTA Final',
-    icon: '🚀',
+    icon: 'cta',
     copyFields: ['titulo', 'subtitulo', 'ctaTexto', 'ctaUrl'],
     required: true,
   },
   {
     type: 'footer',
     label: 'Footer',
-    icon: '🔻',
+    icon: 'footer',
     copyFields: ['copyright', 'politicaUrl'],
     required: true,
   },

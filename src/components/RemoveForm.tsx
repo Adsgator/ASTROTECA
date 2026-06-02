@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import * as ui from '../styles/ui'
+import { Check, Loader2, Trash2 } from 'lucide-react'
 
 interface ComponentEntry {
   id: string
@@ -56,7 +57,7 @@ export default function RemoveForm() {
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-ink-muted py-10">
-        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".25"/><path d="M21 12a9 9 0 00-9-9"/></svg>
+        <Loader2 className="w-4 h-4 animate-spin" />
         Carregando componentes...
       </div>
     )
@@ -74,13 +75,13 @@ export default function RemoveForm() {
       {result && (
         <div className={`${ui.cardBase} p-4 border-ok/20 bg-ok/5`}>
           <div className="flex items-center gap-2 text-ok mb-2">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <Check className="w-4 h-4" />
             <span className="font-semibold">"{result.name}" removido com sucesso!</span>
           </div>
           <div className="text-xs text-ink-muted space-y-0.5">
             {result.removed.map(f => (
               <p key={f} className="flex items-center gap-1">
-                <svg className="w-3 h-3 text-ok flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <Check className="w-3 h-3 text-ok flex-shrink-0" />
                 {f}
               </p>
             ))}
@@ -129,9 +130,7 @@ export default function RemoveForm() {
                   </div>
                   <p className="text-xs text-ink-muted truncate mt-0.5">{c.description || c.id}</p>
                 </div>
-                {selected?.id === c.id && (
-                  <svg className="w-4 h-4 text-fail shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                )}
+                {selected?.id === c.id && <Trash2 className="w-4 h-4 text-fail shrink-0" />}
               </button>
             ))}
           </div>
@@ -155,10 +154,7 @@ export default function RemoveForm() {
               disabled={removing}
             >
               {removing ? (
-                <>
-                  <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity=".25"/><path d="M21 12a9 9 0 00-9-9"/></svg>
-                  Removendo...
-                </>
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" />Removendo...</>
               ) : 'Confirmar remoção'}
             </button>
             <button className={ui.btnGhost} onClick={() => setSelected(null)}>Cancelar</button>
