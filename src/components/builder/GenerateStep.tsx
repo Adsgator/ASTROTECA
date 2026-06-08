@@ -242,6 +242,20 @@ export default function GenerateStep({
         </div>
       </div>
 
+      {/* Aviso: Componentes selecionados */}
+      {state.selected.length > 0 && (
+        <div className={cn(ui.cardBase, 'p-4 border-l-4', 'border-accent/50 bg-accent/5')}>
+          <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-2">Componentes selecionados</p>
+          <div className="flex flex-wrap gap-2">
+            {state.selected.map(s => (
+              <span key={s.meta.id} className="text-[11px] px-2 py-1 bg-accent/10 text-accent rounded">
+                {s.meta.category} → {s.meta.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Seletor de path */}
       <div>
         <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider mb-3">Tipo de Saída</p>

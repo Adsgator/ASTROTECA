@@ -218,6 +218,7 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
     setDisplayStep(project.builderState.step)
     setResult(null)
     setError('')
+    toast(`Projeto "${project.name}" carregado`, 'info')
   }
 
   function handleCreateProject(name: string) {
@@ -272,6 +273,10 @@ function BuilderShellInner({ availableComponents }: { availableComponents: Compo
     setError('')
     setResult(null)
     try {
+      if (!state.briefing.nomeCliente?.trim()) {
+        throw new Error('Nome do cliente é obrigatório')
+      }
+
       let manifestContent: string
       if (state.outputPath === 'create') {
         manifestContent = generateCreateManifest({
