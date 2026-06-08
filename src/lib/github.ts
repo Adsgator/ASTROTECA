@@ -253,7 +253,7 @@ export async function createProjectFromTemplate(
         body: JSON.stringify({
           owner: githubOwner,
           name: repoName,
-          private: true,
+          private: false,
           description: `Landing page — ${clientName}`,
           include_all_branches: false,
         }),
