@@ -9,10 +9,23 @@ export async function callGemini(opts: {
   userPrompt: string
   timeoutMs?: number
 }): Promise<string> {
-  const { apiKey, model, systemPrompt, userPrompt, timeoutMs = 30_000 } = opts
+  const { apiKey, model, systemPrompt, userPrompt } = opts
 
+  // No browser, usa o proxy server-side para evitar CORS e timeout curto
+  if (typeof window !== 'undefined') {
+    const res = await fetch('/api/gemini-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey, model, systemPrompt, userPrompt }),
+    })
+    const data = await res.json() as { text?: string; error?: string }
+    if (!res.ok) throw new Error(data.error || `Erro ${res.status} ao chamar Gemini`)
+    return data.text ?? ''
+  }
+
+  // No servidor (SSR / scripts), chama direto com timeout generoso
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  const timer = setTimeout(() => controller.abort(), 90_000)
 
   let res: Response
   try {
@@ -29,7 +42,7 @@ export async function callGemini(opts: {
     )
   } catch (err) {
     if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error('Gemini demorou demais para responder (timeout de 30s). Tente novamente.')
+      throw new Error('Gemini demorou demais para responder (timeout de 90s). Tente novamente.')
     }
     throw err
   } finally {
